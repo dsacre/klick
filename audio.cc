@@ -29,7 +29,7 @@ using namespace std;
 AudioInterface *Audio = NULL;
 
 
-AudioInterface::AudioInterface(const string & name, const vector<string> & connect_ports)
+AudioInterface::AudioInterface(const string & name, const vector<string> & connect_ports, bool auto_connect)
   : _process_obj(NULL),
     _timebase_obj(NULL),
     _shutdown(false)
@@ -54,6 +54,16 @@ AudioInterface::AudioInterface(const string & name, const vector<string> & conne
             cerr << "can't connect " << jack_port_name(_output_port) << " to " << i->c_str() << endl;
         } else {
             logv << "connected to " << i->c_str() << "" << endl;
+        }
+    }
+
+    if (auto_connect) {
+        const char ** hw_ports = jack_get_ports(_client, NULL, NULL, JackPortIsPhysical | JackPortIsInput);
+        if (hw_ports) {
+            for (int n = 0; n < 2 && hw_ports[n] != NULL; ++n) {
+                jack_connect(_client, jack_port_name(_output_port), hw_ports[n]);
+            }
+            free(hw_ports);
         }
     }
 

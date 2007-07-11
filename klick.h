@@ -32,7 +32,8 @@ class Klick
     {
       public:
         Options()
-          : follow_transport(false),
+          : auto_connect(false),
+            follow_transport(false),
             click_sample(1),
             no_emphasis(false),
             volume(1.0),
@@ -51,6 +52,7 @@ class Klick
 
         std::string client_name;
         std::vector<std::string> connect_ports;
+        bool auto_connect;
         bool follow_transport;
         std::string filename;
         std::string settings;

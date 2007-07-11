@@ -46,7 +46,7 @@ Klick::Klick(int argc, char *argv[])
     logv << "jack client name: " << _options.client_name << endl;
 
     // setup jack
-    _audio.reset(new AudioInterface(_options.client_name, _options.connect_ports));
+    _audio.reset(new AudioInterface(_options.client_name, _options.connect_ports, _options.auto_connect));
 
     if (_options.transport_master) {
         logv << "jack transport master enabled" << endl;
@@ -191,6 +191,7 @@ void Klick::Options::print_usage(ostream & out)
         <<  "  -j                   no tempomap, just follow jack transport" << endl
         <<  "  -n <name>            jack client name" << endl
         <<  "  -p <port,..>         jack port(s) to connect to" << endl
+        <<  "  -P                   automatically connect to hardware ports" << endl
         <<  "  -s <number>          use built-in click sample 1 (default) or 2" << endl
         <<  "  -S <emphasis,normal> use the given files as click samples" << endl
         <<  "  -e                   no emphasized beats" << endl
@@ -213,7 +214,7 @@ void Klick::Options::print_usage(ostream & out)
 void Klick::Options::parse(int argc, char *argv[])
 {
     int c;
-    char optstring[] = "-f:jn:p:s:S:ev:w:tTd:c:l:x:Vh";
+    char optstring[] = "-f:jn:p:Ps:S:ev:w:tTd:c:l:x:Vh";
     char *end;
 
     while ((c = getopt(argc, argv, optstring)) != -1)
@@ -240,6 +241,9 @@ void Klick::Options::parse(int argc, char *argv[])
                     p = strtok(NULL, ",");
                 }
               } break;
+            case 'P':
+                auto_connect = true;
+                break;
             case 's':
                 click_sample = strtoul(::optarg, &end, 10);
                 if (*end != '\0' || click_sample < 1 || click_sample > 2) {

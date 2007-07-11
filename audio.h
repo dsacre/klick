@@ -48,7 +48,7 @@ class AudioInterface
         virtual void timebase_callback(jack_position_t *) = 0;
     };
 
-    AudioInterface(const std::string & name, const std::vector<std::string> & connect_ports);
+    AudioInterface(const std::string & name, const std::vector<std::string> & connect_ports, bool auto_connect);
     ~AudioInterface();
 
 

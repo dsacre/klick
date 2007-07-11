@@ -1,0 +1,26 @@
+klick - an advanced metronome for jack
+
+Copyright (C) 2007  Dominic Sacré  <dominic.sacre@gmx.de>
+
+
+Requirements:
+-------------
+
+JACK Audio Connection Kit
+Boost (headers only)
+libsamplerate
+libsndfile
+SCons
+
+
+Installation:
+-------------
+
+In the klick source directory, run:
+scons
+
+and then, as root:
+scons install
+
+or, to install somewhere else than /usr/local, e.g. /usr:
+scons PREFIX=/usr install

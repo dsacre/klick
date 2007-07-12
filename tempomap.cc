@@ -10,14 +10,17 @@
  */
 
 #include "tempomap.h"
+#include "util.h"
 
 #include <sstream>
 #include <fstream>
 #include <cmath>
+#include <boost/tokenizer.hpp>
 
 using namespace std;
 using boost::shared_ptr;
-
+typedef boost::char_separator<char> char_sep;
+typedef boost::tokenizer<char_sep> tokenizer;
 
 #define REGEX_LABEL     "([[:alnum:]_-]+)"
 #define REGEX_INT       "([[:digit:]]+)"
@@ -39,7 +42,7 @@ static const TempoMap::Regex regex_valid(
     // meter
     "([[:blank:]]+"REGEX_INT"/"REGEX_INT")?" \
     // tempo
-    "[[:blank:]]+"REGEX_FLOAT"(-"REGEX_FLOAT")?" \
+    "[[:blank:]]+"REGEX_FLOAT"(-"REGEX_FLOAT"|((\\|"REGEX_FLOAT")*))?" \
     // accents
     "([[:blank:]]+"REGEX_PATTERN")?" \
     // volume
@@ -48,9 +51,9 @@ static const TempoMap::Regex regex_valid(
     "[[:blank:]]*(#.*)?$",
     REG_EXTENDED
 );
-static const int RE_NMATCHES = 18,
+static const int RE_NMATCHES = 22,
                  IDX_LABEL = 2, IDX_BARS = 3, IDX_BEATS = 5, IDX_DENOM = 6,
-                 IDX_TEMPO = 7, IDX_TEMPO2 = 10, IDX_ACCENTS = 13, IDX_VOLUME = 15;
+                 IDX_TEMPO = 7, IDX_TEMPO2 = 10, IDX_TEMPI = 12, IDX_ACCENTS = 17, IDX_VOLUME = 19;
 
 
 // matches valid tempo parameters on the command line
@@ -73,37 +76,64 @@ vector<TempoMap::BeatType> TempoMap::parse_accents(const string &s, uint nbeats)
     vector<BeatType> accents;
 
     if (!s.empty()) {
-        if (s.length() == nbeats) {
-            accents.resize(nbeats);
-            for (uint n = 0; n < nbeats; n++) {
-                accents[n] = (s[n] == 'X') ? BEAT_EMPHASIS :
-                             (s[n] == 'x') ? BEAT_NORMAL : BEAT_SILENT;
-            }
-        } else {
-            ostringstream os;
-            os << "accent pattern length doesn't match number of beats";
-            throw os.str();
+        if (s.length() != nbeats) {
+            throw "accent pattern length doesn't match number of beats";
+        }
+        accents.resize(nbeats);
+        for (uint n = 0; n < nbeats; n++) {
+            accents[n] = (s[n] == 'X') ? BEAT_EMPHASIS :
+                         (s[n] == 'x') ? BEAT_NORMAL : BEAT_SILENT;
         }
     }
     return accents;
+}
+
+vector<float> TempoMap::parse_tempi(const string &s, float tempo1, uint nbeats_total) const
+{
+    vector<float> tempi;
+
+    char_sep sep("|");
+    tokenizer tok(s, sep);
+    if (count_iter(tok) != nbeats_total - 1) {
+        throw "number of tempo values doesn't match number of beats";
+    }
+    if (tempo1) tempi.push_back(tempo1);
+    for (tokenizer::iterator i = tok.begin(); i != tok.end(); ++i) {
+        tempi.push_back(::strtof(i->c_str(), NULL));
+    }
+    return tempi;
 }
 
 string TempoMap::dump() const
 {
     ostringstream os;
     for (Entries::const_iterator i = _entries.begin(); i != _entries.end(); ++i) {
-        os << (i->label.length() ? i->label : "<none>") << ": ";
-        if (i->bars != UINT_MAX) os << i->bars; else os << "<unlimited>"; os << " ";
+        // label
+        os << (i->label.length() ? i->label : "-") << ": ";
+        // bars
+        if (i->bars != UINT_MAX) os << i->bars; else os << "*"; os << " ";
+        // meter
         os << i->beats << "/" << i->denom << " ";
-        os << i->tempo << " ";
-        if (!i->tempo2) os << "<constant> "; else os << i->tempo2 << " ";
+        // tempo
+        if (i->tempo) {
+            os << i->tempo;
+            if (i->tempo2) os << "-" << i->tempo2;
+        } else {
+            os << i->tempi[0];
+            for (vector<float>::const_iterator k = i->tempi.begin() + 1; k != i->tempi.end(); ++k) {
+                os << "|" << *k;
+            }
+        }
+        os << " ";
+        // accents
         if (i->accents.empty()) {
-            os << "<default>";
+            os << "-";
         } else {
             for (vector<BeatType>::const_iterator j = i->accents.begin(); j != i->accents.end(); ++j)
                 os << (*j == BEAT_EMPHASIS ? "X" : *j == BEAT_NORMAL ? "x" : ".");
         }
         os << " ";
+        // volume
         os << i->volume;
         os << endl;
     }
@@ -156,6 +186,11 @@ TempoMapFile::TempoMapFile(const string & filename)
                 e.denom   = is_specified(line, match[IDX_DENOM]) ? extract_int(line, match[IDX_DENOM]) : 4;
                 e.accents = parse_accents(extract_string(line, match[IDX_ACCENTS]), e.beats);
                 e.volume  = is_specified(line, match[IDX_VOLUME]) ? extract_float(line, match[IDX_VOLUME]) : 1.0f;
+
+                if (is_specified(line, match[IDX_TEMPI])) {
+                    e.tempi = parse_tempi(extract_string(line, match[IDX_TEMPI]), e.tempo, e.beats * e.bars);
+                    e.tempo = 0.0f;
+                }
 
                 _entries.push_back(e);
             } else {

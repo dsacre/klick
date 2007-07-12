@@ -21,10 +21,13 @@
 #include <sstream>
 #include <cstring>
 #include <cstdlib>
+#include <boost/tokenizer.hpp>
 
 #include <unistd.h>
 
 using namespace std;
+typedef boost::char_separator<char> char_sep;
+typedef boost::tokenizer<char_sep> tokenizer;
 
 
 Klick::Klick(int argc, char *argv[])
@@ -235,10 +238,10 @@ void Klick::Options::parse(int argc, char *argv[])
                 client_name = string(::optarg);
                 break;
             case 'p':
-              { char *p = strtok(::optarg, ",");  // yuck
-                while (p) {
-                    connect_ports.push_back(string(p));
-                    p = strtok(NULL, ",");
+              { char_sep sep(",");
+                tokenizer tok(string(::optarg), sep);
+                for (tokenizer::iterator i = tok.begin(); i != tok.end(); ++i) {
+                    connect_ports.push_back(*i);
                 }
               } break;
             case 'P':
@@ -251,14 +254,15 @@ void Klick::Options::parse(int argc, char *argv[])
                 }
                 break;
             case 'S':
-              { string s(::optarg);
-                string::size_type comma = s.find(',');
-                if (comma != string::npos && comma == s.rfind(',')) {
-                    click_filename_emphasis = string(s, 0, comma);
-                    click_filename_normal = string(s, comma + 1, s.length() - comma);
-                } else {
-                    throw "invalid click sample file names";
+              { char_sep sep(",");
+                string str(::optarg);
+                tokenizer tok(str, sep);
+                if (count_iter(tok) != 2) {
+                    throw "wrong number of sample file names";
                 }
+                tokenizer::iterator i = tok.begin();
+                click_filename_emphasis = *i++;
+                click_filename_normal = *i++;
                 click_sample = 0;
               } break;
             case 'e':

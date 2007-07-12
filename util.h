@@ -60,4 +60,15 @@ extern logstream logv;
 
 std::string indent(const std::string & s, uint n);
 
+
+template <typename T>
+uint count_iter(const T t) {
+    int c = 0;
+    for (typename T::const_iterator i = t.begin(); i != t.end(); ++i) {
+        c++;
+    }
+    return c;
+}
+
+
 #endif // _UTIL_H

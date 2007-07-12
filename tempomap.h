@@ -31,8 +31,9 @@ class TempoMap
     struct Entry {
         std::string label;
         uint bars;
-        float tempo;
-        float tempo2;
+        float tempo;    // zero if tempo is given for each beat
+        float tempo2;   // zero if tempo is constant
+        std::vector<float> tempi;
         uint beats;
         uint denom;
         std::vector<BeatType> accents;
@@ -107,6 +108,8 @@ class TempoMap
 
     // builds a vector of beat types, based on the string description
     std::vector<BeatType> parse_accents(const std::string &s, uint nbeats) const;
+
+    std::vector<float> parse_tempi(const std::string &s, float tempo1, uint nbeats_total) const;
 
     Entries _entries;
 };

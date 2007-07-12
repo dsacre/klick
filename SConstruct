@@ -3,7 +3,7 @@
 version = '0.4'
 
 env = Environment(
-    CCFLAGS = '-O2',
+    CCFLAGS = [ '-O2', '-Wall' ],
     CPPDEFINES = 'VERSION=\\"%s\\"' % version
 )
 

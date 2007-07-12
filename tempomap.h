@@ -31,12 +31,12 @@ class TempoMap
     struct Entry {
         std::string label;
         uint bars;
-        float tempo;    // zero if tempo is given for each beat
-        float tempo2;   // zero if tempo is constant
-        std::vector<float> tempi;
+        float tempo;                    // zero if tempo is given for each beat
+        float tempo2;                   // zero if tempo is constant
+        std::vector<float> tempi;       // empty unless tempo == 0.0
         uint beats;
         uint denom;
-        std::vector<BeatType> accents;
+        std::vector<BeatType> accents;  // empty if default
         float volume;
     };
 

@@ -27,6 +27,8 @@ typedef boost::tokenizer<char_sep> tokenizer;
 #define REGEX_FLOAT     "([[:digit:]]+(\\.[[:digit:]]*)?|\\.[[:digit:]]+)"
 #define REGEX_PATTERN   "([Xx.]+)"
 
+static const uint MAX_LINE_LENGTH = 256;
+
 // matches a line that contains nothing but whitespace or comments
 static const TempoMap::Regex regex_blank(
     "^[[:blank:]]*(#.*)?$",
@@ -42,7 +44,7 @@ static const TempoMap::Regex regex_valid(
     // meter
     "([[:blank:]]+"REGEX_INT"/"REGEX_INT")?" \
     // tempo
-    "[[:blank:]]+"REGEX_FLOAT"(-"REGEX_FLOAT"|((\\|"REGEX_FLOAT")*))?" \
+    "[[:blank:]]+"REGEX_FLOAT"(-"REGEX_FLOAT"|((,"REGEX_FLOAT")*))?" \
     // accents
     "([[:blank:]]+"REGEX_PATTERN")?" \
     // volume
@@ -92,7 +94,7 @@ vector<float> TempoMap::parse_tempi(const string &s, float tempo1, uint nbeats_t
 {
     vector<float> tempi;
 
-    char_sep sep("|");
+    char_sep sep(",");
     tokenizer tok(s, sep);
     if (count_iter(tok) != nbeats_total - 1) {
         throw "number of tempo values doesn't match number of beats";
@@ -121,7 +123,7 @@ string TempoMap::dump() const
         } else {
             os << i->tempi[0];
             for (vector<float>::const_iterator k = i->tempi.begin() + 1; k != i->tempi.end(); ++k) {
-                os << "|" << *k;
+                os << "," << *k;
             }
         }
         os << " ";
@@ -165,12 +167,12 @@ TempoMapFile::TempoMapFile(const string & filename)
         throw os.str();
     }
 
-    char line[256];
+    char line[MAX_LINE_LENGTH];
     int  lineno = 1;
 
     while (!file.eof())
     {
-        file.getline(line, 256);
+        file.getline(line, MAX_LINE_LENGTH);
 
         if (!regex_blank.match(line, 0, NULL, 0)) {
             regmatch_t match[RE_NMATCHES];

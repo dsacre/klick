@@ -268,12 +268,12 @@ float MetronomeMap::Position::dist_to_next() const
     const TempoMap::Entry & e = (*_tempomap)[_entry];
     float tempo;
 
-    if (e.tempo2 == 0.0f || e.tempo2 == e.tempo)
+    if (e.tempo != 0.0f && (e.tempo2 == 0.0f || e.tempo2 == e.tempo))
     {
         // constant tempo
         tempo = e.tempo;
     }
-    else
+    else if (e.tempo != 0.0f)
     {
         /*
          * the tempo change is linear with regard to _beats_.
@@ -299,6 +299,11 @@ float MetronomeMap::Position::dist_to_next() const
         double t2 = e.tempo + tdiff * (double(_bar * e.beats) + _beat + 1) / (e.bars * e.beats);
 
         tempo = (t1 - t2) / (log(t1) - log(t2));
+    }
+    else
+    {
+        // different tempo given for each beat
+        tempo = e.tempi[(_bar * e.beats) + _beat];
     }
 
     return ((float)Audio->samplerate() * 240.0f) / (e.denom * tempo * _multiplier);

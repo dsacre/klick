@@ -22,12 +22,14 @@ using boost::shared_ptr;
 typedef boost::char_separator<char> char_sep;
 typedef boost::tokenizer<char_sep> tokenizer;
 
+
 #define REGEX_LABEL     "([[:alnum:]_-]+)"
 #define REGEX_INT       "([[:digit:]]+)"
 #define REGEX_FLOAT     "([[:digit:]]+(\\.[[:digit:]]*)?|\\.[[:digit:]]+)"
 #define REGEX_PATTERN   "([Xx.]+)"
 
 static const uint MAX_LINE_LENGTH = 256;
+
 
 // matches a line that contains nothing but whitespace or comments
 static const TempoMap::Regex regex_blank(

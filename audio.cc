@@ -58,6 +58,7 @@ AudioInterface::AudioInterface(const string & name, const vector<string> & conne
     }
 
     if (auto_connect) {
+        // connect to first two hardware outs
         const char ** hw_ports = jack_get_ports(_client, NULL, NULL, JackPortIsPhysical | JackPortIsInput);
         if (hw_ports) {
             for (int n = 0; n < 2 && hw_ports[n] != NULL; ++n) {
@@ -85,7 +86,7 @@ void AudioInterface::set_timebase_callback(TimebaseCallback *obj)
 {
     if (obj) {
         if (jack_set_timebase_callback(_client, 0, &timebase_callback_, static_cast<void*>(this)) != 0) {
-            cerr << "failed to become jack transport master";
+            cerr << "failed to become jack transport master" << endl;
         }
     } else {
         if (_timebase_obj) {

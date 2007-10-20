@@ -12,15 +12,15 @@
 #ifndef _CLICK_DATA_H
 #define _CLICK_DATA_H
 
-#include "audio_data.h"
+#include "audio_chunk.h"
 
-extern const AudioData CLICK_1_EMPHASIS_DATA;
-extern const AudioData CLICK_1_NORMAL_DATA;
+extern const AudioChunk CLICK_1_EMPHASIS_DATA;
+extern const AudioChunk CLICK_1_NORMAL_DATA;
 
-extern const AudioData CLICK_2_EMPHASIS_DATA;
-extern const AudioData CLICK_2_NORMAL_DATA;
+extern const AudioChunk CLICK_2_EMPHASIS_DATA;
+extern const AudioChunk CLICK_2_NORMAL_DATA;
 
-extern const AudioData CLICK_3_EMPHASIS_DATA;
-extern const AudioData CLICK_3_NORMAL_DATA;
+extern const AudioChunk CLICK_3_EMPHASIS_DATA;
+extern const AudioChunk CLICK_3_NORMAL_DATA;
 
 #endif

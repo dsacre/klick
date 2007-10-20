@@ -26,7 +26,7 @@ using boost::shared_ptr;
 MetronomeMap::MetronomeMap(shared_ptr<const TempoMap> tempomap,
             float tempo_multiplier, bool transport, bool master,
             int preroll, const string & start_label,
-            AudioDataPtr emphasis, AudioDataPtr normal)
+            AudioChunkPtr emphasis, AudioChunkPtr normal)
   : Metronome(emphasis, normal),
     _current(0),
     _pos(tempomap, tempo_multiplier),
@@ -85,7 +85,7 @@ void MetronomeMap::process_callback(sample_t *buffer, nframes_t nframes)
         do { _pos.advance(); } while (_pos.frame() < _current);
         Click click = _pos.click();
 
-        AudioDataPtr click_data;
+        AudioChunkPtr click_data;
         // determine click type
         if (click.type == TempoMap::BEAT_EMPHASIS) {
             click_data = _click_emphasis;

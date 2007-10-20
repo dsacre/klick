@@ -10,7 +10,7 @@
  */
 
 #include "audio.h"
-#include "audio_data.h"
+#include "audio_chunk.h"
 
 #include <sstream>
 #include <cmath>
@@ -21,7 +21,7 @@
 using namespace std;
 
 
-AudioData::AudioData(const sample_t *samples, nframes_t length, nframes_t samplerate, float volume)
+AudioChunk::AudioChunk(const sample_t *samples, nframes_t length, nframes_t samplerate, float volume)
   : _static_samples(samples),
     _samples(NULL),
     _length(length),
@@ -36,7 +36,7 @@ AudioData::AudioData(const sample_t *samples, nframes_t length, nframes_t sample
 }
 
 
-AudioData::AudioData(const string & filename, nframes_t samplerate)
+AudioChunk::AudioChunk(const string & filename, nframes_t samplerate)
   : _static_samples(NULL)
 {
     SF_INFO sfinfo = { 0 };
@@ -80,7 +80,7 @@ AudioData::AudioData(const string & filename, nframes_t samplerate)
 }
 
 
-AudioData::AudioData(const AudioData & in, nframes_t samplerate)
+AudioChunk::AudioChunk(const AudioChunk & in, nframes_t samplerate)
   : _static_samples(NULL)
 {
     if (!samplerate || samplerate == in._samplerate) {
@@ -96,7 +96,7 @@ AudioData::AudioData(const AudioData & in, nframes_t samplerate)
 
 
 
-AudioData::~AudioData()
+AudioChunk::~AudioChunk()
 {
     if (_samples) {
         free(_samples);
@@ -104,7 +104,7 @@ AudioData::~AudioData()
 }
 
 
-void AudioData::resample(const sample_t *samples_in, nframes_t length_in, nframes_t samplerate_in,
+void AudioChunk::resample(const sample_t *samples_in, nframes_t length_in, nframes_t samplerate_in,
                          sample_t **samples_out, nframes_t *length_out, nframes_t samplerate_out)
 {
     SRC_DATA src_data;
@@ -128,7 +128,7 @@ void AudioData::resample(const sample_t *samples_in, nframes_t length_in, nframe
 }
 
 
-void AudioData::adjust_volume(float volume)
+void AudioChunk::adjust_volume(float volume)
 {
     for (uint i = 0; i < _length; i++) {
         _samples[i] *= volume;
@@ -136,7 +136,7 @@ void AudioData::adjust_volume(float volume)
 }
 
 
-void AudioData::adjust_frequency(float factor)
+void AudioChunk::adjust_frequency(float factor)
 {
     sample_t *s;
     nframes_t l;

@@ -18,7 +18,7 @@
 using namespace std;
 
 
-Metronome::Metronome(AudioDataPtr emphasis, AudioDataPtr normal)
+Metronome::Metronome(AudioChunkPtr emphasis, AudioChunkPtr normal)
   : _click_emphasis(emphasis),
     _click_normal(normal)
 {
@@ -38,7 +38,7 @@ void Metronome::start()
 
 
 void Metronome::start_click(sample_t *buffer, nframes_t nframes,
-                            nframes_t offset, AudioDataPtr click, float volume)
+                            nframes_t offset, AudioChunkPtr click, float volume)
 {
     _play_click = click;
     _play_volume = volume;

@@ -32,7 +32,7 @@ class MetronomeMap
                 float tempo_multiplier,
                 bool transport, bool master,
                 int preroll, const std::string & start_label,
-                AudioDataPtr emphasis, AudioDataPtr normal);
+                AudioChunkPtr emphasis, AudioChunkPtr normal);
     virtual ~MetronomeMap();
 
     void start();

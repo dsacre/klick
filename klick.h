@@ -13,7 +13,7 @@
 #define _KLICK_H
 
 #include "audio.h"
-#include "audio_data.h"
+#include "audio_chunk.h"
 
 #include <string>
 #include <vector>
@@ -85,8 +85,8 @@ class Klick
 
   private:
     Options _options;
-    AudioDataPtr _click_emphasis;
-    AudioDataPtr _click_normal;
+    AudioChunkPtr _click_emphasis;
+    AudioChunkPtr _click_normal;
 
     boost::shared_ptr<TempoMap> _map;
     boost::shared_ptr<AudioInterface> _audio;

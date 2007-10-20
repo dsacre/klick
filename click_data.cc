@@ -544,7 +544,7 @@ static const sample_t CLICK_1_EMPHASIS_SAMPLES[] = {
     0, 0,
 };
 
-const AudioData CLICK_1_EMPHASIS_DATA(
+const AudioChunk CLICK_1_EMPHASIS_DATA(
     CLICK_1_EMPHASIS_SAMPLES,
     sizeof(CLICK_1_EMPHASIS_SAMPLES) / sizeof(CLICK_1_EMPHASIS_SAMPLES[0]),
     48000
@@ -1165,7 +1165,7 @@ static const sample_t CLICK_1_NORMAL_SAMPLES[] = {
     0, 0, 0, 0, 0, 0, 0, 0,
 };
 
-const AudioData CLICK_1_NORMAL_DATA(
+const AudioChunk CLICK_1_NORMAL_DATA(
     CLICK_1_NORMAL_SAMPLES,
     sizeof(CLICK_1_NORMAL_SAMPLES) / sizeof(CLICK_1_NORMAL_SAMPLES[0]),
     48000
@@ -1237,7 +1237,7 @@ static const sample_t CLICK_2_EMPHASIS_SAMPLES[] = {
     0.001759, -0.063092, -0.009397, 0.069881, 0.040167, 0.000000,
 };
 
-const AudioData CLICK_2_EMPHASIS_DATA(
+const AudioChunk CLICK_2_EMPHASIS_DATA(
     CLICK_2_EMPHASIS_SAMPLES,
     sizeof(CLICK_2_EMPHASIS_SAMPLES) / sizeof(CLICK_2_EMPHASIS_SAMPLES[0]),
     44100, 0.8f
@@ -1367,7 +1367,7 @@ static const sample_t CLICK_2_NORMAL_SAMPLES[] = {
     0.023675, 0.013062, 0.010575, 0.017617, 
 };
 
-const AudioData CLICK_2_NORMAL_DATA(
+const AudioChunk CLICK_2_NORMAL_DATA(
     CLICK_2_NORMAL_SAMPLES,
     sizeof(CLICK_2_NORMAL_SAMPLES) / sizeof(CLICK_2_NORMAL_SAMPLES[0]),
     44100, 0.8f
@@ -1378,7 +1378,7 @@ static const sample_t CLICK_3_EMPHASIS_SAMPLES[] = {
     0.0
 };
 
-const AudioData CLICK_3_EMPHASIS_DATA(
+const AudioChunk CLICK_3_EMPHASIS_DATA(
     CLICK_3_EMPHASIS_SAMPLES,
     sizeof(CLICK_3_EMPHASIS_SAMPLES) / sizeof(CLICK_3_EMPHASIS_SAMPLES[0]),
     44100, 0.8f
@@ -1389,7 +1389,7 @@ static const sample_t CLICK_3_NORMAL_SAMPLES[] = {
     0.0
 };
 
-const AudioData CLICK_3_NORMAL_DATA(
+const AudioChunk CLICK_3_NORMAL_DATA(
     CLICK_3_NORMAL_SAMPLES,
     sizeof(CLICK_3_NORMAL_SAMPLES) / sizeof(CLICK_3_NORMAL_SAMPLES[0]),
     44100, 0.8f

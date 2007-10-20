@@ -18,7 +18,7 @@ env.Program('klick', [
     'main.cc',
     'klick.cc',
     'audio.cc',
-    'audio_data.cc',
+    'audio_chunk.cc',
     'tempomap.cc',
     'metronome.cc',
     'metronome_map.cc',

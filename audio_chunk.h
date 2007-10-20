@@ -9,8 +9,8 @@
  * (at your option) any later version.
  */
 
-#ifndef _AUDIO_DATA_H
-#define _AUDIO_DATA_H
+#ifndef _AUDIO_CHUNK_H
+#define _AUDIO_CHUNK_H
 
 #include "audio.h"
 
@@ -19,16 +19,16 @@
 /*
  * mono audio sample
  */
-class AudioData
+class AudioChunk
 {
   public:
     // creates sample from plain audio data
-    AudioData(const sample_t *samples, nframes_t length, nframes_t samplerate, float volume = 1.0f);
+    AudioChunk(const sample_t *samples, nframes_t length, nframes_t samplerate, float volume = 1.0f);
     // loads sample from file, converting to the given samplerate if samplerate is non-zero
-    AudioData(const std::string & filename, nframes_t samplerate = 0);
+    AudioChunk(const std::string & filename, nframes_t samplerate = 0);
     // makes a copy of another sample
-    AudioData(const AudioData & in, nframes_t samplerate = 0);
-    ~AudioData();
+    AudioChunk(const AudioChunk & in, nframes_t samplerate = 0);
+    ~AudioChunk();
 
     const sample_t *samples() const { return _samples ? : _static_samples; }
     nframes_t length() const { return _length; }
@@ -48,7 +48,7 @@ class AudioData
 };
 
 
-typedef boost::shared_ptr<AudioData> AudioDataPtr;
+typedef boost::shared_ptr<AudioChunk> AudioChunkPtr;
 
 
-#endif // _AUDIO_DATA_H
+#endif // _AUDIO_CHUNK_H

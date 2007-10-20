@@ -112,7 +112,7 @@ void Klick::load_samples()
                << "  normal: " << _options.click_filename_normal << endl;
     }
 
-    const AudioData *data_normal, *data_emphasis;
+    const AudioChunk *data_normal, *data_emphasis;
 
     switch (_options.click_sample) {
       case 1:
@@ -134,19 +134,19 @@ void Klick::load_samples()
     }
 
     if (data_normal) {
-        _click_normal.reset(new AudioData(*data_normal, Audio->samplerate()));
-        _click_emphasis.reset(new AudioData(*data_emphasis, Audio->samplerate()));
+        _click_normal.reset(new AudioChunk(*data_normal, Audio->samplerate()));
+        _click_emphasis.reset(new AudioChunk(*data_emphasis, Audio->samplerate()));
     } else {
-        _click_normal.reset(new AudioData(_options.click_filename_normal, Audio->samplerate()));
-        _click_emphasis.reset(new AudioData(_options.click_filename_emphasis, Audio->samplerate()));
+        _click_normal.reset(new AudioChunk(_options.click_filename_normal, Audio->samplerate()));
+        _click_emphasis.reset(new AudioChunk(_options.click_filename_emphasis, Audio->samplerate()));
     }
 
     switch (_options.emphasis) {
       case Options::EMPHASIS_NONE:
-        _click_emphasis.reset(new AudioData(*_click_normal));
+        _click_emphasis.reset(new AudioChunk(*_click_normal));
         break;
       case Options::EMPHASIS_ALL:
-        _click_normal.reset(new AudioData(*_click_emphasis));
+        _click_normal.reset(new AudioChunk(*_click_emphasis));
         break;
       default:
         break;

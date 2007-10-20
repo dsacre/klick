@@ -35,14 +35,14 @@ void MetronomeJack::process_callback(sample_t *buffer, nframes_t nframes)
     if (offset % (nframes_t)frames_per_beat == 0) {
         // click starts at first frame. pos already refers to this beat
         bool emphasis = (pos.beat % (int32_t)pos.beats_per_bar == 1);
-        AudioDataPtr click = emphasis ? _click_emphasis : _click_normal;
+        AudioChunkPtr click = emphasis ? _click_emphasis : _click_normal;
         start_click(buffer, nframes, 0, click);
     }
     else if (offset < nframes) {
         // click starts somewhere during this period. since pos is the position at the start
         // of the period, the click played is actually at "pos + 1"
         bool emphasis = (pos.beat == (int32_t)pos.beats_per_bar);
-        AudioDataPtr click = emphasis ? _click_emphasis : _click_normal;
+        AudioChunkPtr click = emphasis ? _click_emphasis : _click_normal;
         start_click(buffer, nframes, offset, click);
     }
     else {

@@ -82,9 +82,9 @@ void Klick::load_tempomap()
         throw "no tempo specified";
     } else {
         if (!_options.filename.empty()) {
-            _map.reset(new TempoMapFile(_options.filename));
+            _map = TempoMap::new_from_file(_options.filename);
         } else {
-            _map.reset(new TempoMapCmdline(_options.settings));
+            _map = TempoMap::new_from_cmdline(_options.settings);
         }
     }
 

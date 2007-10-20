@@ -80,72 +80,46 @@ class TempoMap
         _entries.push_back(e);
     }
 
+    std::string dump() const;
+
     static boost::shared_ptr<TempoMap> join(boost::shared_ptr<const TempoMap>,
                                             boost::shared_ptr<const TempoMap>);
 
-    std::string dump() const;
+    static boost::shared_ptr<TempoMap> new_from_file(const std::string & filename);
+    static boost::shared_ptr<TempoMap> new_from_cmdline(const std::string & line);
+
+    static boost::shared_ptr<TempoMap> new_simple(uint bars, float tempo, uint beats, uint denom,
+                                                  const std::vector<BeatType> & acc = std::vector<BeatType>(),
+                                                  float volume = 1.0f);
 
   protected:
     // determines whether the submatch m is not empty
-    bool is_specified(const std::string &s, const regmatch_t &m) const {
+    static bool is_specified(const std::string &s, const regmatch_t &m) {
         return ((m.rm_eo - m.rm_so) != 0);
     }
     // get submatch m from the line s as string
-    std::string extract_string(const std::string &s, const regmatch_t &m) const {
+    static std::string extract_string(const std::string &s, const regmatch_t &m) {
         uint len = m.rm_eo - m.rm_so;
         return len ? std::string(s.c_str() + m.rm_so, len) : "";
     }
     // get submatch m from the line s as int
-    uint extract_int(const std::string &s, const regmatch_t &m) const {
+    static uint extract_int(const std::string &s, const regmatch_t &m) {
         uint len = m.rm_eo - m.rm_so;
         return len ? atoi(std::string(s.c_str() + m.rm_so, len).c_str()) : 0;
     }
     // get submatch m from the line s as float
-    float extract_float(const std::string &s, const regmatch_t &m) const {
+    static float extract_float(const std::string &s, const regmatch_t &m) {
         uint len = m.rm_eo - m.rm_so;
         return len ? atof(std::string(s.c_str() + m.rm_so, len).c_str()) : 0.0f;
     }
 
     // builds a vector of beat types, based on the string description
-    std::vector<BeatType> parse_accents(const std::string &s, uint nbeats) const;
+    static std::vector<BeatType> parse_accents(const std::string &s, uint nbeats);
 
-    std::vector<float> parse_tempi(const std::string &s, float tempo1, uint nbeats_total) const;
+    static std::vector<float> parse_tempi(const std::string &s, float tempo1, uint nbeats_total);
 
     Entries _entries;
 };
 
-
-class TempoMapFile : public TempoMap
-{
-  public:
-    TempoMapFile(const std::string & filename);
-};
-
-
-class TempoMapCmdline : public TempoMap
-{
-  public:
-    TempoMapCmdline(const std::string & line);
-};
-
-
-class TempoMapSimple : public TempoMap
-{
-  public:
-    TempoMapSimple(uint bars, float tempo, uint beats, uint denom, bool acc, float volume)
-    {
-        Entry e;
-        e.bars    = bars;
-        e.tempo   = tempo;
-        e.tempo2  = 0.0f;
-        e.beats   = beats;
-        e.denom   = denom;
-        e.volume  = volume;
-        if (!acc) {
-            e.accents.insert(e.accents.end(), beats, BEAT_NORMAL);
-        }
-        _entries.push_back(e);
-    }
-};
 
 #endif // _TEMPOMAP_H

@@ -76,7 +76,7 @@ static const int RE_NMATCHES_CMD = 12,
                  IDX_TEMPO2_CMD = 7, IDX_ACCEL_CMD = 9, IDX_ACCENTS_CMD = 11;
 
 
-vector<TempoMap::BeatType> TempoMap::parse_accents(const string &s, uint nbeats) const
+vector<TempoMap::BeatType> TempoMap::parse_accents(const string &s, uint nbeats)
 {
     vector<BeatType> accents;
 
@@ -94,7 +94,7 @@ vector<TempoMap::BeatType> TempoMap::parse_accents(const string &s, uint nbeats)
 }
 
 
-vector<float> TempoMap::parse_tempi(const string &s, float tempo1, uint nbeats_total) const
+vector<float> TempoMap::parse_tempi(const string &s, float tempo1, uint nbeats_total)
 {
     vector<float> tempi;
 
@@ -164,8 +164,10 @@ shared_ptr<TempoMap> TempoMap::join(shared_ptr<const TempoMap> m1, shared_ptr<co
 /*
  * loads tempomap from a file
  */
-TempoMapFile::TempoMapFile(const string & filename)
+shared_ptr<TempoMap> TempoMap::new_from_file(const string & filename)
 {
+    shared_ptr<TempoMap> map(new TempoMap());
+
     ifstream file(filename.c_str());
 
     if (!file.is_open()) {
@@ -201,7 +203,7 @@ TempoMapFile::TempoMapFile(const string & filename)
                     e.tempo = 0.0f;
                 }
 
-                _entries.push_back(e);
+                map->_entries.push_back(e);
             } else {
                 ostringstream os;
                 os << "invalid tempomap entry at line " << lineno << ":" << endl << line;
@@ -210,14 +212,18 @@ TempoMapFile::TempoMapFile(const string & filename)
         }
         lineno++;
     }
+
+    return map;
 }
 
 
 /*
  * loads single-line tempomap from a string
  */
-TempoMapCmdline::TempoMapCmdline(const string & line)
+shared_ptr<TempoMap> TempoMap::new_from_cmdline(const string & line)
 {
+    shared_ptr<TempoMap> map(new TempoMap());
+
     regmatch_t match[RE_NMATCHES_CMD];
 
     if (regex_cmdline.match(line, RE_NMATCHES_CMD, match, 0))
@@ -239,16 +245,16 @@ TempoMapCmdline::TempoMapCmdline(const string & line)
             uint accel = extract_int(line, match[IDX_ACCEL_CMD]);
             if (accel < 1) throw "accel must be greater than 0";
             e.bars = accel * (int)fabs(e.tempo2 - e.tempo);
-            _entries.push_back(e);
+            map->_entries.push_back(e);
 
             // add a second entry, to be played once the "target" tempo is reached
             e.bars = UINT_MAX;
             e.tempo = e.tempo2;
             e.tempo2 = 0.0f;
-            _entries.push_back(e);
+            map->_entries.push_back(e);
         } else {
             // no tempo change, just add this single entry
-            _entries.push_back(e);
+            map->_entries.push_back(e);
         }
     }
     else
@@ -257,4 +263,29 @@ TempoMapCmdline::TempoMapCmdline(const string & line)
         os << "invalid tempomap string:" << endl << line;
         throw os.str();
     }
+
+    return map;
+}
+
+
+shared_ptr<TempoMap> TempoMap::new_simple(uint bars, float tempo, uint beats, uint denom,
+                                          const vector<TempoMap::BeatType> & acc, float volume)
+{
+    shared_ptr<TempoMap> map(new TempoMap());
+
+    Entry e;
+    e.bars    = bars;
+    e.tempo   = tempo;
+    e.tempo2  = 0.0f;
+    e.beats   = beats;
+    e.denom   = denom;
+    e.volume  = volume;
+    e.accents = acc;
+
+/*    if (!acc) {
+        e.accents.insert(e.accents.end(), beats, BEAT_NORMAL);
+    }*/
+    map->_entries.push_back(e);
+
+    return map;
 }

@@ -106,44 +106,50 @@ void Klick::load_tempomap()
 
 void Klick::load_samples()
 {
-    if (_options.click_sample == 0) {
+    if (_options.click_sample == Options::CLICK_SAMPLE_FROM_FILE) {
         logv << "loading samples from file:" << endl
                << "  emphasis: " << _options.click_filename_emphasis << endl
                << "  normal: " << _options.click_filename_normal << endl;
     }
 
+    const AudioData *data_normal, *data_emphasis;
+
     switch (_options.click_sample) {
-      case 0:
-        _click_normal.reset(new AudioData(_options.click_filename_normal, Audio->samplerate()));
-        break;
       case 1:
-        _click_normal.reset(new AudioData(CLICK_1_NORMAL_DATA, Audio->samplerate()));
+        data_normal = &CLICK_1_NORMAL_DATA;
+        data_emphasis = &CLICK_1_EMPHASIS_DATA;
         break;
       case 2:
-        _click_normal.reset(new AudioData(CLICK_2_NORMAL_DATA, Audio->samplerate()));
+        data_normal = &CLICK_2_NORMAL_DATA;
+        data_emphasis = &CLICK_2_EMPHASIS_DATA;
         break;
       case 3:
-        _click_normal.reset(new AudioData(CLICK_3_NORMAL_DATA, Audio->samplerate()));
+        data_normal = &CLICK_3_NORMAL_DATA;
+        data_emphasis = &CLICK_3_EMPHASIS_DATA;
+        break;
+      default:
+        data_normal = NULL;
+        data_emphasis = NULL;
         break;
     }
 
-    if (!_options.no_emphasis) {
-        switch (_options.click_sample) {
-          case 0:
-            _click_emphasis.reset(new AudioData(_options.click_filename_emphasis, Audio->samplerate()));
-            break;
-          case 1:
-            _click_emphasis.reset(new AudioData(CLICK_1_EMPHASIS_DATA, Audio->samplerate()));
-            break;
-          case 2:
-            _click_emphasis.reset(new AudioData(CLICK_2_EMPHASIS_DATA, Audio->samplerate()));
-            break;
-          case 3:
-            _click_emphasis.reset(new AudioData(CLICK_3_EMPHASIS_DATA, Audio->samplerate()));
-            break;
-        }
+    if (data_normal) {
+        _click_normal.reset(new AudioData(*data_normal, Audio->samplerate()));
+        _click_emphasis.reset(new AudioData(*data_emphasis, Audio->samplerate()));
     } else {
+        _click_normal.reset(new AudioData(_options.click_filename_normal, Audio->samplerate()));
+        _click_emphasis.reset(new AudioData(_options.click_filename_emphasis, Audio->samplerate()));
+    }
+
+    switch (_options.emphasis) {
+      case Options::EMPHASIS_NONE:
         _click_emphasis.reset(new AudioData(*_click_normal));
+        break;
+      case Options::EMPHASIS_ALL:
+        _click_normal.reset(new AudioData(*_click_emphasis));
+        break;
+      default:
+        break;
     }
 
     if (_options.volume != 1.0f) {
@@ -211,6 +217,7 @@ void Klick::Options::print_usage(ostream & out)
         <<  "  -s <number>          use built-in click sounds 1 (default), 2 or 3" << endl
         <<  "  -S <emphasis,normal> use the given files as click sounds" << endl
         <<  "  -e                   no emphasized beats" << endl
+        <<  "  -E                   emphasized beats only" << endl
         <<  "  -v <multiplier>      adjust playback volume" << endl
         <<  "  -w <multiplier>      adjust playback frequency" << endl
         <<  "  -t                   enable jack transport" << endl
@@ -231,7 +238,7 @@ void Klick::Options::print_usage(ostream & out)
 void Klick::Options::parse(int argc, char *argv[])
 {
     int c;
-    char optstring[] = "-f:jn:p:Ps:S:ev:w:tTd:c:l:x:Vh";
+    char optstring[] = "-f:jn:p:Ps:S:eEv:w:tTd:c:l:x:Vh";
     char *end;
 
     while ((c = getopt(argc, argv, optstring)) != -1)
@@ -277,10 +284,13 @@ void Klick::Options::parse(int argc, char *argv[])
                 tokenizer::iterator i = tok.begin();
                 click_filename_emphasis = *i++;
                 click_filename_normal = *i++;
-                click_sample = 0;
+                click_sample = CLICK_SAMPLE_FROM_FILE;
               } break;
             case 'e':
-                no_emphasis = true;
+                emphasis = EMPHASIS_NONE;
+                break;
+            case 'E':
+                emphasis = EMPHASIS_ALL;
                 break;
             case 'v':
                 volume = strtof(::optarg, &end);

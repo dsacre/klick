@@ -1372,3 +1372,25 @@ const AudioData CLICK_2_NORMAL_DATA(
     sizeof(CLICK_2_NORMAL_SAMPLES) / sizeof(CLICK_2_NORMAL_SAMPLES[0]),
     44100, 0.8f
 );
+
+
+static const sample_t CLICK_3_EMPHASIS_SAMPLES[] = {
+    0.0
+};
+
+const AudioData CLICK_3_EMPHASIS_DATA(
+    CLICK_3_EMPHASIS_SAMPLES,
+    sizeof(CLICK_3_EMPHASIS_SAMPLES) / sizeof(CLICK_3_EMPHASIS_SAMPLES[0]),
+    44100, 0.8f
+);
+
+
+static const sample_t CLICK_3_NORMAL_SAMPLES[] = {
+    0.0
+};
+
+const AudioData CLICK_3_NORMAL_DATA(
+    CLICK_3_NORMAL_SAMPLES,
+    sizeof(CLICK_3_NORMAL_SAMPLES) / sizeof(CLICK_3_NORMAL_SAMPLES[0]),
+    44100, 0.8f
+);

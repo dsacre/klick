@@ -1,10 +1,13 @@
 # -*- python -*-
 
-version = '0.4'
+import os
+
+version = '0.5'
 
 env = Environment(
     CCFLAGS = [ '-O2', '-Wall' ],
-    CPPDEFINES = 'VERSION=\\"%s\\"' % version
+    CPPDEFINES = 'VERSION=\\"%s\\"' % version,
+    ENV = {'PATH' : os.environ['PATH']}
 )
 
 env.ParseConfig(
@@ -15,8 +18,11 @@ env.Program('klick', [
     'main.cc',
     'klick.cc',
     'audio.cc',
+    'audio_data.cc',
     'tempomap.cc',
     'metronome.cc',
+    'metronome_map.cc',
+    'metronome_jack.cc',
     'click_data.cc',
     'util.cc'
 ])

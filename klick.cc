@@ -12,9 +12,9 @@
 #include "klick.h"
 #include "audio.h"
 #include "tempomap.h"
-#include "metronome.h"
+#include "metronome_map.h"
+#include "metronome_jack.h"
 #include "click_data.h"
-#include "util.h"
 
 #include <string>
 #include <iostream>
@@ -22,8 +22,9 @@
 #include <cstring>
 #include <cstdlib>
 #include <boost/tokenizer.hpp>
-
 #include <unistd.h>
+
+#include "util.h"
 
 using namespace std;
 typedef boost::char_separator<char> char_sep;
@@ -69,9 +70,11 @@ Klick::Klick(int argc, char *argv[])
     }
 }
 
+
 Klick::~Klick()
 {
 }
+
 
 void Klick::load_tempomap()
 {
@@ -100,6 +103,7 @@ void Klick::load_tempomap()
     }
 }
 
+
 void Klick::load_samples()
 {
     if (_options.click_sample == 0) {
@@ -118,6 +122,9 @@ void Klick::load_samples()
       case 2:
         _click_normal.reset(new AudioData(CLICK_2_NORMAL_DATA, Audio->samplerate()));
         break;
+      case 3:
+        _click_normal.reset(new AudioData(CLICK_3_NORMAL_DATA, Audio->samplerate()));
+        break;
     }
 
     if (!_options.no_emphasis) {
@@ -131,6 +138,9 @@ void Klick::load_samples()
           case 2:
             _click_emphasis.reset(new AudioData(CLICK_2_EMPHASIS_DATA, Audio->samplerate()));
             break;
+          case 3:
+            _click_emphasis.reset(new AudioData(CLICK_3_EMPHASIS_DATA, Audio->samplerate()));
+            break;
         }
     } else {
         _click_emphasis.reset(new AudioData(*_click_normal));
@@ -141,11 +151,12 @@ void Klick::load_samples()
         _click_normal->adjust_volume(_options.volume);
     }
 
-    if (_options.frequency != 1.0) {
+    if (_options.frequency != 1.0f) {
         _click_emphasis->adjust_frequency(_options.frequency);
         _click_normal->adjust_frequency(_options.frequency);
     }
 }
+
 
 void Klick::run()
 {
@@ -171,10 +182,12 @@ void Klick::run()
     }
 }
 
+
 void Klick::signal_quit()
 {
     _quit = true;
 }
+
 
 
 void Klick::Options::print_version(ostream & out)
@@ -195,8 +208,8 @@ void Klick::Options::print_usage(ostream & out)
         <<  "  -n <name>            jack client name" << endl
         <<  "  -p <port,..>         jack port(s) to connect to" << endl
         <<  "  -P                   automatically connect to hardware ports" << endl
-        <<  "  -s <number>          use built-in click sample 1 (default) or 2" << endl
-        <<  "  -S <emphasis,normal> use the given files as click samples" << endl
+        <<  "  -s <number>          use built-in click sounds 1 (default), 2 or 3" << endl
+        <<  "  -S <emphasis,normal> use the given files as click sounds" << endl
         <<  "  -e                   no emphasized beats" << endl
         <<  "  -v <multiplier>      adjust playback volume" << endl
         <<  "  -w <multiplier>      adjust playback frequency" << endl
@@ -213,6 +226,7 @@ void Klick::Options::print_usage(ostream & out)
         << "  [label:] bars [meter] tempo[-tempo2] [pattern] [volume]" << endl
         << "  ..." << endl;
 }
+
 
 void Klick::Options::parse(int argc, char *argv[])
 {
@@ -249,7 +263,7 @@ void Klick::Options::parse(int argc, char *argv[])
                 break;
             case 's':
                 click_sample = strtoul(::optarg, &end, 10);
-                if (*end != '\0' || click_sample < 1 || click_sample > 2) {
+                if (*end != '\0' || click_sample < 1 || click_sample > 3) {
                     throw "invalid click sample number";
                 }
                 break;

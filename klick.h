@@ -13,6 +13,7 @@
 #define _KLICK_H
 
 #include "audio.h"
+#include "audio_data.h"
 
 #include <string>
 #include <vector>

@@ -24,12 +24,14 @@ static void signal_handler(int sig)
     app->signal_quit();
 }
 
+
 static void terminate(const char *e)
 {
     std::cerr << e << std::endl;
     delete app;
     exit(EXIT_FAILURE);
 }
+
 
 int main(int argc, char *argv[])
 {

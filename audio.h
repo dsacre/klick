@@ -12,14 +12,13 @@
 #ifndef _AUDIO_H
 #define _AUDIO_H
 
-#include "util.h"
-
 #include <string>
 #include <vector>
-#include <boost/shared_ptr.hpp>
 
 #include <jack/types.h>
 #include <jack/transport.h>
+
+#include "util.h"
 
 typedef jack_default_audio_sample_t sample_t;
 typedef jack_nframes_t nframes_t;
@@ -75,41 +74,5 @@ class AudioInterface
     jack_port_t   *_output_port;
     nframes_t      _samplerate;
 };
-
-
-/*
- * mono audio sample
- */
-class AudioData
-{
-  public:
-    // creates sample from plain audio data
-    AudioData(const sample_t *samples, nframes_t length, nframes_t samplerate, float volume = 1.0f);
-    // loads sample from file, converting to the given samplerate if samplerate is non-zero
-    AudioData(const std::string & filename, nframes_t samplerate = 0);
-    // makes a copy of another sample
-    AudioData(const AudioData & in, nframes_t samplerate = 0);
-    ~AudioData();
-
-    const sample_t *samples() const { return _samples ? : _static_samples; }
-    nframes_t length() const { return _length; }
-    nframes_t samplerate() const { return _samplerate; }
-
-    void adjust_volume(float);
-    void adjust_frequency(float);
-
-  protected:
-    void resample(const sample_t *samples_in, nframes_t length_in, nframes_t samplerate_in,
-                  sample_t **samples_out, nframes_t *length_out, nframes_t samplerate_out);
-
-    const sample_t *_static_samples;
-    sample_t *_samples;
-    nframes_t _length;
-    nframes_t _samplerate;
-};
-
-
-typedef boost::shared_ptr<AudioData> AudioDataPtr;
-
 
 #endif // _AUDIO_H

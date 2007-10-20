@@ -10,12 +10,13 @@
  */
 
 #include "tempomap.h"
-#include "util.h"
 
 #include <sstream>
 #include <fstream>
 #include <cmath>
 #include <boost/tokenizer.hpp>
+
+#include "util.h"
 
 using namespace std;
 using boost::shared_ptr;
@@ -92,6 +93,7 @@ vector<TempoMap::BeatType> TempoMap::parse_accents(const string &s, uint nbeats)
     return accents;
 }
 
+
 vector<float> TempoMap::parse_tempi(const string &s, float tempo1, uint nbeats_total) const
 {
     vector<float> tempi;
@@ -107,6 +109,7 @@ vector<float> TempoMap::parse_tempi(const string &s, float tempo1, uint nbeats_t
     }
     return tempi;
 }
+
 
 string TempoMap::dump() const
 {
@@ -144,6 +147,7 @@ string TempoMap::dump() const
     return os.str();
 }
 
+
 shared_ptr<TempoMap> TempoMap::join(shared_ptr<const TempoMap> m1, shared_ptr<const TempoMap> m2)
 {
     shared_ptr<TempoMap> m(new TempoMap());
@@ -155,6 +159,7 @@ shared_ptr<TempoMap> TempoMap::join(shared_ptr<const TempoMap> m1, shared_ptr<co
 
     return m;
 }
+
 
 /*
  * loads tempomap from a file
@@ -206,6 +211,7 @@ TempoMapFile::TempoMapFile(const string & filename)
         lineno++;
     }
 }
+
 
 /*
  * loads single-line tempomap from a string

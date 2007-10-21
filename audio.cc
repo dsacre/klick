@@ -11,12 +11,12 @@
 
 #include "audio.h"
 
-#include <cerrno>
-
 #include <jack/jack.h>
 #include <jack/transport.h>
+#include <cerrno>
 
 using namespace std;
+using boost::array;
 
 AudioInterface *Audio = NULL;
 
@@ -24,7 +24,9 @@ AudioInterface *Audio = NULL;
 AudioInterface::AudioInterface(const string & name, const vector<string> & connect_ports, bool auto_connect)
   : _process_obj(NULL),
     _timebase_obj(NULL),
-    _shutdown(false)
+    _process_mix(false),
+    _shutdown(false),
+    _next_chunk(0)
 {
     if ((_client = jack_client_new(name.c_str())) == 0) {
         throw "can't connect to jack server";
@@ -71,9 +73,10 @@ AudioInterface::~AudioInterface()
 }
 
 
-void AudioInterface::set_process_callback(ProcessCallback *obj)
+void AudioInterface::set_process_callback(ProcessCallback *obj, bool mix)
 {
     _process_obj = obj;
+    _process_mix = mix;
 }
 
 
@@ -130,6 +133,10 @@ int AudioInterface::process_callback_(nframes_t nframes, void *arg)
         (this_->_process_obj)->process_callback(buffer, nframes);
     }
 
+    if (this_->_process_mix) {
+        this_->process_mix(buffer, nframes);
+    }
+
     return 0;
 }
 
@@ -148,4 +155,49 @@ void AudioInterface::timebase_callback_(jack_transport_state_t state, nframes_t 
 void AudioInterface::shutdown_callback_(void *arg)
 {
     static_cast<AudioInterface*>(arg)->_shutdown = true;
+}
+
+
+void AudioInterface::play(AudioChunkPtr chunk, nframes_t offset, float volume)
+{
+    _chunks[_next_chunk].chunk  = chunk;
+    _chunks[_next_chunk].offset = offset;
+    _chunks[_next_chunk].pos    = 0;
+    _chunks[_next_chunk].volume = volume;
+
+    _next_chunk = (_next_chunk + 1) % MAX_PLAYING_CHUNKS;
+}
+
+
+void AudioInterface::process_mix(sample_t *buffer, nframes_t nframes)
+{
+    for (array<PlayingChunk, MAX_PLAYING_CHUNKS>::iterator i = _chunks.begin(); i != _chunks.end(); ++i)
+    {
+        if (i->chunk) {
+            process_mix_samples(buffer + i->offset,
+                                i->chunk->samples() + i->pos,
+                                min(nframes - i->offset, i->chunk->length() - i->pos),
+                                i->volume);
+
+            i->pos += nframes - i->offset;
+            i->offset = 0;
+
+            // finished?
+            if (i->pos >= i->chunk->length()) {
+                i->chunk.reset();
+            }
+        }
+    }
+}
+
+
+void AudioInterface::process_mix_samples(sample_t *dest, const sample_t *src, nframes_t length, float volume)
+{
+    if (volume == 1.0f) {
+        memcpy(dest, src, length * sizeof(sample_t));
+    } else {
+        for (sample_t *end = dest + length; dest < end; dest++, src++) {
+            *dest += *src * volume;
+        }
+    }
 }

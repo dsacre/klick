@@ -71,7 +71,6 @@ void MetronomeMap::process_callback(sample_t *buffer, nframes_t nframes)
             // position changed since last period, need to relocate
             _current = p;
             _pos.locate(p);
-            reset_click();
         }
     } else {
         if (_pos.end()) return;
@@ -94,11 +93,8 @@ void MetronomeMap::process_callback(sample_t *buffer, nframes_t nframes)
         }
 
         if (click_data) {
-            start_click(buffer, nframes, click.frame - _current, click_data, click.volume);
+            Audio->play(click_data, click.frame - _current, click.volume);
         }
-    }
-    else {
-        continue_click(buffer, nframes);
     }
 
     _current += nframes;
@@ -110,7 +106,6 @@ void MetronomeMap::timebase_callback(jack_position_t *p)
     if (p->frame != _current) {
         _current = p->frame;
         _pos.locate(p->frame);
-        reset_click();
     }
 
     if (_pos.end()) {

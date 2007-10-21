@@ -12,6 +12,7 @@
 #ifndef _CLICK_DATA_H
 #define _CLICK_DATA_H
 
+#include "audio.h"
 #include "audio_chunk.h"
 
 extern const AudioChunk CLICK_1_EMPHASIS_DATA;

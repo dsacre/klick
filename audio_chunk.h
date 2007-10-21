@@ -12,8 +12,6 @@
 #ifndef _AUDIO_CHUNK_H
 #define _AUDIO_CHUNK_H
 
-#include "audio.h"
-
 #include <boost/shared_ptr.hpp>
 
 /*

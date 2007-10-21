@@ -32,50 +32,5 @@ Metronome::~Metronome()
 
 void Metronome::start()
 {
-    Audio->set_process_callback(this);
+    Audio->set_process_callback(this, true);
 }
-
-
-void Metronome::start_click(sample_t *buffer, nframes_t nframes,
-                            nframes_t offset, AudioChunkPtr click, float volume)
-{
-    _play_click = click;
-    _play_volume = volume;
-    copy_audio(buffer + offset, _play_click->samples(),
-                min(nframes - offset, _play_click->length()), _play_volume);
-    _play_sample = nframes - offset;
-
-    // finished already?
-    if (_play_click->length() <= nframes - offset) {
-        _play_click.reset();
-    }
-}
-
-
-void Metronome::continue_click(sample_t *buffer, nframes_t nframes)
-{
-    if (_play_click) {
-        // continue previous click
-        copy_audio(buffer, _play_click->samples() + _play_sample,
-                   min(nframes, _play_click->length() - _play_sample), _play_volume);
-        _play_sample += nframes;
-
-        // finished?
-        if (_play_sample >= _play_click->length()) {
-            _play_click.reset();
-        }
-    }
-}
-
-
-void Metronome::copy_audio(sample_t *dest, const sample_t *src, nframes_t length, float volume)
-{
-    if (volume == 1.0f) {
-        memcpy(dest, src, length * sizeof(sample_t));
-    } else {
-        for (sample_t *end = dest + length; dest < end; dest++, src++) {
-            *dest = *src * volume;
-        }
-    }
-}
-

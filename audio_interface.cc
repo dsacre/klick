@@ -182,7 +182,6 @@ void AudioInterface::process_mix(sample_t *buffer, nframes_t nframes)
             i->pos += nframes - i->offset;
             i->offset = 0;
 
-            // finished?
             if (i->pos >= i->chunk->length()) {
                 i->chunk.reset();
             }
@@ -193,11 +192,7 @@ void AudioInterface::process_mix(sample_t *buffer, nframes_t nframes)
 
 void AudioInterface::process_mix_samples(sample_t *dest, const sample_t *src, nframes_t length, float volume)
 {
-    if (volume == 1.0f) {
-        memcpy(dest, src, length * sizeof(sample_t));
-    } else {
-        for (sample_t *end = dest + length; dest < end; dest++, src++) {
-            *dest += *src * volume;
-        }
+    for (sample_t *end = dest + length; dest < end; dest++, src++) {
+        *dest += *src * volume;
     }
 }

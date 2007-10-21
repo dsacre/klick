@@ -12,7 +12,7 @@
 #ifndef _METRONOME_H
 #define _METRONOME_H
 
-#include "audio.h"
+#include "audio_interface.h"
 #include "audio_chunk.h"
 
 #include <boost/noncopyable.hpp>

@@ -10,7 +10,8 @@
  */
 
 #include "metronome_jack.h"
-#include "audio.h"
+#include "audio_interface.h"
+#include "audio_chunk.h"
 
 #include <jack/jack.h>
 #include <jack/transport.h>

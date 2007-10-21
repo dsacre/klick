@@ -9,7 +9,7 @@
  * (at your option) any later version.
  */
 
-#include "audio.h"
+#include "audio_interface.h"
 
 #include <jack/jack.h>
 #include <jack/transport.h>

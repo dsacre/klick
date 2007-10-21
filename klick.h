@@ -12,7 +12,6 @@
 #ifndef _KLICK_H
 #define _KLICK_H
 
-#include "audio.h"
 #include "audio_chunk.h"
 
 #include <string>
@@ -21,6 +20,7 @@
 #include <boost/noncopyable.hpp>
 
 
+class AudioInterface;
 class TempoMap;
 class Metronome;
 

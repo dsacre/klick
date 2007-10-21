@@ -10,11 +10,7 @@
  */
 
 #include "metronome.h"
-#include "audio.h"
-
-#include <cstring>
-
-using namespace std;
+#include "audio_interface.h"
 
 
 Metronome::Metronome(AudioChunkPtr emphasis, AudioChunkPtr normal)

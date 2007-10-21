@@ -10,7 +10,8 @@
  */
 
 #include "klick.h"
-#include "audio.h"
+#include "audio_interface.h"
+#include "audio_chunk.h"
 #include "tempomap.h"
 #include "metronome_map.h"
 #include "metronome_jack.h"

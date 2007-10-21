@@ -12,7 +12,6 @@
 #include "metronome.h"
 #include "audio.h"
 
-#include <cmath>
 #include <cstring>
 
 using namespace std;

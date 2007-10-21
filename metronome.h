@@ -36,7 +36,7 @@ class Metronome
     virtual void process_callback(sample_t *, nframes_t) = 0;
 
     void start_click(sample_t *buffer, nframes_t nframes,
-                            nframes_t offset, AudioChunkPtr click, float volume = 1.0);
+                     nframes_t offset, AudioChunkPtr click, float volume = 1.0);
     void continue_click(sample_t *buffer, nframes_t nframes);
     bool playing_click() { return _play_click; }
     void reset_click() { _play_click.reset(); }

@@ -77,24 +77,24 @@ void MetronomeMap::process_callback(sample_t *buffer, nframes_t nframes)
         if (_pos.end()) return;
     }
 
-    // does a new click start in this period?
+    // does a new tick start in this period?
     if (_current + nframes > _pos.next_frame())
     {
-        // move position to next click
+        // move position to next tick
         // loop just in case two beats are less than one period apart
         do { _pos.advance(); } while (_pos.frame() < _current);
-        Click click = _pos.click();
+        Tick tick = _pos.tick();
 
-        AudioChunkPtr click_data;
+        AudioChunkPtr click;
         // determine click type
-        if (click.type == TempoMap::BEAT_EMPHASIS) {
-            click_data = _click_emphasis;
-        } else if (click.type == TempoMap::BEAT_NORMAL) {
-            click_data = _click_normal;
+        if (tick.type == TempoMap::BEAT_EMPHASIS) {
+            click = _click_emphasis;
+        } else if (tick.type == TempoMap::BEAT_NORMAL) {
+            click = _click_normal;
         }
 
-        if (click_data) {
-            Audio->play(click_data, click.frame - _current, click.volume);
+        if (click) {
+            Audio->play(click, tick.frame - _current, tick.volume);
         }
     }
 
@@ -284,11 +284,11 @@ void MetronomeMap::Position::advance()
 }
 
 
-const MetronomeMap::Click MetronomeMap::Position::click() const
+const MetronomeMap::Tick MetronomeMap::Position::tick() const
 {
     if (_end) {
         // end of tempomap, return "nothing"
-        return (Click) { (nframes_t)_frame, TempoMap::BEAT_SILENT, 0 };
+        return (Tick) { (nframes_t)_frame, TempoMap::BEAT_SILENT, 0 };
     }
 
     const TempoMap::Entry & e = (*_tempomap)[_entry];
@@ -299,6 +299,6 @@ const MetronomeMap::Click MetronomeMap::Position::click() const
     } else {
         t = e.accents[_beat];
     }
-    return (Click) { (nframes_t)_frame, t, e.volume };
+    return (Tick) { (nframes_t)_frame, t, e.volume };
 }
 

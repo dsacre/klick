@@ -39,7 +39,7 @@ class MetronomeMap
     bool running() const { return _transport_enabled ? true : !_pos.end(); }
 
   protected:
-    struct Click {
+    struct Tick {
         nframes_t frame;
         TempoMap::BeatType type;
         float volume;
@@ -60,7 +60,7 @@ class MetronomeMap
         float next_frame() const { return frame() + dist_to_next(); }
         void advance();
 
-        const Click click() const;
+        const Tick tick() const;
         bool end() const { return _end; }
 
         float frame() const { return _frame; }

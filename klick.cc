@@ -79,13 +79,13 @@ Klick::~Klick()
 
 void Klick::load_tempomap()
 {
-    if (_options.filename.empty() && _options.settings.empty()) {
+    if (_options.filename.empty() && _options.cmdline.empty()) {
         throw "no tempo specified";
     } else {
         if (!_options.filename.empty()) {
             _map = TempoMap::new_from_file(_options.filename);
         } else {
-            _map = TempoMap::new_from_cmdline(_options.settings);
+            _map = TempoMap::new_from_cmdline(_options.cmdline);
         }
     }
 
@@ -239,18 +239,13 @@ void Klick::Options::print_usage(ostream & out)
 void Klick::Options::parse(int argc, char *argv[])
 {
     int c;
-    char optstring[] = "-f:jn:p:Ps:S:eEv:w:tTd:c:l:x:Vh";
+    char optstring[] = "f:jn:p:Ps:S:eEv:w:tTd:c:l:x:Vh";
     char *end;
 
     while ((c = getopt(argc, argv, optstring)) != -1)
     {
         switch (c)
         {
-            case 1:
-                if (!settings.empty()) settings += " ";
-                settings += string(::optarg);
-                break;
-
             case 'f':
                 filename = string(::optarg);
                 break;
@@ -293,7 +288,7 @@ void Klick::Options::parse(int argc, char *argv[])
                     click_filename_normal = click_filename_emphasis;
                     break;
                   case 2:
-                    click_filename_normal = *i++;
+                    click_filename_normal = *i;
                     break;
                   default:
                     throw "too many sample file names";
@@ -362,5 +357,10 @@ void Klick::Options::parse(int argc, char *argv[])
                 exit(EXIT_FAILURE);
                 break;
         }
+    }
+
+    for (int n = ::optind; n < argc; n++) {
+        cmdline += string(argv[n]);
+        cmdline += " ";
     }
 }

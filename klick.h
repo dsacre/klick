@@ -56,7 +56,7 @@ class Klick
         bool auto_connect;
         bool follow_transport;
         std::string filename;
-        std::string settings;
+        std::string cmdline;
         static const uint CLICK_SAMPLE_FROM_FILE = 0;
         uint click_sample;
         std::string click_filename_emphasis;

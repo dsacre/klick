@@ -11,6 +11,7 @@
 
 #include "metronome_map.h"
 #include "klick.h"
+#include "options.h"
 #include "audio_interface.h"
 #include "audio_chunk.h"
 #include "tempomap.h"
@@ -38,7 +39,7 @@ MetronomeMap::MetronomeMap(shared_ptr<const TempoMap> tempomap,
         _pos.set_start_label(start_label);
     }
     // enable preroll only if jack transport is off
-    if (!_transport_enabled && preroll != Klick::Options::PREROLL_NONE) {
+    if (!_transport_enabled && preroll != Options::PREROLL_NONE) {
         _pos.add_preroll(preroll);
     }
 
@@ -180,7 +181,7 @@ void MetronomeMap::Position::add_preroll(int nbars)
 
     shared_ptr<TempoMap> preroll;
 
-    if (nbars == Klick::Options::PREROLL_2_BEATS) {
+    if (nbars == Options::PREROLL_2_BEATS) {
         vector<TempoMap::BeatType> acc;
         for (uint n = 0; n < e.denom; n++) {
             acc.push_back(TempoMap::BEAT_NORMAL);

@@ -17,6 +17,7 @@ env.ParseConfig(
 env.Program('klick', [
     'main.cc',
     'klick.cc',
+    'options.cc',
     'audio_interface.cc',
     'audio_chunk.cc',
     'tempomap.cc',

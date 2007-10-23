@@ -83,7 +83,7 @@ void Options::print_usage(ostream & out)
 void Options::parse(int argc, char *argv[])
 {
     int c;
-    char optstring[] = "f:jn:p:Ps:S:eEv:w:tTd:c:l:x:Vh";
+    char optstring[] = "+f:jn:p:Ps:S:eEv:w:tTd:c:l:x:Vh";
     char *end;
 
     while ((c = getopt(argc, argv, optstring)) != -1)

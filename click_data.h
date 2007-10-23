@@ -14,7 +14,7 @@
 
 #include "audio.h"
 #include "audio_chunk.h"
-
+/*
 extern const AudioChunk CLICK_1_EMPHASIS_DATA;
 extern const AudioChunk CLICK_1_NORMAL_DATA;
 
@@ -23,5 +23,16 @@ extern const AudioChunk CLICK_2_NORMAL_DATA;
 
 extern const AudioChunk CLICK_3_EMPHASIS_DATA;
 extern const AudioChunk CLICK_3_NORMAL_DATA;
+*/
+
+extern const AudioChunkStaticFloat CLICK_1_EMPHASIS_DATA;
+extern const AudioChunkStaticFloat CLICK_1_NORMAL_DATA;
+
+extern const AudioChunkStaticFloat CLICK_2_EMPHASIS_DATA;
+extern const AudioChunkStaticFloat CLICK_2_NORMAL_DATA;
+
+extern const AudioChunkStaticInt16 CLICK_3_EMPHASIS_DATA;
+extern const AudioChunkStaticInt16 CLICK_3_NORMAL_DATA;
+
 
 #endif

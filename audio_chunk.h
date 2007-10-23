@@ -17,31 +17,35 @@
 #include <boost/shared_ptr.hpp>
 
 /*
- * mono audio sample
+ * mono 32-bit audio sample
  */
 class AudioChunk
 {
   public:
-    // creates sample from plain audio data
-    AudioChunk(const sample_t *samples, nframes_t length, nframes_t samplerate, float volume = 1.0f);
     // loads sample from file, converting to the given samplerate if samplerate is non-zero
     AudioChunk(const std::string & filename, nframes_t samplerate = 0);
-    // makes a copy of another sample
-    AudioChunk(const AudioChunk & in, nframes_t samplerate = 0);
-    ~AudioChunk();
+    // copy c'tor
+    AudioChunk(const AudioChunk & in);
+    // makes an AudioChunk from raw samples
+    AudioChunk(const sample_t * samples, nframes_t length, nframes_t samplerate);
 
-    const sample_t *samples() const { return _samples ? : _static_samples; }
-    nframes_t length() const { return _length; }
-    nframes_t samplerate() const { return _samplerate; }
+    ~AudioChunk();
 
     void adjust_volume(float);
     void adjust_frequency(float);
 
-  protected:
-    void resample(const sample_t *samples_in, nframes_t length_in, nframes_t samplerate_in,
-                  sample_t **samples_out, nframes_t *length_out, nframes_t samplerate_out);
+    const sample_t * samples() const { return _samples; }
+    nframes_t length() const { return _length; }
+    nframes_t samplerate() const { return _samplerate; }
 
-    const sample_t *_static_samples;
+  protected:
+    void resample(const sample_t *samples_in,
+                  nframes_t length_in,
+                  nframes_t samplerate_in,
+                  sample_t *& samples_out,
+                  nframes_t & length_out,
+                  nframes_t samplerate_out);
+
     sample_t *_samples;
     nframes_t _length;
     nframes_t _samplerate;
@@ -49,6 +53,45 @@ class AudioChunk
 
 
 typedef boost::shared_ptr<AudioChunk> AudioChunkPtr;
+
+
+
+class AudioChunkStaticBase
+{
+  protected:
+    AudioChunkStaticBase() { }
+    virtual ~AudioChunkStaticBase() { }
+
+  public:
+    AudioChunkPtr load() const;
+};
+
+
+template <typename T>
+class AudioChunkStatic
+  : public AudioChunkStaticBase
+{
+    friend class AudioChunkStaticBase;
+
+  public:
+    template <typename S>
+    AudioChunkStatic(S & samples, nframes_t samplerate, float volume = 1.0f)
+    {
+        _samples = samples;
+        _length = sizeof(samples) / sizeof(samples[0]);
+        _samplerate = samplerate;
+        _volume = volume;
+    }
+
+  protected:
+    T *_samples;
+    nframes_t _length;
+    nframes_t _samplerate;
+    float _volume;
+};
+
+typedef AudioChunkStatic<const sample_t> AudioChunkStaticFloat;
+typedef AudioChunkStatic<const short> AudioChunkStaticInt16;
 
 
 #endif // _AUDIO_CHUNK_H

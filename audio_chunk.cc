@@ -13,6 +13,8 @@
 
 #include <sstream>
 #include <cmath>
+#include <cstdlib>
+#include <cstring>
 
 #include <samplerate.h>
 #include <sndfile.h>
@@ -20,23 +22,7 @@
 using namespace std;
 
 
-AudioChunk::AudioChunk(const sample_t *samples, nframes_t length, nframes_t samplerate, float volume)
-  : _static_samples(samples),
-    _samples(NULL),
-    _length(length),
-    _samplerate(samplerate)
-{
-    if (volume != 1.0f) {
-        _samples = (sample_t*)calloc(length, sizeof(sample_t));
-        memcpy(_samples, samples, length * sizeof(sample_t));
-        _static_samples = NULL;
-        adjust_volume(volume);
-    }
-}
-
-
 AudioChunk::AudioChunk(const string & filename, nframes_t samplerate)
-  : _static_samples(NULL)
 {
     SF_INFO sfinfo = { 0 };
     SNDFILE* f;
@@ -71,7 +57,7 @@ AudioChunk::AudioChunk(const string & filename, nframes_t samplerate)
     } else {
         _samplerate = sfinfo.samplerate;
     }
-    resample(mono_buf, sfinfo.frames, sfinfo.samplerate, &_samples, &_length, _samplerate);
+    resample(mono_buf, sfinfo.frames, sfinfo.samplerate, _samples, _length, _samplerate);
 
     free(mono_buf);
 
@@ -79,32 +65,38 @@ AudioChunk::AudioChunk(const string & filename, nframes_t samplerate)
 }
 
 
-AudioChunk::AudioChunk(const AudioChunk & in, nframes_t samplerate)
-  : _static_samples(NULL)
+AudioChunk::AudioChunk(const AudioChunk & in)
+  : _length(in.length()),
+    _samplerate(in.samplerate())
 {
-    if (!samplerate || samplerate == in._samplerate) {
-        _samples = (sample_t*)calloc(in.length(), sizeof(sample_t));
-        memcpy(_samples, in.samples(), in.length() * sizeof(sample_t));
-        _length = in.length();
-        _samplerate = in._samplerate;
-    } else {
-        _samplerate = samplerate;
-        resample(in.samples(), in.length(), in._samplerate, &_samples, &_length, _samplerate);
-    }
+    size_t s = in.length() * sizeof(sample_t);
+    _samples = (sample_t*)malloc(s);
+    memcpy(_samples, in.samples(), s);
 }
 
+
+AudioChunk::AudioChunk(const sample_t * samples, nframes_t length, nframes_t samplerate)
+  : _length(length),
+    _samplerate(samplerate)
+{
+    size_t s = length * sizeof(sample_t);
+    _samples = (sample_t*)malloc(s);
+    memcpy(_samples, samples, s);
+}
 
 
 AudioChunk::~AudioChunk()
 {
-    if (_samples) {
-        free(_samples);
-    }
+    free(_samples);
 }
 
 
-void AudioChunk::resample(const sample_t *samples_in, nframes_t length_in, nframes_t samplerate_in,
-                         sample_t **samples_out, nframes_t *length_out, nframes_t samplerate_out)
+void AudioChunk::resample(const sample_t *samples_in,
+                          nframes_t length_in,
+                          nframes_t samplerate_in,
+                          sample_t *& samples_out,
+                          nframes_t & length_out,
+                          nframes_t samplerate_out)
 {
     SRC_DATA src_data;
     int error;
@@ -122,13 +114,15 @@ void AudioChunk::resample(const sample_t *samples_in, nframes_t length_in, nfram
         throw src_strerror(error);
     }
 
-    *samples_out = src_data.data_out;
-    *length_out = src_data.output_frames;
+    samples_out = src_data.data_out;
+    length_out = src_data.output_frames;
 }
 
 
 void AudioChunk::adjust_volume(float volume)
 {
+    if (volume == 1.0f) return;
+
     for (uint i = 0; i < _length; i++) {
         _samples[i] *= volume;
     }
@@ -137,12 +131,32 @@ void AudioChunk::adjust_volume(float volume)
 
 void AudioChunk::adjust_frequency(float factor)
 {
+    if (factor == 1.0f) return;
+
     sample_t *s;
     nframes_t l;
 
-    resample(samples(), length(), (nframes_t)(samplerate() * factor), &s, &l, samplerate());
-    if (_samples) free(_samples);
+    resample(_samples, _length, (nframes_t)(_samplerate * factor), s, l, _samplerate);
+    free(_samples);
     _samples = s;
-    _static_samples = NULL;
     _length = l;
+}
+
+
+
+AudioChunkPtr AudioChunkStaticBase::load() const
+{
+    const AudioChunkStaticFloat *float_data = dynamic_cast<const AudioChunkStaticFloat *>(this);
+    if (float_data) {
+        AudioChunkPtr r(new AudioChunk(float_data->_samples, float_data->_length, float_data->_samplerate));
+        r->adjust_volume(float_data->_volume);
+        return r;
+    }
+
+    const AudioChunkStaticInt16 *int16_data = dynamic_cast<const AudioChunkStaticInt16 *>(this);
+    if (int16_data) {
+        // TODO
+    }
+
+    throw "whoops... let's just pretend this never happened, okay?";
 }

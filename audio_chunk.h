@@ -16,6 +16,7 @@
 
 #include <boost/shared_ptr.hpp>
 
+
 /*
  * mono 32-bit audio sample
  */
@@ -33,6 +34,8 @@ class AudioChunk
 
     void adjust_volume(float volume);
     void adjust_frequency(float factor);
+
+    // resample to the given samplerate
     void resample(nframes_t samplerate);
 
     const sample_t * samples() const { return _samples; }
@@ -64,6 +67,9 @@ class AudioChunkStaticBase
     virtual ~AudioChunkStaticBase() { }
 
   public:
+    // loads the audio data into an AudioChunk object, converting sample
+    // format and samplerate if necessary.
+    // pass samplerate = 0 to leave the samplerate as is
     AudioChunkPtr load(nframes_t samplerate = 0) const;
 };
 
@@ -75,8 +81,8 @@ class AudioChunkStatic
     friend class AudioChunkStaticBase;
 
   public:
-    template <typename S>
-    AudioChunkStatic(S & samples, nframes_t samplerate, float volume = 1.0f)
+    template<size_t N>
+    AudioChunkStatic(T (&samples)[N], nframes_t samplerate, float volume = 1.0f)
     {
         _samples = samples;
         _length = sizeof(samples) / sizeof(samples[0]);

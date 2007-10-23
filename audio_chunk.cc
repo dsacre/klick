@@ -27,7 +27,7 @@ using namespace std;
 AudioChunk::AudioChunk(const string & filename, nframes_t samplerate)
 {
     SF_INFO sfinfo = { 0 };
-    SNDFILE* f;
+    SNDFILE *f;
 
     if ((f = sf_open(filename.c_str(), SFM_READ, &sfinfo)) == NULL) {
         ostringstream os;
@@ -166,7 +166,15 @@ AudioChunkPtr AudioChunkStaticBase::load(nframes_t samplerate) const
 
     const AudioChunkStaticInt16 *int16_data = dynamic_cast<const AudioChunkStaticInt16 *>(this);
     if (int16_data) {
-        // TODO
+        sample_t *s = (sample_t *)calloc(int16_data->_length, sizeof(sample_t));
+
+        for (uint i = 0; i < int16_data->_length; i++) {
+            // yeah, this is probably the most naive way possible to do this
+            // let's improve this some day...
+            s[i] = float(int16_data->_samples[i]) / float(numeric_limits<short>::max());
+        }
+        r.reset(new AudioChunk(s, int16_data->_length, int16_data->_samplerate));
+        free(s);
     }
 
     ASSERT(r);

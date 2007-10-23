@@ -26,13 +26,14 @@ class AudioChunk
     AudioChunk(const std::string & filename, nframes_t samplerate = 0);
     // copy c'tor
     AudioChunk(const AudioChunk & in);
-    // makes an AudioChunk from raw samples
+    // makes an AudioChunk object from raw samples
     AudioChunk(const sample_t * samples, nframes_t length, nframes_t samplerate);
 
     ~AudioChunk();
 
-    void adjust_volume(float);
-    void adjust_frequency(float);
+    void adjust_volume(float volume);
+    void adjust_frequency(float factor);
+    void resample(nframes_t samplerate);
 
     const sample_t * samples() const { return _samples; }
     nframes_t length() const { return _length; }
@@ -63,7 +64,7 @@ class AudioChunkStaticBase
     virtual ~AudioChunkStaticBase() { }
 
   public:
-    AudioChunkPtr load() const;
+    AudioChunkPtr load(nframes_t samplerate = 0) const;
 };
 
 

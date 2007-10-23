@@ -11,12 +11,15 @@
 
 #include "metronome.h"
 #include "audio_interface.h"
+#include "util.h"
 
 
 Metronome::Metronome(AudioChunkPtr emphasis, AudioChunkPtr normal)
   : _click_emphasis(emphasis),
     _click_normal(normal)
 {
+    ASSERT(_click_emphasis->samplerate() == Audio->samplerate());
+    ASSERT(_click_normal->samplerate() == Audio->samplerate());
 }
 
 

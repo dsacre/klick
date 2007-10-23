@@ -130,8 +130,8 @@ void Klick::load_samples()
     }
 
     if (data_normal) {
-        _click_emphasis = data_emphasis->load();
-        _click_normal = data_normal->load();
+        _click_emphasis = data_emphasis->load(Audio->samplerate());
+        _click_normal = data_normal->load(Audio->samplerate());
     } else {
         _click_emphasis.reset(new AudioChunk(_options.click_filename_emphasis, Audio->samplerate()));
         _click_normal.reset(new AudioChunk(_options.click_filename_normal, Audio->samplerate()));

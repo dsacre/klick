@@ -71,4 +71,16 @@ uint count_iter(const T t) {
 }
 
 
+#ifdef _DEBUG
+    #include <assert.h>
+    #define ASSERT(f) assert(f)
+    #define VERIFY(f) assert(f)
+    #define FAIL()    assert(false)
+#else
+    #define ASSERT(f) ((void)0)
+    #define VERIFY(f) ((void)f)
+    #define FAIL()    ((void)0)
+#endif
+
+
 #endif // _UTIL_H

@@ -282,9 +282,6 @@ TempoMapPtr TempoMap::new_simple(uint bars, float tempo, uint beats, uint denom,
     e.volume  = volume;
     e.accents = acc;
 
-/*    if (!acc) {
-        e.accents.insert(e.accents.end(), beats, BEAT_NORMAL);
-    }*/
     map->_entries.push_back(e);
 
     return map;

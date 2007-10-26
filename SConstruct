@@ -10,7 +10,7 @@ env = Environment(
     ENV = {'PATH' : os.environ['PATH']}
 )
 
-opts = Options('scache.conf')
+opts = Options('custom.py')
 opts.AddOptions(
     BoolOption('DEBUG', 'debug mode', 0),
     PathOption('PREFIX', 'install prefix', '/usr/local'),
@@ -41,5 +41,3 @@ env.Program('klick', [
 env['PREFIX_BIN'] = env['PREFIX'] + '/bin'
 env.Alias('install', env['PREFIX_BIN'])
 env.Install(env['PREFIX_BIN'], ['klick'])
-
-opts.Save('scache.conf', env)

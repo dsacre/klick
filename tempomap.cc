@@ -148,9 +148,9 @@ string TempoMap::dump() const
 }
 
 
-shared_ptr<TempoMap> TempoMap::join(shared_ptr<const TempoMap> m1, shared_ptr<const TempoMap> m2)
+TempoMapPtr TempoMap::join(const TempoMapConstPtr m1, const TempoMapConstPtr m2)
 {
-    shared_ptr<TempoMap> m(new TempoMap());
+    TempoMapPtr m(new TempoMap());
 
     back_insert_iterator<Entries> p(m->_entries);
 
@@ -164,9 +164,9 @@ shared_ptr<TempoMap> TempoMap::join(shared_ptr<const TempoMap> m1, shared_ptr<co
 /*
  * loads tempomap from a file
  */
-shared_ptr<TempoMap> TempoMap::new_from_file(const string & filename)
+TempoMapPtr TempoMap::new_from_file(const string & filename)
 {
-    shared_ptr<TempoMap> map(new TempoMap());
+    TempoMapPtr map(new TempoMap());
 
     ifstream file(filename.c_str());
 
@@ -220,9 +220,9 @@ shared_ptr<TempoMap> TempoMap::new_from_file(const string & filename)
 /*
  * loads single-line tempomap from a string
  */
-shared_ptr<TempoMap> TempoMap::new_from_cmdline(const string & line)
+TempoMapPtr TempoMap::new_from_cmdline(const string & line)
 {
-    shared_ptr<TempoMap> map(new TempoMap());
+    TempoMapPtr map(new TempoMap());
 
     regmatch_t match[RE_NMATCHES_CMD];
 
@@ -268,10 +268,10 @@ shared_ptr<TempoMap> TempoMap::new_from_cmdline(const string & line)
 }
 
 
-shared_ptr<TempoMap> TempoMap::new_simple(uint bars, float tempo, uint beats, uint denom,
-                                          const vector<TempoMap::BeatType> & acc, float volume)
+TempoMapPtr TempoMap::new_simple(uint bars, float tempo, uint beats, uint denom,
+                                 const vector<TempoMap::BeatType> & acc, float volume)
 {
-    shared_ptr<TempoMap> map(new TempoMap());
+    TempoMapPtr map(new TempoMap());
 
     Entry e;
     e.bars    = bars;

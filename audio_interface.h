@@ -61,7 +61,7 @@ class AudioInterface
     bool set_frame(nframes_t);
     bool is_shutdown() const { return _shutdown; }
 
-    void play(AudioChunkPtr chunk, nframes_t offset, float volume = 1.0);
+    void play(AudioChunkConstPtr chunk, nframes_t offset, float volume = 1.0);
 
   private:
     static int process_callback_(nframes_t, void *);
@@ -81,7 +81,7 @@ class AudioInterface
     nframes_t      _samplerate;
 
     struct PlayingChunk {
-        AudioChunkPtr chunk;
+        AudioChunkConstPtr chunk;
         nframes_t     offset;
         nframes_t     pos;
         float         volume;

@@ -19,6 +19,10 @@
 #include <regex.h>
 
 
+typedef boost::shared_ptr<class TempoMap> TempoMapPtr;
+typedef boost::shared_ptr<const class TempoMap> TempoMapConstPtr;
+
+
 class TempoMap
 {
   public:
@@ -82,15 +86,14 @@ class TempoMap
 
     std::string dump() const;
 
-    static boost::shared_ptr<TempoMap> join(boost::shared_ptr<const TempoMap>,
-                                            boost::shared_ptr<const TempoMap>);
+    static TempoMapPtr join(const TempoMapConstPtr, const TempoMapConstPtr);
 
-    static boost::shared_ptr<TempoMap> new_from_file(const std::string & filename);
-    static boost::shared_ptr<TempoMap> new_from_cmdline(const std::string & line);
+    static TempoMapPtr new_from_file(const std::string & filename);
+    static TempoMapPtr new_from_cmdline(const std::string & line);
 
-    static boost::shared_ptr<TempoMap> new_simple(uint bars, float tempo, uint beats, uint denom,
-                                                  const std::vector<BeatType> & acc = std::vector<BeatType>(),
-                                                  float volume = 1.0f);
+    static TempoMapPtr new_simple(uint bars, float tempo, uint beats, uint denom,
+                                  const std::vector<BeatType> & acc = std::vector<BeatType>(),
+                                  float volume = 1.0f);
 
   protected:
     // determines whether the submatch m is not empty

@@ -22,19 +22,19 @@
 #include <cmath>
 
 using namespace std;
-using boost::shared_ptr;
 
 
-MetronomeMap::MetronomeMap(shared_ptr<const TempoMap> tempomap,
-            float tempo_multiplier, bool transport, bool master,
-            int preroll, const string & start_label,
-            AudioChunkPtr emphasis, AudioChunkPtr normal)
+MetronomeMap::MetronomeMap(TempoMapConstPtr tempomap,
+        float tempo_multiplier, bool transport, bool master,
+        int preroll, const string & start_label,
+        AudioChunkConstPtr emphasis, AudioChunkConstPtr normal)
   : Metronome(emphasis, normal),
     _current(0),
     _pos(tempomap, tempo_multiplier),
     _transport_enabled(transport),
     _transport_master(master)
 {
+    // set start label
     if (!start_label.empty()) {
         _pos.set_start_label(start_label);
     }
@@ -44,6 +44,7 @@ MetronomeMap::MetronomeMap(shared_ptr<const TempoMap> tempomap,
     }
 
     if (_transport_master) {
+        // reset transport position
         Audio->set_frame(0);
     }
 }
@@ -57,8 +58,19 @@ MetronomeMap::~MetronomeMap()
 
 void MetronomeMap::start()
 {
-    if (_transport_master) Audio->set_timebase_callback(this);
+    if (_transport_master) {
+        // receive jack timebase callbacks
+        Audio->set_timebase_callback(this);
+    }
+    // base class sets process callback
     Metronome::start();
+}
+
+
+bool MetronomeMap::running() const
+{
+    // if transport is enabled, we never quit, even at the end of the tempomap
+    return _transport_enabled ? true : !_pos.end();
 }
 
 
@@ -81,12 +93,12 @@ void MetronomeMap::process_callback(sample_t *buffer, nframes_t nframes)
     // does a new tick start in this period?
     if (_current + nframes > _pos.next_frame())
     {
-        // move position to next tick
-        // loop just in case two beats are less than one period apart
+        // move position to next tick. loop just in case two beats are
+        // less than one period apart (which we don't really handle)
         do { _pos.advance(); } while (_pos.frame() < _current);
         Tick tick = _pos.tick();
 
-        AudioChunkPtr click;
+        AudioChunkConstPtr click;
         // determine click type
         if (tick.type == TempoMap::BEAT_EMPHASIS) {
             click = _click_emphasis;
@@ -95,6 +107,7 @@ void MetronomeMap::process_callback(sample_t *buffer, nframes_t nframes)
         }
 
         if (click) {
+            // start playing the click sample
             Audio->play(click, tick.frame - _current, tick.volume);
         }
     }
@@ -106,46 +119,55 @@ void MetronomeMap::process_callback(sample_t *buffer, nframes_t nframes)
 void MetronomeMap::timebase_callback(jack_position_t *p)
 {
     if (p->frame != _current) {
+        // current position doesn't match jack transport frame.
+        // assume we're wrong and jack is right ;)
         _current = p->frame;
         _pos.locate(p->frame);
     }
 
     if (_pos.end()) {
+        // end of tempomap, no valid position
         p->valid = (jack_position_bits_t)0;
         return;
     }
 
     p->valid = JackPositionBBT;
 
-    p->bar = _pos.bar_total() + 1;  // jack starts counting at 1
+    p->bar = _pos.bar_total() + 1;  // jack counts from 1
     p->beat = _pos.beat() + 1;
     p->beats_per_bar = _pos.map_entry().beats;
     p->beat_type = _pos.map_entry().denom;
 
-    float d = _pos.dist_to_next();
-    p->tick = d ? nframes_t(float(_current - _pos.frame()) * 1920.0f / d) : 0;
-    p->ticks_per_beat = 1920.0f;
+    float_frames_t d = _pos.dist_to_next();
 
-    // NOTE: all tempo values are converted from "quarters per minute"
+    if (d) {
+        p->tick = nframes_t(float_frames_t(_current - _pos.frame()) * TICKS_PER_BEAT / d);
+    } else {
+        p->tick = 0;
+    }
+    p->ticks_per_beat = TICKS_PER_BEAT;
+
+    // NOTE: jack's notion of bpm is different from ours.
+    // all tempo values are converted from "quarters per minute"
     // to the actual beats per minute used by jack
 
-    if (!_pos.map_entry().tempo2 || d == 0.0f) {
-        // constant tempo, and/or start of tempo map
-        p->beats_per_minute = _pos.map_entry().tempo * _pos.map_entry().denom / 4.0f;
+    if (!_pos.map_entry().tempo2 || d == 0.0) {
+        // constant tempo, and/or start of tempomap
+        p->beats_per_minute = _pos.map_entry().tempo * _pos.map_entry().denom / 4.0;
     }
     else if (_pos.map_entry().tempo2 && _pos.end()) {
-        // end of tempomap, last entry had tempo change
-        p->beats_per_minute = _pos.map_entry().tempo2 * _pos.map_entry().denom / 4.0f;
+        // end of tempomap, last entry had tempo change, so use tempo2
+        p->beats_per_minute = _pos.map_entry().tempo2 * _pos.map_entry().denom / 4.0;
     }
     else {
-        // tempo change
-        p->beats_per_minute = (float)Audio->samplerate() * 60.0f / d;
+        // tempo change, use average tempo for this beat
+        p->beats_per_minute = (double)Audio->samplerate() * 60.0 / d;
     }
 }
 
 
 
-MetronomeMap::Position::Position(shared_ptr<const TempoMap> tempomap, float multiplier)
+MetronomeMap::Position::Position(TempoMapConstPtr tempomap, float multiplier)
   : _tempomap(tempomap),
     _multiplier(multiplier)
 {
@@ -155,7 +177,7 @@ MetronomeMap::Position::Position(shared_ptr<const TempoMap> tempomap, float mult
 
 void MetronomeMap::Position::reset()
 {
-    _frame = 0.0f;
+    _frame = 0.0;
     _entry = _bar = _beat = 0;
     _bar_total = 0;
     _init = true;
@@ -165,7 +187,7 @@ void MetronomeMap::Position::reset()
 
 void MetronomeMap::Position::set_start_label(const string & start_label)
 {
-    shared_ptr<TempoMap> t(new TempoMap());
+    TempoMapPtr t(new TempoMap());
 
     // remove everything before the start label
     TempoMap::Entries::const_iterator i = _tempomap->entries().begin();
@@ -179,8 +201,9 @@ void MetronomeMap::Position::add_preroll(int nbars)
 {
     const TempoMap::Entry & e = (*_tempomap)[0];
 
-    shared_ptr<TempoMap> preroll;
+    TempoMapPtr preroll;
 
+    // create a new tempomap for preroll
     if (nbars == Options::PREROLL_2_BEATS) {
         vector<TempoMap::BeatType> acc;
         for (uint n = 0; n < e.denom; n++) {
@@ -191,6 +214,7 @@ void MetronomeMap::Position::add_preroll(int nbars)
         preroll = TempoMap::new_simple(nbars, e.tempo, e.beats, e.denom, e.accents, 0.66f);
     }
 
+    // join preroll and our actual tempomap
     _tempomap = TempoMap::join(preroll, _tempomap);
 }
 
@@ -201,19 +225,19 @@ void MetronomeMap::Position::locate(nframes_t frame)
 
     if (frame == 0) return;
 
+    // this will be very slow for long tempomaps...
+    // should be improved some day
     while ((nframes_t)_frame < frame && !_end) {
         advance();
     }
 }
 
 
-float MetronomeMap::Position::dist_to_next() const
+MetronomeMap::float_frames_t MetronomeMap::Position::dist_to_next() const
 {
-    if (_init) return 0.0f;
-
-    if (_end) {
-        return numeric_limits<float>::max();
-    }
+    // no valid "next beat"
+    if (_init) return 0.0;
+    if (_end) return numeric_limits<float_frames_t>::max();
 
     const TempoMap::Entry & e = (*_tempomap)[_entry];
     float tempo;
@@ -256,7 +280,7 @@ float MetronomeMap::Position::dist_to_next() const
         tempo = e.tempi[(_bar * e.beats) + _beat];
     }
 
-    return ((float)Audio->samplerate() * 240.0f) / (e.denom * tempo * _multiplier);
+    return ((float_frames_t)Audio->samplerate() * 240.0) / (e.denom * tempo * _multiplier);
 }
 
 
@@ -271,12 +295,15 @@ void MetronomeMap::Position::advance()
 
     const TempoMap::Entry & e = (*_tempomap)[_entry];
 
+    // move to next beat
     if (++_beat >= e.beats) {
         _beat = 0;
+        // move to next bar
         if (++_bar >= e.bars) {
             _bar = 0;
+            // move to next entry
             if (++_entry >= _tempomap->size()) {
-                _entry--;
+                _entry--;       // no such entry
                 _end = true;
             }
         }
@@ -296,10 +323,11 @@ const MetronomeMap::Tick MetronomeMap::Position::tick() const
 
     TempoMap::BeatType t;
     if (e.accents.empty()) {
+        // use default accents
         t = (_beat == 0) ? TempoMap::BEAT_EMPHASIS : TempoMap::BEAT_NORMAL;
     } else {
+        // use accents as specified in the tempomap
         t = e.accents[_beat];
     }
     return (Tick) { (nframes_t)_frame, t, e.volume };
 }
-

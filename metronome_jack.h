@@ -23,7 +23,7 @@ class MetronomeJack
   : public Metronome
 {
   public:
-    MetronomeJack(AudioChunkPtr emphasis, AudioChunkPtr normal)
+    MetronomeJack(AudioChunkConstPtr emphasis, AudioChunkConstPtr normal)
       : Metronome(emphasis, normal)
     { }
     virtual ~MetronomeJack() { }

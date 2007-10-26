@@ -158,7 +158,7 @@ void AudioInterface::shutdown_callback_(void *arg)
 }
 
 
-void AudioInterface::play(AudioChunkPtr chunk, nframes_t offset, float volume)
+void AudioInterface::play(AudioChunkConstPtr chunk, nframes_t offset, float volume)
 {
     _chunks[_next_chunk].chunk  = chunk;
     _chunks[_next_chunk].offset = offset;

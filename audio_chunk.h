@@ -57,6 +57,7 @@ class AudioChunk
 
 
 typedef boost::shared_ptr<AudioChunk> AudioChunkPtr;
+typedef boost::shared_ptr<const AudioChunk> AudioChunkConstPtr;
 
 
 

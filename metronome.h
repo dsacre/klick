@@ -26,7 +26,7 @@ class Metronome
     boost::noncopyable
 {
   public:
-    Metronome(AudioChunkPtr emphasis, AudioChunkPtr normal);
+    Metronome(AudioChunkConstPtr emphasis, AudioChunkConstPtr normal);
     virtual ~Metronome();
 
     virtual void start();
@@ -35,8 +35,8 @@ class Metronome
   protected:
     virtual void process_callback(sample_t *, nframes_t) = 0;
 
-    AudioChunkPtr _click_emphasis;
-    AudioChunkPtr _click_normal;
+    AudioChunkConstPtr _click_emphasis;
+    AudioChunkConstPtr _click_normal;
 };
 
 

@@ -17,7 +17,6 @@
 #include "tempomap.h"
 
 #include <string>
-#include <boost/shared_ptr.hpp>
 
 /*
  * plays a click track using a predefined tempomap
@@ -28,58 +27,74 @@ class MetronomeMap
     protected AudioInterface::TimebaseCallback
 {
   public:
-    MetronomeMap(boost::shared_ptr<const TempoMap> tempomap,
-                float tempo_multiplier,
-                bool transport, bool master,
-                int preroll, const std::string & start_label,
-                AudioChunkPtr emphasis, AudioChunkPtr normal);
+    MetronomeMap(TempoMapConstPtr tempomap,
+                 float tempo_multiplier,
+                 bool transport, bool master,
+                 int preroll, const std::string & start_label,
+                 AudioChunkConstPtr emphasis, AudioChunkConstPtr normal);
     virtual ~MetronomeMap();
 
     void start();
-    bool running() const { return _transport_enabled ? true : !_pos.end(); }
+    bool running() const;
 
   protected:
+    static const double TICKS_PER_BEAT = 1920.0;
+
+    typedef double float_frames_t;
+
     struct Tick {
         nframes_t frame;
         TempoMap::BeatType type;
         float volume;
     };
 
-    // keeps track of the current position in the tempomap
+    /*
+     * keeps track of the current position in the tempomap
+     */
     class Position
     {
       public:
-        Position(boost::shared_ptr<const TempoMap> tempomap, float multiplier);
+        Position(TempoMapConstPtr tempomap, float multiplier);
 
         void set_start_label(const std::string & start_label);
         void add_preroll(int nbars);
 
-        void locate(nframes_t);
+        // move to frame
+        void locate(nframes_t frame);
 
-        float dist_to_next() const;
-        float next_frame() const { return frame() + dist_to_next(); }
+        // distance from previous (current) tick to the next
+        float_frames_t dist_to_next() const;
+        // frame of next tick
+        float_frames_t next_frame() const { return frame() + dist_to_next(); }
+        // move position one tick forward
         void advance();
 
+        // get current tick
         const Tick tick() const;
+        // end of tempomap reached?
         bool end() const { return _end; }
 
-        float frame() const { return _frame; }
+        float_frames_t frame() const { return _frame; }
         uint entry() const { return _entry; }
         uint bar() const { return _bar; }
         uint beat() const { return _beat; }
         uint bar_total() const { return _bar_total; }
 
-        const TempoMap::Entry & map_entry() const { return (*_tempomap)[_entry]; }
+        // current tempomap entry
+        const TempoMap::Entry & map_entry() const {
+            return (*_tempomap)[_entry];
+        }
 
       private:
+        // reset, locate at start of tempomap
         void reset();
 
-        double _frame;
-        uint _entry, _bar, _beat;
-        uint _bar_total;
+        float_frames_t _frame;      // frame position of current tick
+        uint _entry, _bar, _beat;   // current position in tempomap
+        uint _bar_total;            // current bar number (including previous entries)
         bool _init, _end;
 
-        boost::shared_ptr<const TempoMap> _tempomap;
+        TempoMapConstPtr _tempomap;
         float _multiplier;
     };
 

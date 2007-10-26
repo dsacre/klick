@@ -169,7 +169,7 @@ AudioChunkPtr AudioChunkStaticBase::load(nframes_t samplerate) const
         sample_t *s = (sample_t *)calloc(int16_data->_length, sizeof(sample_t));
 
         for (uint i = 0; i < int16_data->_length; i++) {
-            // yeah, this is probably the most naive way possible to do this
+            // yeah, this is probably the most naive way possible to do this.
             // let's improve this some day...
             s[i] = float(int16_data->_samples[i]) / float(numeric_limits<short>::max());
         }

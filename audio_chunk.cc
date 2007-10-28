@@ -179,7 +179,7 @@ AudioChunkPtr AudioChunkStaticBase::load(nframes_t samplerate) const
 
     ASSERT(r);
 
-    r->adjust_volume(float_data->_volume);
+    r->adjust_volume(_volume);
     if (samplerate) r->resample(samplerate);
     return r;
 }

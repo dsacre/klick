@@ -72,6 +72,11 @@ class AudioChunkStaticBase
     // format and samplerate if necessary.
     // pass samplerate = 0 to leave the samplerate as is
     AudioChunkPtr load(nframes_t samplerate = 0) const;
+
+  protected:
+    nframes_t _length;
+    nframes_t _samplerate;
+    float _volume;
 };
 
 
@@ -93,9 +98,6 @@ class AudioChunkStatic
 
   protected:
     T *_samples;
-    nframes_t _length;
-    nframes_t _samplerate;
-    float _volume;
 };
 
 typedef AudioChunkStatic<const sample_t> AudioChunkStaticFloat;

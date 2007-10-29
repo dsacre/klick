@@ -56,7 +56,7 @@ void Options::print_usage(ostream & out)
         << "Options:" << endl
         <<  "  -f filename       load tempomap from file" << endl
         <<  "  -j                no tempomap, just follow jack transport" << endl
-        <<  "  -n name           jack client name" << endl
+        <<  "  -n name           set jack client name" << endl
         <<  "  -p port,..        jack port(s) to connect to" << endl
         <<  "  -P                automatically connect to hardware ports" << endl
         <<  "  -s number         use built-in sounds 1 (sine), 2 (noise) or 3 (bell/click)" << endl
@@ -71,7 +71,6 @@ void Options::print_usage(ostream & out)
         <<  "  -c bars           pre-roll. use -c 0 for 2 beats" << endl
         <<  "  -l label          start playback at the given label" << endl
         <<  "  -x multiplier     multiply tempo by the given factor" << endl
-        <<  "  -V                verbose output" << endl
         <<  "  -h                show this help" << endl
         << endl
         << "Tempomap file format:" << endl

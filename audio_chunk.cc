@@ -30,9 +30,7 @@ AudioChunk::AudioChunk(const string & filename, nframes_t samplerate)
     SNDFILE *f;
 
     if ((f = sf_open(filename.c_str(), SFM_READ, &sfinfo)) == NULL) {
-        ostringstream os;
-        os << "failed to open audio file '" << filename << "'";
-        throw os.str();
+        throw string(make_string() << "failed to open audio file '" << filename << "'");
     }
 
     sample_t *buf = (sample_t*)calloc(sfinfo.frames * sfinfo.channels, sizeof(sample_t));

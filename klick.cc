@@ -92,9 +92,7 @@ void Klick::load_tempomap()
         if (_map->entry(_options.start_label)) {
             logv << "starting at label: " << _options.start_label << endl;
         } else {
-            ostringstream os;
-            os << "label '" << _options.start_label << "' not found in tempomap";
-            throw os.str();
+            throw string(make_string() << "label '" << _options.start_label << "' not found in tempomap");
         }
     }
 }

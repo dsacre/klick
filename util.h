@@ -14,6 +14,7 @@
 
 #include <string>
 #include <iostream>
+#include <sstream>
 #include <boost/noncopyable.hpp>
 
 
@@ -38,13 +39,17 @@ class logstream
       : _stream(s), _enabled(true)
     {
     }
+
     void enable(bool b) {
         _enabled = b;
     }
-    template <typename T> logstream & operator<< (const T & p) {
+
+    template <typename T>
+    logstream & operator<< (const T & p) {
         if (_enabled) _stream << p;
         return *this;
     }
+
     logstream & operator<< (std::ostream & (*pf)(std::ostream &)) {
         if (_enabled) pf(_stream);
         return *this;
@@ -59,6 +64,29 @@ extern logstream logv;
 
 
 std::string indent(const std::string & s, uint n);
+
+
+class make_string
+{
+  public:
+    template <typename T>
+    make_string & operator<< (T const& t) {
+        _stream << t;
+        return *this;
+    }
+
+    make_string & operator<< (std::ostream & (*pf)(std::ostream &)) {
+        pf(_stream);
+        return *this;
+    }
+
+    operator std::string() {
+        return _stream.str();
+    }
+
+  private:
+    std::ostringstream _stream;
+};
 
 
 template <typename T>

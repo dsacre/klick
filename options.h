@@ -13,6 +13,7 @@
 #define _OPTIONS_H
 
 #include <string>
+#include <iostream>
 #include <vector>
 
 
@@ -22,8 +23,6 @@ class Options
     Options();
 
     void parse(int argc, char *argv[]);
-    static void print_version(std::ostream &);
-    static void print_usage(std::ostream &);
 
     std::string client_name;
     std::vector<std::string> connect_ports;
@@ -46,6 +45,12 @@ class Options
     std::string start_label;
     float tempo_multiplier;
     bool verbose;
+
+  private:
+    void print_version(std::ostream & = std::cout);
+    void print_usage(std::ostream & = std::cout);
+
+    std::vector<std::string> split_arguments(const std::string & str);
 };
 
 

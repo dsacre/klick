@@ -14,6 +14,7 @@
 #include <string>
 #include <iostream>
 #include <boost/tokenizer.hpp>
+#include <boost/algorithm/string/replace.hpp>
 #include <unistd.h>
 
 #include "util.h"
@@ -21,6 +22,7 @@
 using namespace std;
 typedef boost::char_separator<char> char_sep;
 typedef boost::tokenizer<char_sep> tokenizer;
+using boost::algorithm::replace_all;
 
 
 Options::Options()
@@ -85,6 +87,13 @@ void Options::parse(int argc, char *argv[])
     char optstring[] = "+f:jn:p:Ps:S:eEv:w:tTd:c:l:x:Vh";
     char *end;
 
+    if (argc < 2) {
+        // run with no arguments, print usage
+        print_version();
+        print_usage();
+        exit(EXIT_SUCCESS);
+    }
+
     while ((c = getopt(argc, argv, optstring)) != -1)
     {
         switch (c)
@@ -102,11 +111,8 @@ void Options::parse(int argc, char *argv[])
                 break;
 
             case 'p':
-              { char_sep sep(",");
-                tokenizer tok(string(::optarg), sep);
-                for (tokenizer::iterator i = tok.begin(); i != tok.end(); ++i) {
-                    connect_ports.push_back(*i);
-                }
+              { const vector<string> &v = split_arguments(::optarg);
+                copy(v.begin(), v.end(), back_insert_iterator<vector<string> >(connect_ports));
               } break;
 
             case 'P':
@@ -121,12 +127,10 @@ void Options::parse(int argc, char *argv[])
                 break;
 
             case 'S':
-              { char_sep sep(",");
-                string str(::optarg);
-                tokenizer tok(str, sep);
-                tokenizer::iterator i = tok.begin();
+              { const vector<string> &v = split_arguments(::optarg);
+                vector<string>::const_iterator i = v.begin();
                 click_filename_emphasis = *i++;
-                switch (count_iter(tok)) {
+                switch (count_iter(v)) {
                   case 1:
                     click_filename_normal = click_filename_emphasis;
                     break;
@@ -182,7 +186,7 @@ void Options::parse(int argc, char *argv[])
 
             case 'x':
                 tempo_multiplier = strtof(::optarg, &end);
-                if (*end != '\0') throw "invalid tempo multiplier";
+                if (*end != '\0' || tempo_multiplier <= 0.0f) throw "invalid tempo multiplier";
                 break;
 
             case 'V':
@@ -190,8 +194,8 @@ void Options::parse(int argc, char *argv[])
                 break;
 
             case 'h':
-                print_version(cout);
-                print_usage(cout);
+                print_version();
+                print_usage();
                 exit(EXIT_SUCCESS);
                 break;
 
@@ -202,8 +206,32 @@ void Options::parse(int argc, char *argv[])
         }
     }
 
+    // all remaining arguments make up the "tempomap"
     for (int n = ::optind; n < argc; n++) {
         cmdline += string(argv[n]);
         cmdline += " ";
     }
+}
+
+
+/*
+ * splits string by commas or spaces, but *not* escaped spaces
+ */
+vector<string> Options::split_arguments(const string & str)
+{
+    string s(str);
+    vector<string> ret;
+
+    replace_all(s, "\\ ", "\a");    // "hide" escaped spaces (yuck!)
+    replace_all(s, " ", ",");       // replace spaces by commas
+    replace_all(s, "\a", " ");      // convert hidden spaces back
+
+    char_sep sep(",");              // split at commas
+    tokenizer tok(s, sep);
+
+    for (tokenizer::iterator i = tok.begin(); i != tok.end(); ++i) {
+        ret.push_back(*i);
+    }
+
+    return ret;
 }

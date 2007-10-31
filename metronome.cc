@@ -18,6 +18,8 @@ Metronome::Metronome(AudioChunkConstPtr emphasis, AudioChunkConstPtr normal)
   : _click_emphasis(emphasis),
     _click_normal(normal)
 {
+    ASSERT(_click_emphasis);
+    ASSERT(_click_normal);
     ASSERT(_click_emphasis->samplerate() == Audio->samplerate());
     ASSERT(_click_normal->samplerate() == Audio->samplerate());
 }

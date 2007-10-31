@@ -34,12 +34,16 @@ MetronomeMap::MetronomeMap(TempoMapConstPtr tempomap,
     _transport_enabled(transport),
     _transport_master(master)
 {
+    ASSERT(tempomap);
+    ASSERT(tempomap->size() > 0);
+    ASSERT(tempo_multiplier > 0.0f);
+
     // set start label
     if (!start_label.empty()) {
         _pos.set_start_label(start_label);
     }
-    // enable preroll only if jack transport is off
-    if (!_transport_enabled && preroll != Options::PREROLL_NONE) {
+    // enable preroll only if jack transport is off -- why?
+    if (/*!_transport_enabled &&*/ preroll != Options::PREROLL_NONE) {
         _pos.add_preroll(preroll);
     }
 
@@ -205,13 +209,13 @@ void MetronomeMap::Position::add_preroll(int nbars)
 
     // create a new tempomap for preroll
     if (nbars == Options::PREROLL_2_BEATS) {
-        vector<TempoMap::BeatType> acc;
+        vector<TempoMap::BeatType> pattern;
         for (uint n = 0; n < e.denom; n++) {
-            acc.push_back(TempoMap::BEAT_NORMAL);
+            pattern.push_back(TempoMap::BEAT_NORMAL);
         }
-        preroll = TempoMap::new_simple(1, e.tempo, 2, e.denom, acc, 0.66f);
+        preroll = TempoMap::new_simple(1, e.tempo, 2, e.denom, pattern, 0.66f);
     } else {
-        preroll = TempoMap::new_simple(nbars, e.tempo, e.beats, e.denom, e.accents, 0.66f);
+        preroll = TempoMap::new_simple(nbars, e.tempo, e.beats, e.denom, e.pattern, 0.66f);
     }
 
     // join preroll and our actual tempomap
@@ -322,12 +326,12 @@ const MetronomeMap::Tick MetronomeMap::Position::tick() const
     const TempoMap::Entry & e = (*_tempomap)[_entry];
 
     TempoMap::BeatType t;
-    if (e.accents.empty()) {
-        // use default accents
+    if (e.pattern.empty()) {
+        // use default pattern
         t = (_beat == 0) ? TempoMap::BEAT_EMPHASIS : TempoMap::BEAT_NORMAL;
     } else {
-        // use accents as specified in the tempomap
-        t = e.accents[_beat];
+        // use pattern as specified in the tempomap
+        t = e.pattern[_beat];
     }
     return (Tick) { (nframes_t)_frame, t, e.volume };
 }

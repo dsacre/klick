@@ -15,6 +15,7 @@
 #include <string>
 #include <iostream>
 #include <vector>
+#include "util.h"
 
 
 class Options
@@ -27,26 +28,43 @@ class Options
     std::string client_name;
     std::vector<std::string> connect_ports;
     bool auto_connect;
+
     bool follow_transport;
     std::string filename;
     std::string cmdline;
-    static const uint CLICK_SAMPLE_FROM_FILE = 0;
-    uint click_sample;
+
+    static const int CLICK_SAMPLE_FROM_FILE = 0;
+    int click_sample;
     std::string click_filename_emphasis;
     std::string click_filename_normal;
-    enum { EMPHASIS_NORMAL, EMPHASIS_NONE, EMPHASIS_ALL } emphasis;
+
+    enum { EMPHASIS_NORMAL,
+           EMPHASIS_NONE,
+           EMPHASIS_ALL } emphasis;
     float volume;
     float frequency;
     bool transport_enabled;
     bool transport_master;
     float delay;
-    static const int PREROLL_NONE = -1, PREROLL_2_BEATS = 0;
+
+    static const int PREROLL_NONE = -1,
+                     PREROLL_2_BEATS = 0;
     int preroll;
     std::string start_label;
     float tempo_multiplier;
     bool verbose;
 
   private:
+    struct CmdlineError : public string_exception {
+        CmdlineError(const std::string & w)
+          : string_exception(w) { }
+    };
+
+    struct InvalidArgument : public string_exception {
+        InvalidArgument(const std::string & w)
+          : string_exception("invalid argument (" + w + ")") { }
+    };
+
     void print_version(std::ostream & = std::cout);
     void print_usage(std::ostream & = std::cout);
 

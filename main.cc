@@ -15,6 +15,8 @@
 #include <iostream>
 #include <csignal>
 
+using namespace std;
+
 
 static Klick *app = NULL;
 
@@ -27,7 +29,7 @@ static void signal_handler(int sig)
 
 static void terminate(const char *e)
 {
-    std::cerr << e << std::endl;
+    cerr << e << endl;
     delete app;
     exit(EXIT_FAILURE);
 }
@@ -41,7 +43,6 @@ int main(int argc, char *argv[])
         // exit cleanly when terminated
         signal(SIGINT,  signal_handler);
         signal(SIGTERM, signal_handler);
-        signal(SIGQUIT, signal_handler);
         signal(SIGHUP,  signal_handler);
 
         app->run();
@@ -49,10 +50,13 @@ int main(int argc, char *argv[])
 
         return EXIT_SUCCESS;
     }
+    catch (const exception & e) {
+        terminate(e.what());
+    }
     catch (const char *e) {
         terminate(e);
     }
-    catch (const std::string & e) {
+    catch (const string & e) {
         terminate(e.c_str());
     }
 }

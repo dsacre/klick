@@ -27,7 +27,7 @@ extern class AudioInterface *Audio;
 
 
 class AudioInterface
-  : public global_object<AudioInterface, &::Audio>
+  : public global_object<AudioInterface, ::Audio>
 {
     static const int MAX_PLAYING_CHUNKS = 4;
 
@@ -88,7 +88,7 @@ class AudioInterface
     };
 
     boost::array<PlayingChunk, MAX_PLAYING_CHUNKS> _chunks;
-    uint _next_chunk;
+    int _next_chunk;
 };
 
 #endif // _AUDIO_INTERFACE_H

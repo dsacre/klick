@@ -35,12 +35,12 @@ class TempoMap
 
     struct Entry {
         std::string label;
-        uint bars;
+        int bars;
         float tempo;                    // zero if tempo is given for each beat
         float tempo2;                   // zero if tempo is constant
         std::vector<float> tempi;       // empty unless tempo == 0.0
-        uint beats;
-        uint denom;
+        int beats;
+        int denom;
         std::vector<BeatType> pattern;  // empty if default
         float volume;
     };
@@ -50,10 +50,10 @@ class TempoMap
     // get all entries
     const Entries & entries() const { return _entries; }
     // get n'th entry
-    const Entry & entry(uint n) const { return _entries[n]; }
-    const Entry & operator[](uint n) const { return _entries[n]; }
+    const Entry & entry(size_t n) const { return _entries[n]; }
+    const Entry & operator[](size_t n) const { return _entries[n]; }
     // get number of entries
-    uint size() const { return _entries.size(); }
+    size_t size() const { return _entries.size(); }
 
     // get entry with label l, NULL if no such entry exists
     const Entry * entry(const std::string & l) const {
@@ -75,15 +75,15 @@ class TempoMap
     static TempoMapPtr new_from_file(const std::string & filename);
     static TempoMapPtr new_from_cmdline(const std::string & line);
 
-    static TempoMapPtr new_simple(uint bars, float tempo, uint beats, uint denom,
+    static TempoMapPtr new_simple(int bars, float tempo, int beats, int denom,
                                   const std::vector<BeatType> & pattern = std::vector<BeatType>(),
                                   float volume = 1.0f);
 
   protected:
     // builds a vector of beat types, based on the string description
-    static std::vector<BeatType> parse_pattern(const std::string &s, uint nbeats);
+    static std::vector<BeatType> parse_pattern(const std::string &s, int nbeats);
 
-    static std::vector<float> parse_tempi(const std::string &s, float tempo1, uint nbeats_total);
+    static std::vector<float> parse_tempi(const std::string &s, float tempo1, int nbeats_total);
 
     Entries _entries;
 };

@@ -124,7 +124,7 @@ void AudioChunk::adjust_volume(float volume)
 {
     if (volume == 1.0f) return;
 
-    for (uint i = 0; i < _length; i++) {
+    for (nframes_t i = 0; i < _length; i++) {
         _samples[i] *= volume;
     }
 }
@@ -166,7 +166,7 @@ AudioChunkPtr AudioChunkStaticBase::load(nframes_t samplerate) const
     if (int16_data) {
         sample_t *s = (sample_t *)calloc(int16_data->_length, sizeof(sample_t));
 
-        for (uint i = 0; i < int16_data->_length; i++) {
+        for (nframes_t i = 0; i < int16_data->_length; i++) {
             // yeah, this is probably the most naive way possible to do this.
             // let's improve this some day...
             s[i] = float(int16_data->_samples[i]) / float(numeric_limits<short>::max());

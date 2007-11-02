@@ -210,7 +210,7 @@ void MetronomeMap::Position::add_preroll(int nbars)
     // create a new tempomap for preroll
     if (nbars == Options::PREROLL_2_BEATS) {
         vector<TempoMap::BeatType> pattern;
-        for (uint n = 0; n < e.denom; n++) {
+        for (int n = 0; n < e.denom; n++) {
             pattern.push_back(TempoMap::BEAT_NORMAL);
         }
         preroll = TempoMap::new_simple(1, e.tempo, 2, e.denom, pattern, 0.66f);
@@ -267,8 +267,9 @@ MetronomeMap::float_frames_t MetronomeMap::Position::dist_to_next() const
          * ----- =  lim   |  Σ  | ------------------------ | / n |
          * tempo   n->inf \ x=0 \  t1 + (x/n) * (t2 - t1)  /     /
          *
-         * NOTE: for slow tempo changes, the tempo calculated by this formula appears to be the same
-         * as a simple (t1 + t2) / 2. but it really isn't...
+         * NOTE: for slow tempo changes, the tempo calculated by this formula is virtually
+         * indistinguishable from a simple (t1 + t2) / 2.
+         * but it's really not the same thing...
          */
 
         float tdiff = e.tempo2 - e.tempo;
@@ -306,7 +307,7 @@ void MetronomeMap::Position::advance()
         if (++_bar >= e.bars) {
             _bar = 0;
             // move to next entry
-            if (++_entry >= _tempomap->size()) {
+            if (++_entry >= (int)_tempomap->size()) {
                 _entry--;       // no such entry
                 _end = true;
             }

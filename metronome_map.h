@@ -75,10 +75,10 @@ class MetronomeMap
         bool end() const { return _end; }
 
         float_frames_t frame() const { return _frame; }
-        uint entry() const { return _entry; }
-        uint bar() const { return _bar; }
-        uint beat() const { return _beat; }
-        uint bar_total() const { return _bar_total; }
+        int entry() const { return _entry; }
+        int bar() const { return _bar; }
+        int beat() const { return _beat; }
+        int bar_total() const { return _bar_total; }
 
         // current tempomap entry
         const TempoMap::Entry & map_entry() const {
@@ -90,8 +90,8 @@ class MetronomeMap
         void reset();
 
         float_frames_t _frame;      // frame position of current tick
-        uint _entry, _bar, _beat;   // current position in tempomap
-        uint _bar_total;            // current bar number (including previous entries)
+        int _entry, _bar, _beat;    // current position in tempomap
+        int _bar_total;             // current bar number (including previous entries)
         bool _init, _end;
 
         TempoMapConstPtr _tempomap;

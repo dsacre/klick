@@ -12,13 +12,14 @@
 #ifndef _KLICK_H
 #define _KLICK_H
 
-#include "options.h"
-#include "audio_chunk.h"
-
 #include <boost/shared_ptr.hpp>
+#include <boost/scoped_ptr.hpp>
 #include <boost/noncopyable.hpp>
 
+#include "audio.h"
 
+
+class Options;
 class AudioInterface;
 class TempoMap;
 class Metronome;
@@ -38,7 +39,9 @@ class Klick
     void signal_quit();
 
   private:
-    Options _options;
+//    Options _options;
+    boost::scoped_ptr<Options> _options;
+
     AudioChunkPtr _click_emphasis;
     AudioChunkPtr _click_normal;
 

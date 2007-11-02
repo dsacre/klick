@@ -122,7 +122,7 @@ void Options::parse(int argc, char *argv[])
             case 's':
                 click_sample = strtoul(::optarg, &end, 10);
                 if (*end != '\0' || click_sample < 1 || click_sample > 3) {
-                    throw "invalid click sample number";
+                    throw InvalidArgument("click sample");
                 }
                 break;
 
@@ -138,7 +138,7 @@ void Options::parse(int argc, char *argv[])
                     click_filename_normal = *i;
                     break;
                   default:
-                    throw "too many sample file names";
+                    throw InvalidArgument("sample file names");
                 }
                 click_sample = CLICK_SAMPLE_FROM_FILE;
               } break;
@@ -153,12 +153,12 @@ void Options::parse(int argc, char *argv[])
 
             case 'v':
                 volume = strtof(::optarg, &end);
-                if (*end != '\0') throw "invalid volume";
+                if (*end != '\0') throw InvalidArgument("volume");
                 break;
 
             case 'w':
                 frequency = strtof(::optarg, &end);
-                if (*end != '\0') throw "invalid frequency multiplier";
+                if (*end != '\0') throw InvalidArgument("frequency");
                 break;
 
             case 't':
@@ -172,12 +172,12 @@ void Options::parse(int argc, char *argv[])
 
             case 'd':
                 delay = strtod(::optarg, &end);
-                if (*end != '\0' || delay < 0.0f) throw "invalid delay";
+                if (*end != '\0' || delay < 0.0f) throw InvalidArgument("delay");
                 break;
 
             case 'c':
                 preroll = strtoul(::optarg, &end, 10);
-                if (*end != '\0') throw "invalid pre-roll";
+                if (*end != '\0') throw InvalidArgument("pre-roll");
                 break;
 
             case 'l':
@@ -186,7 +186,9 @@ void Options::parse(int argc, char *argv[])
 
             case 'x':
                 tempo_multiplier = strtof(::optarg, &end);
-                if (*end != '\0' || tempo_multiplier <= 0.0f) throw "invalid tempo multiplier";
+                if (*end != '\0' || tempo_multiplier <= 0.0f) {
+                    throw InvalidArgument("tempo multiplier");
+                }
                 break;
 
             case 'V':
@@ -209,7 +211,15 @@ void Options::parse(int argc, char *argv[])
     // all remaining arguments make up the "tempomap"
     for (int n = ::optind; n < argc; n++) {
         cmdline += string(argv[n]);
-        cmdline += " ";
+        if (n < argc - 1) cmdline += " ";
+    }
+
+    if (follow_transport && (filename.length() || cmdline.length())) {
+        throw CmdlineError("can't use tempo/tempomap together with -j option");
+    }
+
+    if (filename.length() && cmdline.length()) {
+        throw CmdlineError("can't use tempomap from file and command line at the same time");
     }
 }
 

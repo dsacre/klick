@@ -19,7 +19,7 @@ using namespace std;
 logstream logv(std::cout);
 
 
-string indent(const string & s, uint n) {
+string indent(const string & s, int n) {
     char buf[n + 256];
     memset(buf, ' ', n);
     istringstream is(s);

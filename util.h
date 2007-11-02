@@ -1,6 +1,4 @@
 /*
- * klick - an advanced metronome for jack
- *
  * Copyright (C) 2007  Dominic Sacré  <dominic.sacre@gmx.de>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -16,18 +14,34 @@
 #include <iostream>
 #include <sstream>
 #include <boost/noncopyable.hpp>
+#include <exception>
 
 
-template <typename T, T **pp>
+#ifdef _DEBUG
+    #include <assert.h>
+    #define ASSERT(f) assert(f)
+    #define VERIFY(f) assert(f)
+    #define FAIL()    assert(false)
+#else
+    #define ASSERT(f) ((void)0)
+    #define VERIFY(f) ((void)f)
+    #define FAIL()    ((void)0)
+#endif
+
+
+template <typename T, T *& pp>
 class global_object
   : boost::noncopyable
 {
   protected:
     global_object() {
-        *pp = static_cast<T*>(this);
+        ASSERT(!pp);
+        pp = static_cast<T*>(this);
     }
+
     ~global_object() {
-        *pp = NULL;
+        ASSERT(pp);
+        pp = NULL;
     }
 };
 
@@ -35,8 +49,8 @@ class global_object
 class logstream
 {
   public:
-    logstream(std::ostream & s)
-      : _stream(s), _enabled(true)
+    logstream(std::ostream & s, bool b = true)
+      : _stream(s), _enabled(b)
     {
     }
 
@@ -63,9 +77,6 @@ class logstream
 extern logstream logv;
 
 
-std::string indent(const std::string & s, uint n);
-
-
 class make_string
 {
   public:
@@ -89,8 +100,11 @@ class make_string
 };
 
 
+std::string indent(const std::string & s, int n);
+
+
 template <typename T>
-uint count_iter(const T t) {
+int count_iter(const T &t) {
     int c = 0;
     for (typename T::const_iterator i = t.begin(); i != t.end(); ++i) {
         c++;
@@ -99,16 +113,14 @@ uint count_iter(const T t) {
 }
 
 
-#ifdef _DEBUG
-    #include <assert.h>
-    #define ASSERT(f) assert(f)
-    #define VERIFY(f) assert(f)
-    #define FAIL()    assert(false)
-#else
-    #define ASSERT(f) ((void)0)
-    #define VERIFY(f) ((void)f)
-    #define FAIL()    ((void)0)
-#endif
+class string_exception : public std::exception {
+  public:
+    string_exception(const std::string & w) : _w(w) { }
+    virtual ~string_exception() throw () { }
+    virtual const char *what() const throw() { return _w.c_str(); }
+  protected:
+    std::string _w;
+};
 
 
 #endif // _UTIL_H

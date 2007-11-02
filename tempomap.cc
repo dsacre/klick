@@ -30,57 +30,37 @@ typedef boost::tokenizer<char_sep> tokenizer;
 #define REGEX_FLOAT     "([[:digit:]]+(\\.[[:digit:]]*)?|\\.[[:digit:]]+)"
 #define REGEX_PATTERN   "([Xx.]+)"
 
-static const int MAX_LINE_LENGTH = 256;
 
-
-// helper class for regex parsing
-class TempoMap::Regex
-{
-  public:
-    Regex(const string &regex, int flags) {
-        regcomp(&_re, regex.c_str(), flags);
-    }
-    ~Regex() {
-        regfree(&_re);
-    }
-    bool match(const string &str, int nmatch, regmatch_t pmatch[], int flags) const {
-        return (regexec(&_re, str.c_str(), nmatch, pmatch, flags) == 0);
-    }
-
-    // determines whether the submatch m is not empty
-    static bool is_specified(const string &s, const regmatch_t &m) {
-        return ((m.rm_eo - m.rm_so) != 0);
-    }
-    // get submatch m from the line s as string
-    static string extract_string(const string &s, const regmatch_t &m) {
-        int len = m.rm_eo - m.rm_so;
-        return len ? string(s.c_str() + m.rm_so, len) : "";
-    }
-    // get submatch m from the line s as int
-    static int extract_int(const string &s, const regmatch_t &m) {
-        int len = m.rm_eo - m.rm_so;
-        return len ? atoi(string(s.c_str() + m.rm_so, len).c_str()) : 0;
-    }
-    // get submatch m from the line s as float
-    static float extract_float(const string &s, const regmatch_t &m) {
-        int len = m.rm_eo - m.rm_so;
-        return len ? atof(string(s.c_str() + m.rm_so, len).c_str()) : 0.0f;
-    }
-
-  protected:
-    regex_t _re;
+// frees the regex when it goes out of scope
+struct regfreeer {
+    regfreeer(regex_t *r) : re(r) { }
+    ~regfreeer() { regfree(re); }
+    regex_t *re;
 };
 
 
+static inline bool is_specified(const string &s, const regmatch_t &m) {
+    return ((m.rm_eo - m.rm_so) != 0);
+}
+static inline string extract_string(const string &s, const regmatch_t &m) {
+    int len = m.rm_eo - m.rm_so;
+    return len ? string(s.c_str() + m.rm_so, len) : "";
+}
+static inline int extract_int(const string &s, const regmatch_t &m) {
+    int len = m.rm_eo - m.rm_so;
+    return len ? atoi(string(s.c_str() + m.rm_so, len).c_str()) : 0;
+}
+static inline float extract_float(const string &s, const regmatch_t &m) {
+    int len = m.rm_eo - m.rm_so;
+    return len ? atof(string(s.c_str() + m.rm_so, len).c_str()) : 0.0f;
+}
+
 
 // matches a line that contains nothing but whitespace or comments
-static const TempoMap::Regex regex_blank(
-    "^[[:blank:]]*(#.*)?$",
-    REG_EXTENDED | REG_NOSUB
-);
+static const char regex_blank[] = "^[[:blank:]]*(#.*)?$";
 
 // matches any valid line in a tempomap file
-static const TempoMap::Regex regex_valid(
+static const char regex_valid[] =
     // label
     "^[[:blank:]]*("REGEX_LABEL":)?" \
     // bars
@@ -94,27 +74,38 @@ static const TempoMap::Regex regex_valid(
     // volume
     "([[:blank:]]+"REGEX_FLOAT")?" \
     // comment
-    "[[:blank:]]*(#.*)?$",
-    REG_EXTENDED
-);
-static const int RE_NMATCHES = 22,
-                 IDX_LABEL = 2, IDX_BARS = 3, IDX_BEATS = 5, IDX_DENOM = 6,
-                 IDX_TEMPO = 7, IDX_TEMPO2 = 10, IDX_TEMPI = 12, IDX_PATTERN = 17, IDX_VOLUME = 19;
+    "[[:blank:]]*(#.*)?$";
+
+static const int
+    RE_NMATCHES = 22,
+    IDX_LABEL   =  2,
+    IDX_BARS    =  3,
+    IDX_BEATS   =  5,
+    IDX_DENOM   =  6,
+    IDX_TEMPO   =  7,
+    IDX_TEMPO2  = 10,
+    IDX_TEMPI   = 12,
+    IDX_PATTERN = 17,
+    IDX_VOLUME  = 19;
 
 
 // matches valid tempo parameters on the command line
-static const TempoMap::Regex regex_cmdline(
+static const char regex_cmdline[] =
     // meter
     "^[[:blank:]]*("REGEX_INT"/"REGEX_INT"[[:blank:]]+)?" \
     // tempo
     REGEX_FLOAT"(-"REGEX_FLOAT"/"REGEX_INT")?" \
     // pattern
-    "([[:blank:]]+"REGEX_PATTERN")?[[:blank:]]*$",
-    REG_EXTENDED
-);
-static const int RE_NMATCHES_CMD = 12,
-                 IDX_BEATS_CMD = 2, IDX_DENOM_CMD = 3, IDX_TEMPO_CMD = 4,
-                 IDX_TEMPO2_CMD = 7, IDX_ACCEL_CMD = 9, IDX_PATTERN_CMD = 11;
+    "([[:blank:]]+"REGEX_PATTERN")?[[:blank:]]*$";
+
+static const int
+    RE_NMATCHES_CMD = 12,
+    IDX_BEATS_CMD   =  2,
+    IDX_DENOM_CMD   =  3,
+    IDX_TEMPO_CMD   =  4,
+    IDX_TEMPO2_CMD  =  7,
+    IDX_ACCEL_CMD   =  9,
+    IDX_PATTERN_CMD = 11;
 
 
 
@@ -123,7 +114,7 @@ vector<TempoMap::BeatType> TempoMap::parse_pattern(const string &s, int nbeats)
     vector<BeatType> pattern;
 
     if (!s.empty()) {
-        if (int(s.length()) != nbeats) {
+        if ((int)s.length() != nbeats) {
             throw "pattern length doesn't match number of beats";
         }
         pattern.resize(nbeats);
@@ -161,7 +152,9 @@ string TempoMap::dump() const
         // label
         os << (i->label.length() ? i->label : "-") << ": ";
         // bars
-        if (i->bars != INT_MAX) os << i->bars; else os << "*"; os << " ";
+        if (i->bars != INT_MAX) os << i->bars;
+        else os << "*";
+        os << " ";
         // meter
         os << i->beats << "/" << i->denom << " ";
         // tempo
@@ -218,39 +211,54 @@ TempoMapPtr TempoMap::new_from_file(const string & filename)
         throw string(make_string() << "can't open tempomap file: '" << filename << "'");
     }
 
-    char line[MAX_LINE_LENGTH];
-    int  lineno = 1;
+    regex_t re_blank, re;
+    regmatch_t match[RE_NMATCHES];
+    // compile the regexes
+    regcomp(&re_blank, regex_blank, REG_EXTENDED | REG_NOSUB);
+    regcomp(&re, regex_valid, REG_EXTENDED);
+    regfreeer foo(&re_blank);
+    regfreeer bar(&re);
+
+    string line;
+    int lineno = 0;
 
     while (!file.eof())
     {
-        file.getline(line, MAX_LINE_LENGTH);
-
-        if (!regex_blank.match(line, 0, NULL, 0)) {
-            regmatch_t match[RE_NMATCHES];
-
-            if (regex_valid.match(line, RE_NMATCHES, match, 0)) {
-                Entry e;
-
-                e.label   = Regex::extract_string(line, match[IDX_LABEL]);
-                e.bars    = Regex::extract_int(line, match[IDX_BARS]);
-                e.tempo   = Regex::extract_float(line, match[IDX_TEMPO]);
-                e.tempo2  = Regex::extract_float(line, match[IDX_TEMPO2]);   // 0 if empty
-                e.beats   = Regex::is_specified(line, match[IDX_BEATS]) ? Regex::extract_int(line, match[IDX_BEATS]) : 4;
-                e.denom   = Regex::is_specified(line, match[IDX_DENOM]) ? Regex::extract_int(line, match[IDX_DENOM]) : 4;
-                e.pattern = parse_pattern(Regex::extract_string(line, match[IDX_PATTERN]), e.beats);
-                e.volume  = Regex::is_specified(line, match[IDX_VOLUME]) ? Regex::extract_float(line, match[IDX_VOLUME]) : 1.0f;
-
-                if (Regex::is_specified(line, match[IDX_TEMPI])) {
-                    e.tempi = parse_tempi(Regex::extract_string(line, match[IDX_TEMPI]), e.tempo, e.beats * e.bars);
-                    e.tempo = 0.0f;
-                }
-
-                map->_entries.push_back(e);
-            } else {
-                throw string(make_string() << "invalid tempomap entry at line " << lineno << ":" << endl << line);
-            }
-        }
+        getline(file, line);
         lineno++;
+
+        // discard blank lines right away
+        if (regexec(&re_blank, line.c_str(), 0, NULL, 0) == 0) {
+            continue;
+        }
+
+        // check if this line matches the regex
+        if (regexec(&re, line.c_str(), RE_NMATCHES, match, 0) == 0) {
+            Entry e;
+
+            e.label   = extract_string(line, match[IDX_LABEL]);
+            e.bars    = extract_int(line, match[IDX_BARS]);
+            e.tempo   = extract_float(line, match[IDX_TEMPO]);
+            e.tempo2  = extract_float(line, match[IDX_TEMPO2]);   // 0 if empty
+            e.beats   = is_specified(line, match[IDX_BEATS]) ?
+                            extract_int(line, match[IDX_BEATS]) : 4;
+            e.denom   = is_specified(line, match[IDX_DENOM]) ?
+                            extract_int(line, match[IDX_DENOM]) : 4;
+            e.pattern = parse_pattern(extract_string(line, match[IDX_PATTERN]), e.beats);
+            e.volume  = is_specified(line, match[IDX_VOLUME]) ?
+                            extract_float(line, match[IDX_VOLUME]) : 1.0f;
+
+            if (is_specified(line, match[IDX_TEMPI])) {
+                e.tempi = parse_tempi(extract_string(line, match[IDX_TEMPI]), e.tempo, e.beats * e.bars);
+                e.tempo = 0.0f;
+            }
+
+            map->_entries.push_back(e);
+        }
+        else
+        {
+            throw string(make_string() << "invalid tempomap entry at line " << lineno << ":" << endl << line);
+        }
     }
 
     return map;
@@ -264,25 +272,30 @@ TempoMapPtr TempoMap::new_from_cmdline(const string & line)
 {
     TempoMapPtr map(new TempoMap());
 
+    regex_t re;
     regmatch_t match[RE_NMATCHES_CMD];
+    regcomp(&re, regex_cmdline, REG_EXTENDED);
+    regfreeer foo(&re);
 
-    if (regex_cmdline.match(line, RE_NMATCHES_CMD, match, 0))
+    if (regexec(&re, line.c_str(), RE_NMATCHES_CMD, match, 0) == 0)
     {
         Entry e;
 
         e.label   = "";
         e.bars    = INT_MAX;
-        e.beats   = Regex::is_specified(line, match[IDX_BEATS_CMD]) ? Regex::extract_int(line, match[IDX_BEATS_CMD]) : 4;
-        e.denom   = Regex::is_specified(line, match[IDX_DENOM_CMD]) ? Regex::extract_int(line, match[IDX_DENOM_CMD]) : 4;
-        e.tempo   = Regex::extract_float(line, match[IDX_TEMPO_CMD]);
+        e.beats   = is_specified(line, match[IDX_BEATS_CMD]) ?
+                        extract_int(line, match[IDX_BEATS_CMD]) : 4;
+        e.denom   = is_specified(line, match[IDX_DENOM_CMD]) ?
+                        extract_int(line, match[IDX_DENOM_CMD]) : 4;
+        e.tempo   = extract_float(line, match[IDX_TEMPO_CMD]);
         e.tempo2  = 0.0f;
-        e.pattern = parse_pattern(Regex::extract_string(line, match[IDX_PATTERN_CMD]), e.beats);
+        e.pattern = parse_pattern(extract_string(line, match[IDX_PATTERN_CMD]), e.beats);
         e.volume  = 1.0f;
 
-        if (Regex::is_specified(line, match[IDX_TEMPO2_CMD])) {
+        if (is_specified(line, match[IDX_TEMPO2_CMD])) {
             // tempo change...
-            e.tempo2 = Regex::extract_float(line, match[IDX_TEMPO2_CMD]);
-            int accel = Regex::extract_int(line, match[IDX_ACCEL_CMD]);
+            e.tempo2 = extract_float(line, match[IDX_TEMPO2_CMD]);
+            int accel = extract_int(line, match[IDX_ACCEL_CMD]);
             if (accel < 1) throw "accel must be greater than 0";
             e.bars = accel * (int)fabs(e.tempo2 - e.tempo);
             map->_entries.push_back(e);

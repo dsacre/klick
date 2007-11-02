@@ -24,9 +24,6 @@ typedef boost::shared_ptr<const class TempoMap> TempoMapConstPtr;
 class TempoMap
 {
   public:
-    // helper class for regex parsing
-    class Regex;
-
     enum BeatType {
         BEAT_EMPHASIS = 1,
         BEAT_NORMAL,
@@ -82,7 +79,7 @@ class TempoMap
   protected:
     // builds a vector of beat types, based on the string description
     static std::vector<BeatType> parse_pattern(const std::string &s, int nbeats);
-
+    // parses a comma-separated tempo string
     static std::vector<float> parse_tempi(const std::string &s, float tempo1, int nbeats_total);
 
     Entries _entries;

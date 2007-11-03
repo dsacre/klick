@@ -21,7 +21,9 @@ using boost::array;
 AudioInterface *Audio = NULL;
 
 
-AudioInterface::AudioInterface(const string & name, const vector<string> & connect_ports, bool auto_connect)
+AudioInterface::AudioInterface(const string & name,
+                               const vector<string> & connect_ports,
+                               bool auto_connect)
   : _process_obj(NULL),
     _timebase_obj(NULL),
     _process_mix(false),
@@ -53,7 +55,7 @@ AudioInterface::AudioInterface(const string & name, const vector<string> & conne
 
     if (auto_connect) {
         // connect to first two hardware outs
-        const char ** hw_ports = jack_get_ports(_client, NULL, NULL, JackPortIsPhysical | JackPortIsInput);
+        const char **hw_ports = jack_get_ports(_client, NULL, NULL, JackPortIsPhysical | JackPortIsInput);
         if (hw_ports) {
             for (int n = 0; n < 2 && hw_ports[n] != NULL; ++n) {
                 jack_connect(_client, jack_port_name(_output_port), hw_ports[n]);
@@ -142,7 +144,7 @@ int AudioInterface::process_callback_(nframes_t nframes, void *arg)
 
 
 void AudioInterface::timebase_callback_(jack_transport_state_t state, nframes_t nframes,
-                               jack_position_t *pos, int new_pos, void *arg)
+                                        jack_position_t *pos, int new_pos, void *arg)
 {
     AudioInterface *this_ = static_cast<AudioInterface*>(arg);
 

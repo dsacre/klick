@@ -39,7 +39,6 @@ class Klick
     void signal_quit();
 
   private:
-//    Options _options;
     boost::scoped_ptr<Options> _options;
 
     AudioChunkPtr _click_emphasis;

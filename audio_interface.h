@@ -48,11 +48,14 @@ class AudioInterface
         virtual void timebase_callback(jack_position_t *) = 0;
     };
 
-    AudioInterface(const std::string & name, const std::vector<std::string> & connect_ports, bool auto_connect);
+    AudioInterface(const std::string & name,
+                   const std::vector<std::string> & connect_ports,
+                   bool auto_connect);
     ~AudioInterface();
 
     void set_process_callback(ProcessCallback *, bool mix = false);
     void set_timebase_callback(TimebaseCallback *);
+
     nframes_t samplerate() const { return _samplerate; }
     bool transport_rolling() const;
     jack_position_t position() const;
@@ -61,7 +64,9 @@ class AudioInterface
     bool set_frame(nframes_t);
     bool is_shutdown() const { return _shutdown; }
 
-    void play(AudioChunkConstPtr chunk, nframes_t offset, float volume = 1.0);
+    void play(AudioChunkConstPtr chunk,
+              nframes_t offset,
+              float volume = 1.0);
 
   private:
     static int process_callback_(nframes_t, void *);
@@ -82,9 +87,9 @@ class AudioInterface
 
     struct PlayingChunk {
         AudioChunkConstPtr chunk;
-        nframes_t     offset;
-        nframes_t     pos;
-        float         volume;
+        nframes_t offset;
+        nframes_t pos;
+        float volume;
     };
 
     boost::array<PlayingChunk, MAX_PLAYING_CHUNKS> _chunks;

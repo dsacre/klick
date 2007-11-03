@@ -34,20 +34,22 @@ Klick::Klick(int argc, char *argv[])
     _options->parse(argc, argv);
     logv.enable(_options->verbose);
 
-    if (!_options->follow_transport) {
-        load_tempomap();
-    }
-
     // determine client name (if not specified)
     if (_options->client_name.empty()) {
-        ostringstream os;
-        os << "klick-" << getpid();
-        _options->client_name = os.str();
+        _options->client_name = make_string() << "klick-" << getpid();
     }
     logv << "jack client name: " << _options->client_name << endl;
 
     // setup jack
-    _audio.reset(new AudioInterface(_options->client_name, _options->connect_ports, _options->auto_connect));
+    _audio.reset(new AudioInterface(_options->client_name,
+                                    _options->connect_ports,
+                                    _options->auto_connect));
+
+    if (_options->follow_transport) {
+        logv << "using follow transport, no tempomap" << endl;
+    } else {
+        load_tempomap();
+    }
 
     if (_options->transport_master) {
         logv << "jack transport master enabled" << endl;
@@ -62,8 +64,11 @@ Klick::Klick(int argc, char *argv[])
         _metro.reset(new MetronomeJack(_click_emphasis, _click_normal));
     } else {
         _metro.reset(new MetronomeMap(_map, _options->tempo_multiplier,
-                _options->transport_enabled, _options->transport_master,
-                _options->preroll, _options->start_label, _click_emphasis, _click_normal));
+                                      _options->transport_enabled,
+                                      _options->transport_master,
+                                      _options->preroll,
+                                      _options->start_label,
+                                      _click_emphasis, _click_normal));
     }
 }
 
@@ -75,21 +80,19 @@ Klick::~Klick()
 
 void Klick::load_tempomap()
 {
-    if (_options->filename.empty() && _options->cmdline.empty()) {
-        throw "no tempo specified";
+    if (_options->filename.length()) {
+        logv << "loading tempomap from file" << endl;
+        _map = TempoMap::new_from_file(_options->filename);
     } else {
-        if (!_options->filename.empty()) {
-            _map = TempoMap::new_from_file(_options->filename);
-        } else {
-            _map = TempoMap::new_from_cmdline(_options->cmdline);
-        }
+        logv << "loading tempomap from command line" << endl;
+        _map = TempoMap::new_from_cmdline(_options->cmdline);
     }
 
     logv << "tempomap:" << endl
          << indent(_map->dump(), 2);
 
     // make sure the start label exists
-    if (!_options->start_label.empty()) {
+    if (_options->start_label.length()) {
         if (_map->entry(_options->start_label)) {
             logv << "starting at label: " << _options->start_label << endl;
         } else {

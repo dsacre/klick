@@ -221,6 +221,10 @@ void Options::parse(int argc, char *argv[])
     if (filename.length() && cmdline.length()) {
         throw CmdlineError("can't use tempomap from file and command line at the same time");
     }
+
+    if ((!follow_transport) && filename.empty() && cmdline.empty()) {
+        throw CmdlineError("no tempo specified");
+    }
 }
 
 

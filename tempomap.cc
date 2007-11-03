@@ -13,6 +13,7 @@
 
 #include <sstream>
 #include <fstream>
+#include <iomanip>
 #include <cmath>
 #include <regex.h>
 #include <boost/tokenizer.hpp>
@@ -115,7 +116,7 @@ vector<TempoMap::BeatType> TempoMap::parse_pattern(const string &s, int nbeats)
 
     if (!s.empty()) {
         if ((int)s.length() != nbeats) {
-            throw "pattern length doesn't match number of beats";
+            throw ParseError("pattern length doesn't match number of beats");
         }
         pattern.resize(nbeats);
         for (int n = 0; n < nbeats; n++) {
@@ -134,7 +135,7 @@ vector<float> TempoMap::parse_tempi(const string &s, float tempo1, int nbeats_to
     char_sep sep(",");
     tokenizer tok(s, sep);
     if (count_iter(tok) != nbeats_total - 1) {
-        throw "number of tempo values doesn't match number of beats";
+        throw ParseError("number of tempo values doesn't match number of beats");
     }
     if (tempo1) tempi.push_back(tempo1);
     for (tokenizer::iterator i = tok.begin(); i != tok.end(); ++i) {
@@ -147,6 +148,8 @@ vector<float> TempoMap::parse_tempi(const string &s, float tempo1, int nbeats_to
 string TempoMap::dump() const
 {
     ostringstream os;
+
+    os << fixed << setprecision(2);
 
     for (Entries::const_iterator i = _entries.begin(); i != _entries.end(); ++i) {
         // label
@@ -257,7 +260,7 @@ TempoMapPtr TempoMap::new_from_file(const string & filename)
         }
         else
         {
-            throw string(make_string() << "invalid tempomap entry at line " << lineno << ":" << endl << line);
+            throw ParseError(make_string() << "invalid tempomap entry at line " << lineno << ":" << endl << line);
         }
     }
 
@@ -296,7 +299,7 @@ TempoMapPtr TempoMap::new_from_cmdline(const string & line)
             // tempo change...
             e.tempo2 = extract_float(line, match[IDX_TEMPO2_CMD]);
             int accel = extract_int(line, match[IDX_ACCEL_CMD]);
-            if (accel < 1) throw "accel must be greater than 0";
+            if (accel < 1) throw ParseError("accel must be greater than 0");
             e.bars = accel * (int)fabs(e.tempo2 - e.tempo);
             map->_entries.push_back(e);
 
@@ -312,13 +315,16 @@ TempoMapPtr TempoMap::new_from_cmdline(const string & line)
     }
     else
     {
-        throw string(make_string() << "invalid tempomap string:" << endl << line);
+        throw ParseError(make_string() << "invalid tempomap string:" << endl << line);
     }
 
     return map;
 }
 
 
+/*
+ * creates tempomap with one single entry
+ */
 TempoMapPtr TempoMap::new_simple(int bars, float tempo, int beats, int denom,
                                  const vector<TempoMap::BeatType> & pattern, float volume)
 {

@@ -24,9 +24,9 @@ typedef boost::shared_ptr<const class TempoMap> TempoMapConstPtr;
 class TempoMap
 {
   public:
-    struct ParseError : public string_exception {
+    struct ParseError : public Exception {
         ParseError(const std::string & w)
-          : string_exception(w) { }
+          : Exception(w) { }
     };
 
     enum BeatType {
@@ -86,6 +86,8 @@ class TempoMap
     static std::vector<BeatType> parse_pattern(const std::string &s, int nbeats);
     // parses a comma-separated tempo string
     static std::vector<float> parse_tempi(const std::string &s, float tempo1, int nbeats_total);
+
+    static void check_entry(const Entry & e);
 
     Entries _entries;
 };

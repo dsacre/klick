@@ -14,7 +14,6 @@
 #include <string>
 #include <iostream>
 #include <boost/tokenizer.hpp>
-#include <boost/algorithm/string/replace.hpp>
 #include <unistd.h>
 
 #include "util.h"
@@ -22,7 +21,6 @@
 using namespace std;
 typedef boost::char_separator<char> char_sep;
 typedef boost::tokenizer<char_sep> tokenizer;
-using boost::algorithm::replace_all;
 
 
 Options::Options()
@@ -111,8 +109,11 @@ void Options::parse(int argc, char *argv[])
                 break;
 
             case 'p':
-              { const vector<string> &v = split_arguments(::optarg);
-                copy(v.begin(), v.end(), back_insert_iterator<vector<string> >(connect_ports));
+              { char_sep sep(",");
+                tokenizer tok(string(::optarg), sep);
+                for (tokenizer::iterator i = tok.begin(); i != tok.end(); ++i) {
+                    connect_ports.push_back(*i);
+                }
               } break;
 
             case 'P':
@@ -127,10 +128,12 @@ void Options::parse(int argc, char *argv[])
                 break;
 
             case 'S':
-              { const vector<string> &v = split_arguments(::optarg);
-                vector<string>::const_iterator i = v.begin();
+              { char_sep sep(",");
+                string str(::optarg);
+                tokenizer tok(str, sep);
+                tokenizer::iterator i = tok.begin();
                 click_filename_emphasis = *i++;
-                switch (count_iter(v)) {
+                switch (count_iter(tok)) {
                   case 1:
                     click_filename_normal = click_filename_emphasis;
                     break;
@@ -225,27 +228,4 @@ void Options::parse(int argc, char *argv[])
     if ((!follow_transport) && filename.empty() && cmdline.empty()) {
         throw CmdlineError("no tempo specified");
     }
-}
-
-
-/*
- * splits string by commas or spaces, but *not* escaped spaces
- */
-vector<string> Options::split_arguments(const string & str)
-{
-    string s(str);
-    vector<string> ret;
-
-    replace_all(s, "\\ ", "\a");    // "hide" escaped spaces (yuck!)
-    replace_all(s, " ", ",");       // replace spaces by commas
-    replace_all(s, "\a", " ");      // convert hidden spaces back
-
-    char_sep sep(",");              // split at commas
-    tokenizer tok(s, sep);
-
-    for (tokenizer::iterator i = tok.begin(); i != tok.end(); ++i) {
-        ret.push_back(*i);
-    }
-
-    return ret;
 }

@@ -31,17 +31,17 @@ AudioInterface::AudioInterface(const string & name,
     _next_chunk(0)
 {
     if ((_client = jack_client_new(name.c_str())) == 0) {
-        throw "can't connect to jack server";
+        throw AudioError("can't connect to jack server");
     }
     jack_set_process_callback(_client, &process_callback_, static_cast<void*>(this));
     jack_on_shutdown(_client, &shutdown_callback_, static_cast<void*>(this));
 
     if ((_output_port = jack_port_register(_client, "out", JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0)) == NULL) {
-        throw "can't register output port";
+        throw AudioError("can't register output port");
     }
 
     if (jack_activate(_client)) {
-        throw "can't activate client";
+        throw AudioError("can't activate client");
     }
 
     for (vector<string>::const_iterator i = connect_ports.begin(); i != connect_ports.end(); ++i) {
@@ -167,13 +167,13 @@ void AudioInterface::play(AudioChunkConstPtr chunk, nframes_t offset, float volu
     _chunks[_next_chunk].pos    = 0;
     _chunks[_next_chunk].volume = volume;
 
-    _next_chunk = (_next_chunk + 1) % MAX_PLAYING_CHUNKS;
+    _next_chunk = (_next_chunk + 1) % _chunks.size();
 }
 
 
 void AudioInterface::process_mix(sample_t *buffer, nframes_t nframes)
 {
-    for (array<PlayingChunk, MAX_PLAYING_CHUNKS>::iterator i = _chunks.begin(); i != _chunks.end(); ++i)
+    for (ChunkArray::iterator i = _chunks.begin(); i != _chunks.end(); ++i)
     {
         if (i->chunk) {
             process_mix_samples(buffer + i->offset,

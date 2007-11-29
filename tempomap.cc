@@ -17,6 +17,8 @@
 #include <cmath>
 #include <regex.h>
 #include <boost/tokenizer.hpp>
+#include <functional>
+#include <algorithm>
 
 #include "util.h"
 
@@ -32,7 +34,7 @@ typedef boost::tokenizer<char_sep> tokenizer;
 #define REGEX_PATTERN   "([Xx.]+)"
 
 
-// frees the regex when it goes out of scope
+// frees the regex when going out of scope
 struct regfreeer {
     regfreeer(regex_t *r) : re(r) { }
     ~regfreeer() { regfree(re); }
@@ -137,11 +139,27 @@ vector<float> TempoMap::parse_tempi(const string &s, float tempo1, int nbeats_to
     if (count_iter(tok) != nbeats_total - 1) {
         throw ParseError("number of tempo values doesn't match number of beats");
     }
-    if (tempo1) tempi.push_back(tempo1);
+    /*if (tempo1)*/ tempi.push_back(tempo1);
     for (tokenizer::iterator i = tok.begin(); i != tok.end(); ++i) {
         tempi.push_back(::strtof(i->c_str(), NULL));
     }
     return tempi;
+}
+
+
+void TempoMap::check_entry(const Entry & e)
+{
+    if ((e.tempo <= 0 && e.tempi.empty()) ||
+        find_if(e.tempi.begin(), e.tempi.end(), bind2nd(less_equal<float>(), 0.0f)) != e.tempi.end())
+    {
+        throw ParseError("tempo must be greater than zero");
+    }
+    if (e.bars <= 0) {
+        throw ParseError("number of bars must be greater than zero");
+    }
+    if (e.beats <= 0 || e.denom <= 0) {
+        throw ParseError("invalid time signature");
+    }
 }
 
 
@@ -211,7 +229,7 @@ TempoMapPtr TempoMap::new_from_file(const string & filename)
     ifstream file(filename.c_str());
 
     if (!file.is_open()) {
-        throw string(make_string() << "can't open tempomap file: '" << filename << "'");
+        throw Exception(make_string() << "can't open tempomap file: '" << filename << "'");
     }
 
     regex_t re_blank, re;
@@ -235,8 +253,12 @@ TempoMapPtr TempoMap::new_from_file(const string & filename)
             continue;
         }
 
-        // check if this line matches the regex
-        if (regexec(&re, line.c_str(), RE_NMATCHES, match, 0) == 0) {
+        try {
+            // check if this line matches the regex
+            if (regexec(&re, line.c_str(), RE_NMATCHES, match, 0) != 0) {
+                throw ParseError("malformed tempomap entry");
+            }
+
             Entry e;
 
             e.label   = extract_string(line, match[IDX_LABEL]);
@@ -256,11 +278,12 @@ TempoMapPtr TempoMap::new_from_file(const string & filename)
                 e.tempo = 0.0f;
             }
 
+            check_entry(e);
             map->_entries.push_back(e);
         }
-        else
-        {
-            throw ParseError(make_string() << "invalid tempomap entry at line " << lineno << ":" << endl << line);
+        catch (ParseError & e) {
+            throw ParseError(make_string() << e.what() << ":" << endl
+                                << "line " << lineno << ": " << line);
         }
     }
 
@@ -280,8 +303,11 @@ TempoMapPtr TempoMap::new_from_cmdline(const string & line)
     regcomp(&re, regex_cmdline, REG_EXTENDED);
     regfreeer foo(&re);
 
-    if (regexec(&re, line.c_str(), RE_NMATCHES_CMD, match, 0) == 0)
-    {
+    try {
+        if (regexec(&re, line.c_str(), RE_NMATCHES_CMD, match, 0) != 0) {
+            throw ParseError("malformed tempomap string");
+        }
+
         Entry e;
 
         e.label   = "";
@@ -295,11 +321,13 @@ TempoMapPtr TempoMap::new_from_cmdline(const string & line)
         e.pattern = parse_pattern(extract_string(line, match[IDX_PATTERN_CMD]), e.beats);
         e.volume  = 1.0f;
 
+        check_entry(e);
+
         if (is_specified(line, match[IDX_TEMPO2_CMD])) {
             // tempo change...
             e.tempo2 = extract_float(line, match[IDX_TEMPO2_CMD]);
             int accel = extract_int(line, match[IDX_ACCEL_CMD]);
-            if (accel < 1) throw ParseError("accel must be greater than 0");
+            if (accel < 1) throw ParseError("accel must be greater than zero");
             e.bars = accel * (int)fabs(e.tempo2 - e.tempo);
             map->_entries.push_back(e);
 
@@ -313,9 +341,8 @@ TempoMapPtr TempoMap::new_from_cmdline(const string & line)
             map->_entries.push_back(e);
         }
     }
-    else
-    {
-        throw ParseError(make_string() << "invalid tempomap string:" << endl << line);
+    catch (ParseError & e) {
+        throw ParseError(make_string() << e.what() << ":" << endl << line);
     }
 
     return map;

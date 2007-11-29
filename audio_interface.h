@@ -32,6 +32,11 @@ class AudioInterface
     static const int MAX_PLAYING_CHUNKS = 4;
 
   public:
+    struct AudioError : public Exception {
+        AudioError(const std::string & w)
+          : Exception(w) { }
+    };
+
     class ProcessCallback {
       protected:
         ProcessCallback() { }
@@ -92,7 +97,9 @@ class AudioInterface
         float volume;
     };
 
-    boost::array<PlayingChunk, MAX_PLAYING_CHUNKS> _chunks;
+    typedef boost::array<PlayingChunk, MAX_PLAYING_CHUNKS> ChunkArray;
+
+    ChunkArray _chunks;
     int _next_chunk;
 };
 

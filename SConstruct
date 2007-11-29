@@ -7,7 +7,7 @@ version = '0.5'
 env = Environment(
     CCFLAGS = [ '-O2', '-Wall' ],
     CPPDEFINES = [ ('VERSION', '\\"%s\\"' % version) ],
-    ENV = {'PATH' : os.environ['PATH']}
+    ENV = os.environ,
 )
 
 opts = Options('custom.py')

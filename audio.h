@@ -21,4 +21,5 @@ typedef jack_nframes_t nframes_t;
 typedef boost::shared_ptr<class AudioChunk> AudioChunkPtr;
 typedef boost::shared_ptr<const class AudioChunk> AudioChunkConstPtr;
 
+
 #endif // _AUDIO_H

@@ -54,24 +54,24 @@ void Options::print_usage(ostream & out)
         << "  klick [ options ] -j" << endl
         << endl
         << "Options:" << endl
-        <<  "  -f filename       load tempomap from file" << endl
-        <<  "  -j                no tempomap, just follow jack transport" << endl
-        <<  "  -n name           set jack client name" << endl
-        <<  "  -p port,..        jack port(s) to connect to" << endl
-        <<  "  -P                automatically connect to hardware ports" << endl
-        <<  "  -s number         use built-in sounds 1 (sine), 2 (noise) or 3 (bell/click)" << endl
-        <<  "  -S file[,file]    load sounds from file(s)" << endl
-        <<  "  -e                no emphasized beats" << endl
-        <<  "  -E                emphasized beats only" << endl
-        <<  "  -v multiplier     adjust playback volume" << endl
-        <<  "  -w multiplier     adjust playback frequency" << endl
-        <<  "  -t                enable jack transport" << endl
-        <<  "  -T                become transport master (implies -t)" << endl
-        <<  "  -d seconds        delay before starting playback" << endl
-        <<  "  -c bars           pre-roll. use -c 0 for 2 beats" << endl
-        <<  "  -l label          start playback at the given label" << endl
-        <<  "  -x multiplier     multiply tempo by the given factor" << endl
-        <<  "  -h                show this help" << endl
+        << "  -f filename       load tempomap from file" << endl
+        << "  -j                no tempomap, just follow jack transport" << endl
+        << "  -n name           set jack client name" << endl
+        << "  -p port,..        jack port(s) to connect to" << endl
+        << "  -P                automatically connect to hardware ports" << endl
+        << "  -s number         use built-in sounds 1 (sine), 2 (noise) or 3 (bell/click)" << endl
+        << "  -S file[,file]    load sounds from file(s)" << endl
+        << "  -e                no emphasized beats" << endl
+        << "  -E                emphasized beats only" << endl
+        << "  -v multiplier     adjust playback volume" << endl
+        << "  -w multiplier     adjust playback frequency" << endl
+        << "  -t                enable jack transport" << endl
+        << "  -T                become transport master (implies -t)" << endl
+        << "  -d seconds        delay before starting playback" << endl
+        << "  -c bars           pre-roll. use -c 0 for 2 beats" << endl
+        << "  -l label          start playback at the given label" << endl
+        << "  -x multiplier     multiply tempo by the given factor" << endl
+        << "  -h                show this help" << endl
         << endl
         << "Tempomap file format:" << endl
         << "  [label:] bars [meter] tempo[-tempo2] [pattern] [volume]" << endl

@@ -97,7 +97,7 @@ static const char regex_cmdline[] =
     // meter
     "^[[:blank:]]*("REGEX_INT"/"REGEX_INT"[[:blank:]]+)?" \
     // tempo
-    REGEX_FLOAT"(-"REGEX_FLOAT"/"REGEX_INT")?" \
+    REGEX_FLOAT"(-"REGEX_FLOAT"/"REGEX_FLOAT")?" \
     // pattern
     "([[:blank:]]+"REGEX_PATTERN")?[[:blank:]]*$";
 
@@ -326,9 +326,9 @@ TempoMapPtr TempoMap::new_from_cmdline(const string & line)
         if (is_specified(line, match[IDX_TEMPO2_CMD])) {
             // tempo change...
             e.tempo2 = extract_float(line, match[IDX_TEMPO2_CMD]);
-            int accel = extract_int(line, match[IDX_ACCEL_CMD]);
-            if (accel < 1) throw ParseError("accel must be greater than zero");
-            e.bars = accel * (int)fabs(e.tempo2 - e.tempo);
+            float accel = extract_float(line, match[IDX_ACCEL_CMD]);
+            if (accel <= 0.0f) throw ParseError("accel must be greater than zero");
+            e.bars = (int)(accel * fabs(e.tempo2 - e.tempo));
             map->_entries.push_back(e);
 
             // add a second entry, to be played once the "target" tempo is reached

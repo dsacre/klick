@@ -64,7 +64,7 @@ run a sequencer as JACK transport master, and klick -j will play a simple
 metronome pattern in sync with JACK transport.
 
 
-Command line options:
+Command Line Options:
 =====================
 
 -f filename       load tempomap from file
@@ -87,7 +87,7 @@ Command line options:
 -h                show this help
 
 
-Tempo map file format:
+Tempo Map File Format:
 ======================
 
 A tempo map consists of an arbitrary number of lines which will be played
@@ -126,7 +126,7 @@ pattern This can be used to alter the pattern of accented/normal beats.
 volume  Allows you to set a different volume for each part, default is 1.0.
 
 
-Example tempo map:
+Example Tempo Map:
 ==================
 
 intro:    8 120           # play 8 measures at 120 bpm (4/4)

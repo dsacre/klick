@@ -173,8 +173,7 @@ void AudioInterface::play(AudioChunkConstPtr chunk, nframes_t offset, float volu
 
 void AudioInterface::process_mix(sample_t *buffer, nframes_t nframes)
 {
-    for (ChunkArray::iterator i = _chunks.begin(); i != _chunks.end(); ++i)
-    {
+    for (ChunkArray::iterator i = _chunks.begin(); i != _chunks.end(); ++i) {
         if (i->chunk) {
             process_mix_samples(buffer + i->offset,
                                 i->chunk->samples() + i->pos,

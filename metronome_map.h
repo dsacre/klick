@@ -60,14 +60,14 @@ class MetronomeMap
         void add_preroll(int nbars);
 
         // move to frame
-        void locate(nframes_t frame);
+        void locate(nframes_t f);
 
         // distance from previous (current) tick to the next
         float_frames_t dist_to_next() const;
         // frame of next tick
         float_frames_t next_frame() const { return frame() + dist_to_next(); }
         // move position one tick forward
-        void advance();
+        void advance(float_frames_t dist = 0.0);
 
         // get current tick
         const Tick tick() const;

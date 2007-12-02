@@ -223,23 +223,27 @@ void MetronomeMap::Position::add_preroll(int nbars)
 }
 
 
-void MetronomeMap::Position::locate(nframes_t frame)
+void MetronomeMap::Position::locate(nframes_t f)
 {
     reset();
 
-    if (frame == 0) return;
+    if (f == 0) return;
+
+    float_frames_t dist = 0.0;
 
     // this will be very slow for long tempomaps...
     // should be improved some day
-    while ((nframes_t)_frame < frame && !_end) {
-        advance();
+    while (dist = dist_to_next(), frame() + dist <= f && !_end) {
+        advance(dist);
     }
+
+    _init = true;
 }
 
 
 MetronomeMap::float_frames_t MetronomeMap::Position::dist_to_next() const
 {
-    // no valid "next beat"
+    // no valid next tick
     if (_init) return 0.0;
     if (_end) return numeric_limits<float_frames_t>::max();
 
@@ -289,14 +293,17 @@ MetronomeMap::float_frames_t MetronomeMap::Position::dist_to_next() const
 }
 
 
-void MetronomeMap::Position::advance()
+void MetronomeMap::Position::advance(float_frames_t dist)
 {
     if (_init) {
         _init = false;
         return;
     }
 
-    _frame += dist_to_next();
+    if (!dist) {
+        dist = dist_to_next();
+    }
+    _frame += dist;
 
     const TempoMap::Entry & e = (*_tempomap)[_entry];
 

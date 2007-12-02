@@ -64,7 +64,7 @@ void Options::print_usage(ostream & out)
         << "  -e                no emphasized beats" << endl
         << "  -E                emphasized beats only" << endl
         << "  -v multiplier     adjust playback volume" << endl
-        << "  -w multiplier     adjust playback frequency" << endl
+        << "  -w multiplier     adjust playback pitch" << endl
         << "  -t                enable jack transport" << endl
         << "  -T                become transport master (implies -t)" << endl
         << "  -d seconds        delay before starting playback" << endl

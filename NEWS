@@ -1,0 +1,23 @@
+2007-12-02: Version 0.5
+
+ * Additional sound (bell/click).
+ * Added option to auto-connect to hardware output ports.
+ * Various minor fixes and enhancements, several changes under the hood.
+ * Improved documentation.
+
+2007-07-08: Version 0.4
+
+ * JACK transport master support.
+ * JACK transport slave support (running without tempomap).
+ * Added ability to change the pitch of the click sounds.
+ * Volume and tempo multipliers are now given as floats rather than percentage.
+ * Hopefully more bugs fixed than newly introduced.
+
+2007-03-26: Version 0.2
+
+ * Some bugfixes.
+ * Improved documentation.
+
+2007-02-10: Version 0.1
+
+ * Initial release.

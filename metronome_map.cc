@@ -95,8 +95,7 @@ void MetronomeMap::process_callback(sample_t *buffer, nframes_t nframes)
     }
 
     // does a new tick start in this period?
-    if (_current + nframes > _pos.next_frame())
-    {
+    if (_current + nframes > _pos.next_frame()) {
         // move position to next tick. loop just in case two beats are
         // less than one period apart (which we don't really handle)
         do { _pos.advance(); } while (_pos.frame() < _current);
@@ -106,21 +105,6 @@ void MetronomeMap::process_callback(sample_t *buffer, nframes_t nframes)
 
         // start playing the click sample
         play_click(tick.type == TempoMap::BEAT_EMPHASIS, tick.frame - _current, tick.volume);
-
-#if 0
-        AudioChunkConstPtr click;
-        // determine click type
-        if (tick.type == TempoMap::BEAT_EMPHASIS) {
-            click = _click_emphasis;
-        } else if (tick.type == TempoMap::BEAT_NORMAL) {
-            click = _click_normal;
-        }
-
-        if (click) {
-            // start playing the click sample
-            Audio->play(click, tick.frame - _current, tick.volume);
-        }
-#endif
     }
 
     _current += nframes;
@@ -156,9 +140,11 @@ void MetronomeMap::timebase_callback(jack_position_t *p)
     } else {
         p->tick = 0;
     }
-//    if (p->tick == TICKS_PER_BEAT) std::cout << d << " " << _current << " " << _pos.frame() << std::endl;
 
-//    ASSERT(p->tick >= 0 && p->tick < TICKS_PER_BEAT);
+    //////
+    if (p->tick == TICKS_PER_BEAT) std::cout << d << " " << _current << " " << _pos.frame() << std::endl;
+
+    ASSERT(p->tick >= 0 && p->tick < TICKS_PER_BEAT);
     p->ticks_per_beat = TICKS_PER_BEAT;
 
     // NOTE: jack's notion of bpm is different from ours.
@@ -267,13 +253,11 @@ MetronomeMap::float_frames_t MetronomeMap::Position::dist_to_next() const
     const TempoMap::Entry & e = (*_tempomap)[_entry];
     float tempo;
 
-    if (e.tempo != 0.0f && (e.tempo2 == 0.0f || e.tempo2 == e.tempo))
-    {
+    if (e.tempo != 0.0f && (e.tempo2 == 0.0f || e.tempo2 == e.tempo)) {
         // constant tempo
         tempo = e.tempo;
     }
-    else if (e.tempo != 0.0f)
-    {
+    else if (e.tempo != 0.0f) {
         /*
          * the tempo change is linear with regard to _beats_.
          * the following formula works by dividing the "time" between the two reference tempi t1 and t2
@@ -300,8 +284,7 @@ MetronomeMap::float_frames_t MetronomeMap::Position::dist_to_next() const
 
         tempo = (t1 - t2) / (log(t1) - log(t2));
     }
-    else
-    {
+    else {
         // different tempo given for each beat
         tempo = e.tempi[(_bar * e.beats) + _beat];
     }

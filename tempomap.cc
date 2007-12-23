@@ -150,8 +150,7 @@ vector<float> TempoMap::parse_tempi(const string &s, float tempo1, int nbeats_to
 void TempoMap::check_entry(const Entry & e)
 {
     if ((e.tempo <= 0 && e.tempi.empty()) ||
-        find_if(e.tempi.begin(), e.tempi.end(), bind2nd(less_equal<float>(), 0.0f)) != e.tempi.end())
-    {
+        find_if(e.tempi.begin(), e.tempi.end(), bind2nd(less_equal<float>(), 0.0f)) != e.tempi.end()) {
         throw ParseError("tempo must be greater than zero");
     }
     if (e.bars <= 0) {
@@ -243,8 +242,7 @@ TempoMapPtr TempoMap::new_from_file(const string & filename)
     string line;
     int lineno = 0;
 
-    while (!file.eof())
-    {
+    while (!file.eof()) {
         getline(file, line);
         lineno++;
 

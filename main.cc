@@ -27,8 +27,7 @@ static void signal_handler(int sig)
 
 int main(int argc, char *argv[])
 {
-    try
-    {
+    try {
         app = new Klick(argc, argv);
 
         // exit cleanly when terminated
@@ -41,8 +40,7 @@ int main(int argc, char *argv[])
 
         return EXIT_SUCCESS;
     }
-    catch (std::exception & e)
-    {
+    catch (std::exception & e) {
         std::cerr << e.what() << std::endl;
         delete app;
         exit(EXIT_FAILURE);

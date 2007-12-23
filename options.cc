@@ -92,10 +92,8 @@ void Options::parse(int argc, char *argv[])
         exit(EXIT_SUCCESS);
     }
 
-    while ((c = getopt(argc, argv, optstring)) != -1)
-    {
-        switch (c)
-        {
+    while ((c = getopt(argc, argv, optstring)) != -1) {
+        switch (c) {
             case 'f':
                 filename = string(::optarg);
                 break;

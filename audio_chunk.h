@@ -84,8 +84,7 @@ class AudioChunkStatic
 
   public:
     template<size_t N>
-    AudioChunkStatic(T (&samples)[N], nframes_t samplerate, float volume = 1.0f)
-    {
+    AudioChunkStatic(T (&samples)[N], nframes_t samplerate, float volume = 1.0f) {
         _samples = samples;
         _length = sizeof(samples) / sizeof(samples[0]);
         _samplerate = samplerate;

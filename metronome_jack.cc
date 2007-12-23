@@ -16,6 +16,33 @@
 #include <jack/jack.h>
 #include <jack/transport.h>
 
+#if 0
+#include <iostream> //////
+
+void dump_pos(const jack_position_t & pos)
+{
+    std::cout
+        << "frame:" << pos.frame << " "
+        << "bpm:" << pos.beats_per_minute << " "
+        << "bpb:" << pos.beats_per_bar << " "
+        << "tpb:" << pos.ticks_per_beat << " "
+        << "beat:" << pos.beat << " "
+        << "tick:" << pos.tick << " "
+        << std::endl;
+}
+#endif
+
+MetronomeJack::MetronomeJack(AudioChunkConstPtr emphasis, AudioChunkConstPtr normal)
+  : Metronome(emphasis, normal),
+    _last_click_frame(0)
+{
+}
+
+
+MetronomeJack::~MetronomeJack()
+{
+}
+
 
 void MetronomeJack::process_callback(sample_t *buffer, nframes_t nframes)
 {
@@ -30,21 +57,42 @@ void MetronomeJack::process_callback(sample_t *buffer, nframes_t nframes)
         return;
     }
 
+    // if this fails, it should be considered a bug in the timebase master
+    //ASSERT(pos.beat <= pos.beats_per_bar);
+    //ASSERT(pos.tick < pos.ticks_per_beat);
+
     // convert BBT position to a frame number in this period
     double frames_per_beat = Audio->samplerate() * 60.0 / pos.beats_per_minute;
     nframes_t offset = (nframes_t)(frames_per_beat * (1.0 - (pos.tick / pos.ticks_per_beat)));
 
+    // avoid playing the same click twice due to rounding errors
+    if (_last_click_frame && (pos.frame >= _last_click_frame) &&
+        (pos.frame < _last_click_frame + MIN_FRAMES_DIFF)) {
+        //dump_pos(pos);
+        //std::cout << "discarded" << std::endl;
+        return;
+    }
+
     if (offset % (nframes_t)frames_per_beat == 0) {
         // click starts at first frame. pos already refers to this beat
-        bool emphasis = (pos.beat % (int32_t)pos.beats_per_bar == 1);
-        AudioChunkConstPtr click = emphasis ? _click_emphasis : _click_normal;
-        Audio->play(click, 0);
+        bool emphasis = (pos.beat == 1);
+        // deal with faulty timebase masters
+        if ((pos.beat == pos.beats_per_bar + 1) ||
+            (pos.beat == pos.beats_per_bar && pos.tick == pos.ticks_per_beat)) {
+            emphasis = true;
+        }
+        play_click(emphasis, 0);
+        _last_click_frame = pos.frame;
+        //dump_pos(pos);
+        //std::cout << "a: " << emphasis << " (" << offset << ")" << std::endl;
     }
     else if (offset < nframes) {
         // click starts somewhere during this period. since pos is the position at the start
         // of the period, the click played is actually at "pos + 1"
-        bool emphasis = (pos.beat == (int32_t)pos.beats_per_bar);
-        AudioChunkConstPtr click = emphasis ? _click_emphasis : _click_normal;
-        Audio->play(click, offset);
+        bool emphasis = (pos.beat == (int)pos.beats_per_bar);
+        play_click(emphasis, offset);
+        _last_click_frame = pos.frame + offset;
+        //dump_pos(pos);
+        //std::cout << "b: " << emphasis << " " << offset << std::endl;
     }
 }

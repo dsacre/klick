@@ -17,6 +17,7 @@
 #include "tempomap.h"
 
 #include <string>
+#include <vector>
 
 /*
  * plays a click track using a predefined tempomap
@@ -95,6 +96,7 @@ class MetronomeMap
         bool _init, _end;
 
         TempoMapConstPtr _tempomap;
+        std::vector<float_frames_t> _tempomap_frames;
         float _multiplier;
     };
 

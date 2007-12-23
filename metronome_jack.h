@@ -23,15 +23,20 @@ class MetronomeJack
   : public Metronome
 {
   public:
-    MetronomeJack(AudioChunkConstPtr emphasis, AudioChunkConstPtr normal)
-      : Metronome(emphasis, normal)
-    { }
-    virtual ~MetronomeJack() { }
+    MetronomeJack(AudioChunkConstPtr emphasis, AudioChunkConstPtr normal);
+    virtual ~MetronomeJack();
 
-    virtual bool running() const { return true; }
+    virtual bool running() const {
+        return true;
+    }
 
   protected:
+    static const nframes_t MIN_FRAMES_DIFF = 64;
+
     virtual void process_callback(sample_t *, nframes_t);
+
+  private:
+    nframes_t _last_click_frame;
 };
 
 

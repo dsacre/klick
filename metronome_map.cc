@@ -102,6 +102,12 @@ void MetronomeMap::process_callback(sample_t *buffer, nframes_t nframes)
         do { _pos.advance(); } while (_pos.frame() < _current);
         Tick tick = _pos.tick();
 
+        if (tick.type == TempoMap::BEAT_SILENT) return;
+
+        // start playing the click sample
+        play_click(tick.type == TempoMap::BEAT_EMPHASIS, tick.frame - _current, tick.volume);
+
+#if 0
         AudioChunkConstPtr click;
         // determine click type
         if (tick.type == TempoMap::BEAT_EMPHASIS) {
@@ -114,6 +120,7 @@ void MetronomeMap::process_callback(sample_t *buffer, nframes_t nframes)
             // start playing the click sample
             Audio->play(click, tick.frame - _current, tick.volume);
         }
+#endif
     }
 
     _current += nframes;
@@ -145,10 +152,13 @@ void MetronomeMap::timebase_callback(jack_position_t *p)
     float_frames_t d = _pos.dist_to_next();
 
     if (d) {
-        p->tick = nframes_t(float_frames_t(_current - _pos.frame()) * TICKS_PER_BEAT / d);
+        p->tick = (nframes_t)(((float_frames_t)_current - _pos.frame()) * TICKS_PER_BEAT / d);
     } else {
         p->tick = 0;
     }
+//    if (p->tick == TICKS_PER_BEAT) std::cout << d << " " << _current << " " << _pos.frame() << std::endl;
+
+//    ASSERT(p->tick >= 0 && p->tick < TICKS_PER_BEAT);
     p->ticks_per_beat = TICKS_PER_BEAT;
 
     // NOTE: jack's notion of bpm is different from ours.
@@ -175,6 +185,13 @@ MetronomeMap::Position::Position(TempoMapConstPtr tempomap, float multiplier)
   : _tempomap(tempomap),
     _multiplier(multiplier)
 {
+/*
+    float_frames_t f = 0.0;
+    for (size_t n = 0; n < _tempomap->size(); n++) {
+        _tempomap_frames[n] = f;
+
+    }
+*/
     reset();
 }
 

@@ -35,6 +35,8 @@ class Metronome
   protected:
     virtual void process_callback(sample_t *, nframes_t) = 0;
 
+    void play_click(bool emphasis, nframes_t offset, float volume = 1.0f);
+
     AudioChunkConstPtr _click_emphasis;
     AudioChunkConstPtr _click_normal;
 };

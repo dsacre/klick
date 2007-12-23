@@ -35,3 +35,11 @@ void Metronome::start()
 {
     Audio->set_process_callback(this, true);
 }
+
+
+void Metronome::play_click(bool emphasis, nframes_t offset, float volume)
+{
+    AudioChunkConstPtr click = emphasis ? _click_emphasis : _click_normal;
+
+    Audio->play(click, offset, volume);
+}

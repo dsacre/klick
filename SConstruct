@@ -19,6 +19,7 @@ opts.Update(env)
 
 if env['DEBUG'] == 1:
     env['CPPDEFINES'] += [ '_DEBUG' ]
+    env['CCFLAGS'] = [ '-g', '-Wall', '-Werror' ]
 
 env.ParseConfig(
     'pkg-config --cflags --libs jack samplerate sndfile'

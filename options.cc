@@ -10,6 +10,7 @@
  */
 
 #include "options.h"
+#include "main.h"
 
 #include <string>
 #include <iostream>
@@ -90,7 +91,7 @@ void Options::parse(int argc, char *argv[])
         // run with no arguments, print usage
         print_version();
         print_usage();
-        exit(EXIT_SUCCESS);
+        throw Exit(EXIT_SUCCESS);
     }
 
     while ((c = getopt(argc, argv, optstring)) != -1) {
@@ -200,12 +201,12 @@ void Options::parse(int argc, char *argv[])
             case 'h':
                 print_version();
                 print_usage();
-                exit(EXIT_SUCCESS);
+                throw Exit(EXIT_SUCCESS);
                 break;
 
             default:
                 print_usage(cerr);
-                exit(EXIT_FAILURE);
+                throw Exit(EXIT_FAILURE);
                 break;
         }
     }

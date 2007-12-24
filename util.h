@@ -115,11 +115,11 @@ int count_iter(const T &t) {
 
 class Exception : public std::exception {
   public:
-    Exception(const std::string & w) : _w(w) { }
+    Exception(const std::string & what) : _what(what) { }
     virtual ~Exception() throw () { }
-    virtual const char *what() const throw() { return _w.c_str(); }
+    virtual const char *what() const throw() { return _what.c_str(); }
   protected:
-    std::string _w;
+    std::string _what;
 };
 
 

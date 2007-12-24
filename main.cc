@@ -9,6 +9,7 @@
  * (at your option) any later version.
  */
 
+#include "main.h"
 #include "klick.h"
 
 #include <string>
@@ -36,9 +37,13 @@ int main(int argc, char *argv[])
         signal(SIGHUP,  signal_handler);
 
         app->run();
-        delete app;
 
+        delete app;
         return EXIT_SUCCESS;
+    }
+    catch (Exit & e) {
+        delete app;
+        return e.status();
     }
     catch (std::exception & e) {
         std::cerr << e.what() << std::endl;

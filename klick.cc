@@ -20,6 +20,7 @@
 
 #include <string>
 #include <iostream>
+#include <unistd.h>
 
 #include "util.h"
 

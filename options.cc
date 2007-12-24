@@ -14,6 +14,7 @@
 #include <string>
 #include <iostream>
 #include <boost/tokenizer.hpp>
+#include <cstdlib>
 #include <unistd.h>
 
 #include "util.h"

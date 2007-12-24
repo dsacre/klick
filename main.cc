@@ -43,6 +43,6 @@ int main(int argc, char *argv[])
     catch (std::exception & e) {
         std::cerr << e.what() << std::endl;
         delete app;
-        exit(EXIT_FAILURE);
+        return EXIT_FAILURE;
     }
 }

@@ -55,14 +55,14 @@ class Options
     bool verbose;
 
   private:
-    struct CmdlineError : public Exception {
+    struct CmdlineError : public das::exception {
         CmdlineError(const std::string & w)
-          : Exception(w) { }
+          : das::exception(w) { }
     };
 
-    struct InvalidArgument : public Exception {
+    struct InvalidArgument : public das::exception {
         InvalidArgument(const std::string & w)
-          : Exception("invalid argument (" + w + ")") { }
+          : das::exception("invalid argument (" + w + ")") { }
     };
 
     void print_version(std::ostream & = std::cout);

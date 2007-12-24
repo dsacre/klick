@@ -29,6 +29,9 @@
 #endif
 
 
+namespace das {
+
+
 template <typename T, T *& pp>
 class global_object
   : boost::noncopyable
@@ -113,14 +116,16 @@ int count_iter(const T &t) {
 }
 
 
-class Exception : public std::exception {
+class exception : public std::exception {
   public:
-    Exception(const std::string & what) : _what(what) { }
-    virtual ~Exception() throw () { }
+    exception(const std::string & what) : _what(what) { }
+    virtual ~exception() throw () { }
     virtual const char *what() const throw() { return _what.c_str(); }
   protected:
     std::string _what;
 };
 
+
+} // namespace das
 
 #endif // _UTIL_H

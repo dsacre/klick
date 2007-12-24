@@ -25,6 +25,7 @@
 #include "util.h"
 
 using namespace std;
+using namespace das;
 
 
 Klick::Klick(int argc, char *argv[])
@@ -96,7 +97,7 @@ void Klick::load_tempomap()
         if (_map->entry(_options->start_label)) {
             logv << "starting at label: " << _options->start_label << endl;
         } else {
-            throw Exception(make_string() << "label '" << _options->start_label << "' not found in tempomap");
+            throw das::exception(make_string() << "label '" << _options->start_label << "' not found in tempomap");
         }
     }
 }
@@ -181,7 +182,7 @@ void Klick::run()
             logv << "end of tempomap reached" << endl;
             break;
         } else if (_audio->is_shutdown()) {
-            throw Exception("shut down by the jack server");
+            throw das::exception("shut down by the jack server");
         }
     }
 }

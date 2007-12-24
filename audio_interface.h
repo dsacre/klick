@@ -27,14 +27,14 @@ extern class AudioInterface *Audio;
 
 
 class AudioInterface
-  : public global_object<AudioInterface, ::Audio>
+  : public das::global_object<AudioInterface, ::Audio>
 {
     static const int MAX_PLAYING_CHUNKS = 4;
 
   public:
-    struct AudioError : public Exception {
+    struct AudioError : public das::exception {
         AudioError(const std::string & w)
-          : Exception(w) { }
+          : das::exception(w) { }
     };
 
     class ProcessCallback {

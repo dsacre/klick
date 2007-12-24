@@ -23,6 +23,7 @@
 #include "util.h"
 
 using namespace std;
+using namespace das;
 using boost::shared_ptr;
 typedef boost::char_separator<char> char_sep;
 typedef boost::tokenizer<char_sep> tokenizer;
@@ -228,7 +229,7 @@ TempoMapPtr TempoMap::new_from_file(const string & filename)
     ifstream file(filename.c_str());
 
     if (!file.is_open()) {
-        throw Exception(make_string() << "can't open tempomap file: '" << filename << "'");
+        throw das::exception(make_string() << "can't open tempomap file: '" << filename << "'");
     }
 
     regex_t re_blank, re;

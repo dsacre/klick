@@ -16,6 +16,9 @@
 
 using namespace std;
 
+
+namespace das {
+
 logstream logv(std::cout);
 
 
@@ -31,3 +34,6 @@ string indent(const string & s, int n) {
     }
     return os.str();
 }
+
+
+} // namespace das

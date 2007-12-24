@@ -16,6 +16,7 @@
 #include <cerrno>
 
 using namespace std;
+using namespace das;
 using boost::array;
 
 AudioInterface *Audio = NULL;

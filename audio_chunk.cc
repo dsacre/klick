@@ -22,6 +22,7 @@
 #include "util.h"
 
 using namespace std;
+using namespace das;
 
 
 AudioChunk::AudioChunk(const string & filename, nframes_t samplerate)
@@ -30,7 +31,7 @@ AudioChunk::AudioChunk(const string & filename, nframes_t samplerate)
     SNDFILE *f;
 
     if ((f = sf_open(filename.c_str(), SFM_READ, &sfinfo)) == NULL) {
-        throw Exception(make_string() << "failed to open audio file '" << filename << "'");
+        throw das::exception(make_string() << "failed to open audio file '" << filename << "'");
     }
 
     sample_t *buf = (sample_t*)calloc(sfinfo.frames * sfinfo.channels, sizeof(sample_t));
@@ -112,7 +113,7 @@ void AudioChunk::resample(const sample_t *samples_in,
 
     if ((error = src_simple(&src_data, SRC_SINC_BEST_QUALITY, 1)) != 0) {
         free(src_data.data_out);
-        throw Exception(make_string() << "error converting samplerate: " << src_strerror(error));
+        throw das::exception(make_string() << "error converting samplerate: " << src_strerror(error));
     }
 
     samples_out = src_data.data_out;

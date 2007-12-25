@@ -17,7 +17,8 @@
 #include <jack/transport.h>
 
 
-MetronomeJack::MetronomeJack(AudioChunkConstPtr emphasis, AudioChunkConstPtr normal)
+MetronomeJack::MetronomeJack(AudioChunkConstPtr emphasis,
+                             AudioChunkConstPtr normal)
   : Metronome(emphasis, normal),
     _last_click_frame(0)
 {

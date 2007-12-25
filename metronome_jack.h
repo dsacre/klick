@@ -23,7 +23,8 @@ class MetronomeJack
   : public Metronome
 {
   public:
-    MetronomeJack(AudioChunkConstPtr emphasis, AudioChunkConstPtr normal);
+    MetronomeJack(AudioChunkConstPtr emphasis,
+                  AudioChunkConstPtr normal);
     virtual ~MetronomeJack();
 
     virtual bool running() const {

@@ -14,7 +14,8 @@
 #include "util.h"
 
 
-Metronome::Metronome(AudioChunkConstPtr emphasis, AudioChunkConstPtr normal)
+Metronome::Metronome(AudioChunkConstPtr emphasis,
+                     AudioChunkConstPtr normal)
   : _click_emphasis(emphasis),
     _click_normal(normal)
 {

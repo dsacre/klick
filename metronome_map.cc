@@ -24,10 +24,16 @@
 using namespace std;
 
 
-MetronomeMap::MetronomeMap(TempoMapConstPtr tempomap,
-        float tempo_multiplier, bool transport, bool master,
-        int preroll, const string & start_label,
-        AudioChunkConstPtr emphasis, AudioChunkConstPtr normal)
+MetronomeMap::MetronomeMap(
+    TempoMapConstPtr tempomap,
+    float tempo_multiplier,
+    bool transport,
+    bool master,
+    int preroll,
+    const string & start_label,
+    AudioChunkConstPtr emphasis,
+    AudioChunkConstPtr normal
+)
   : Metronome(emphasis, normal),
     _current(0),
     _pos(tempomap, tempo_multiplier),

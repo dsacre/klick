@@ -28,11 +28,16 @@ class MetronomeMap
     protected AudioInterface::TimebaseCallback
 {
   public:
-    MetronomeMap(TempoMapConstPtr tempomap,
-                 float tempo_multiplier,
-                 bool transport, bool master,
-                 int preroll, const std::string & start_label,
-                 AudioChunkConstPtr emphasis, AudioChunkConstPtr normal);
+    MetronomeMap(
+        TempoMapConstPtr tempomap,
+        float tempo_multiplier,
+        bool transport,
+        bool master,
+        int preroll,
+        const std::string & start_label,
+        AudioChunkConstPtr emphasis,
+        AudioChunkConstPtr normal
+    );
     virtual ~MetronomeMap();
 
     void start();

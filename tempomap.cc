@@ -327,7 +327,7 @@ TempoMapPtr TempoMap::new_from_cmdline(const string & line)
             e.tempo2 = extract_float(line, match[IDX_TEMPO2_CMD]);
             float accel = extract_float(line, match[IDX_ACCEL_CMD]);
             if (accel <= 0.0f) throw ParseError("accel must be greater than zero");
-            e.bars = (int)(accel * fabs(e.tempo2 - e.tempo));
+            e.bars = (int)ceilf(accel * fabs(e.tempo2 - e.tempo));
             map->_entries.push_back(e);
 
             // add a second entry, to be played once the "target" tempo is reached

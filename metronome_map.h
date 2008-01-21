@@ -95,13 +95,18 @@ class MetronomeMap
         // reset, locate at start of tempomap
         void reset();
 
+        // calculate length of entry or beat(s)
+        float_frames_t entry_frames(const TempoMap::Entry & e,
+            int bar_start = 0, int beat_start = 0,
+            int bar_end = -1, int beat_end = -1) const;
+
         float_frames_t _frame;      // frame position of current tick
         int _entry, _bar, _beat;    // current position in tempomap
         int _bar_total;             // current bar number (including previous entries)
         bool _init, _end;
 
         TempoMapConstPtr _tempomap;
-        std::vector<float_frames_t> _tempomap_frames;
+        std::vector<float_frames_t> _start_frames;
         float _multiplier;
     };
 

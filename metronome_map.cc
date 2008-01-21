@@ -177,13 +177,15 @@ MetronomeMap::Position::Position(TempoMapConstPtr tempomap, float multiplier)
   : _tempomap(tempomap),
     _multiplier(multiplier)
 {
-/*
     float_frames_t f = 0.0;
-    for (size_t n = 0; n < _tempomap->size(); n++) {
-        _tempomap_frames[n] = f;
 
+    // calculate first frame of each tempomap entry
+    for (TempoMap::Entries::const_iterator i = tempomap->entries().begin(); i != tempomap->entries().end(); ++i) {
+        _start_frames.push_back(f);
+        //cout << f << endl;
+        f += entry_frames(*i);
     }
-*/
+
     reset();
 }
 
@@ -250,6 +252,50 @@ void MetronomeMap::Position::locate(nframes_t f)
 }
 
 
+MetronomeMap::float_frames_t MetronomeMap::Position::entry_frames(
+    const TempoMap::Entry & e,
+    int bar_start, int beat_start,
+    int bar_end, int beat_end) const
+{
+    ASSERT(!(bar_start == bar_end && beat_start == beat_end));
+
+    if (bar_end == -1) {
+        // whole entry
+        bar_end = e.bars;
+        beat_end = 0;
+    }
+
+    int nbeats = (bar_end - bar_start) * e.beats + (beat_end - beat_start);
+    float secs = 0.0f;
+
+    // constant tempo
+    if (e.tempo != 0.0f && e.tempo2 == 0.0f) {
+        secs = nbeats * 240.0 / (e.tempo * e.denom);
+    }
+    // gradual tempo change
+    else if (e.tempo != 0.0f && e.tempo2 != 0.0f) {
+        float tdiff = e.tempo2 - e.tempo;
+        // use doubles, otherwise the logarithms would lose some precision
+        double t1 = (double)e.tempo + tdiff * (double(bar_start * e.beats) + beat_start) / (e.bars * e.beats);
+        double t2 = (double)e.tempo + tdiff * (double(bar_end   * e.beats) + beat_end  ) / (e.bars * e.beats);
+
+        float avg_tempo = (t1 - t2) / (log(t1) - log(t2));
+        secs = (nbeats * 240.0) / (avg_tempo * e.denom);
+    }
+    // different tempo for each beat
+    else if (e.tempo == 0.0f) {
+        vector<float>::const_iterator begin = e.tempi.begin() + bar_start * e.beats + beat_start;
+        vector<float>::const_iterator end   = e.tempi.begin() + bar_end   * e.beats + beat_end;
+        secs = 0.0f;
+        for (vector<float>::const_iterator i = begin; i != end; ++i) {
+            secs += 240.0 / (*i * e.denom);
+        }
+    }
+
+    return secs * (float_frames_t)Audio->samplerate() / _multiplier;
+}
+
+
 MetronomeMap::float_frames_t MetronomeMap::Position::dist_to_next() const
 {
     // no valid next tick
@@ -257,45 +303,8 @@ MetronomeMap::float_frames_t MetronomeMap::Position::dist_to_next() const
     if (_end) return numeric_limits<float_frames_t>::max();
 
     const TempoMap::Entry & e = (*_tempomap)[_entry];
-    float tempo;
 
-    if (e.tempo != 0.0f && (e.tempo2 == 0.0f || e.tempo2 == e.tempo)) {
-        // constant tempo
-        tempo = e.tempo;
-    }
-    else if (e.tempo != 0.0f) {
-        /*
-         * the tempo change is linear with regard to _beats_.
-         * the following formula works by dividing the "time" between the two reference tempi t1 and t2
-         * into n slices with equal length (in beats, not time!), with tempo linearly increasing
-         * between them.
-         * the distance between the start and end point of the tempo change doesn't matter here!
-         *
-         * ...and thanks to Derive(TM) being a lot smarter than me, i don't actually have to code
-         * all this in C++ ;)
-         *
-         *   1            / n-1 /            1             \     \
-         * ----- =  lim   |  Σ  | ------------------------ | / n |
-         * tempo   n->inf \ x=0 \  t1 + (x/n) * (t2 - t1)  /     /
-         *
-         * NOTE: for slow tempo changes, the tempo calculated by this formula is virtually
-         * indistinguishable from a simple (t1 + t2) / 2.
-         * but it's really not the same thing...
-         */
-
-        float tdiff = e.tempo2 - e.tempo;
-        // use doubles, otherwise the logarithms would lose some precision
-        double t1 = e.tempo + tdiff * (double(_bar * e.beats) + _beat    ) / (e.bars * e.beats);
-        double t2 = e.tempo + tdiff * (double(_bar * e.beats) + _beat + 1) / (e.bars * e.beats);
-
-        tempo = (t1 - t2) / (log(t1) - log(t2));
-    }
-    else {
-        // different tempo given for each beat
-        tempo = e.tempi[(_bar * e.beats) + _beat];
-    }
-
-    return ((float_frames_t)Audio->samplerate() * 240.0) / (e.denom * tempo * _multiplier);
+    return entry_frames(e, _bar, _beat, _bar, _beat + 1);
 }
 
 

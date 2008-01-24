@@ -109,6 +109,8 @@ void MetronomeMap::process_callback(sample_t *buffer, nframes_t nframes)
 
         if (tick.type == TempoMap::BEAT_SILENT) return;
 
+        //cout << tick.frame << ": " << (tick.type == TempoMap::BEAT_EMPHASIS) << endl;
+
         // start playing the click sample
         play_click(tick.type == TempoMap::BEAT_EMPHASIS, tick.frame - _current, tick.volume);
     }
@@ -147,17 +149,24 @@ void MetronomeMap::timebase_callback(jack_position_t *p)
         p->tick = 0;
     }
 
-    //////
-    if (p->tick == TICKS_PER_BEAT) std::cout << d << " " << _current << " " << _pos.frame() << std::endl;
+    if (p->tick >= TICKS_PER_BEAT) {
+        // already at the next beat, but _pos.advance() won't be called until the next process cycle
+        p->tick -= (int32_t)TICKS_PER_BEAT;
+        p->beat++;
+        if (p->beat > _pos.map_entry().beats) {
+            p->bar++;
+        }
+    }
 
-    ASSERT(p->tick >= 0 && p->tick < TICKS_PER_BEAT);
+    //cout << p->frame << ": " << p->bar << "|" << p->beat << "|" << p->tick << endl;
+
     p->ticks_per_beat = TICKS_PER_BEAT;
 
     // NOTE: jack's notion of bpm is different from ours.
     // all tempo values are converted from "quarters per minute"
     // to the actual beats per minute used by jack
 
-    if (!_pos.map_entry().tempo2 || d == 0.0) {
+    if (_pos.map_entry().tempo && (!_pos.map_entry().tempo2 || d == 0.0)) {
         // constant tempo, and/or start of tempomap
         p->beats_per_minute = _pos.map_entry().tempo * _pos.map_entry().denom / 4.0;
     }
@@ -165,9 +174,14 @@ void MetronomeMap::timebase_callback(jack_position_t *p)
         // end of tempomap, last entry had tempo change, so use tempo2
         p->beats_per_minute = _pos.map_entry().tempo2 * _pos.map_entry().denom / 4.0;
     }
-    else {
+    else if (_pos.map_entry().tempo2) {
         // tempo change, use average tempo for this beat
         p->beats_per_minute = (double)Audio->samplerate() * 60.0 / d;
+    }
+    else if (!_pos.map_entry().tempo) {
+        // tempo per beat
+        size_t n = _pos.bar() * _pos.map_entry().beats + _pos.beat();
+        p->beats_per_minute = _pos.map_entry().tempi[n];
     }
 }
 
@@ -248,7 +262,10 @@ void MetronomeMap::Position::locate(nframes_t f)
         advance(dist);
     }
 
-    _init = true;
+    // make sure we don't miss the first beat if it starts at f
+    if (frame() == f) {
+        _init = true;
+    }
 }
 
 

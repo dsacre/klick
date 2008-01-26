@@ -19,7 +19,8 @@ opts.Update(env)
 
 if env['DEBUG'] == 1:
     env['CPPDEFINES'] += [ '_DEBUG' ]
-    env['CCFLAGS'] = [ '-g', '-Wall', '-Werror' ]
+    env['CCFLAGS'] = [ '-g', '-Wall' ]
+    #env['CCFLAGS'] += [ '-Werror' ]
 
 env.ParseConfig(
     'pkg-config --cflags --libs jack samplerate sndfile'
@@ -35,6 +36,7 @@ env.Program('klick', [
     'metronome.cc',
     'metronome_map.cc',
     'metronome_jack.cc',
+    'position.cc',
     'click_data.cc',
     'util.cc'
 ])

@@ -37,7 +37,7 @@ class TempoMap
 
     struct Entry {
         std::string label;
-        int bars;
+        int bars;                       // -1 means play ad infinitum
         float tempo;                    // zero if tempo is given for each beat
         float tempo2;                   // zero if tempo is constant
         std::vector<float> tempi;       // empty unless tempo == 0.0

@@ -140,7 +140,7 @@ vector<float> TempoMap::parse_tempi(const string &s, float tempo1, int nbeats_to
     if (count_iter(tok) != nbeats_total - 1) {
         throw ParseError("number of tempo values doesn't match number of beats");
     }
-    /*if (tempo1)*/ tempi.push_back(tempo1);
+    tempi.push_back(tempo1);
     for (tokenizer::iterator i = tok.begin(); i != tok.end(); ++i) {
         tempi.push_back(::strtof(i->c_str(), NULL));
     }
@@ -154,7 +154,7 @@ void TempoMap::check_entry(const Entry & e)
         find_if(e.tempi.begin(), e.tempi.end(), bind2nd(less_equal<float>(), 0.0f)) != e.tempi.end()) {
         throw ParseError("tempo must be greater than zero");
     }
-    if (e.bars <= 0) {
+    if (e.bars <= 0 && e.bars != -1) {
         throw ParseError("number of bars must be greater than zero");
     }
     if (e.beats <= 0 || e.denom <= 0) {
@@ -173,7 +173,7 @@ string TempoMap::dump() const
         // label
         os << (i->label.length() ? i->label : "-") << ": ";
         // bars
-        if (i->bars != INT_MAX) os << i->bars;
+        if (i->bars != -1) os << i->bars;
         else os << "*";
         os << " ";
         // meter
@@ -310,7 +310,7 @@ TempoMapPtr TempoMap::new_from_cmdline(const string & line)
         Entry e;
 
         e.label   = "";
-        e.bars    = INT_MAX;
+        e.bars    = -1;
         e.beats   = is_specified(line, match[IDX_BEATS_CMD]) ?
                         extract_int(line, match[IDX_BEATS_CMD]) : 4;
         e.denom   = is_specified(line, match[IDX_DENOM_CMD]) ?
@@ -331,7 +331,7 @@ TempoMapPtr TempoMap::new_from_cmdline(const string & line)
             map->_entries.push_back(e);
 
             // add a second entry, to be played once the "target" tempo is reached
-            e.bars = INT_MAX;
+            e.bars = -1;
             e.tempo = e.tempo2;
             e.tempo2 = 0.0f;
             map->_entries.push_back(e);

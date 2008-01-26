@@ -12,12 +12,11 @@
 #ifndef _METRONOME_MAP_H
 #define _METRONOME_MAP_H
 
-#include "audio.h"
 #include "metronome.h"
 #include "tempomap.h"
+#include "position.h"
 
 #include <string>
-#include <vector>
 
 /*
  * plays a click track using a predefined tempomap
@@ -45,70 +44,6 @@ class MetronomeMap
 
   protected:
     static const double TICKS_PER_BEAT = 1920.0;
-
-    typedef double float_frames_t;
-
-    struct Tick {
-        nframes_t frame;
-        TempoMap::BeatType type;
-        float volume;
-    };
-
-    /*
-     * keeps track of the current position in the tempomap
-     */
-    class Position
-    {
-      public:
-        Position(TempoMapConstPtr tempomap, float multiplier);
-
-        void set_start_label(const std::string & start_label);
-        void add_preroll(int nbars);
-
-        // move to frame
-        void locate(nframes_t f);
-
-        // distance from previous (current) tick to the next
-        float_frames_t dist_to_next() const;
-        // frame of next tick
-        float_frames_t next_frame() const { return frame() + dist_to_next(); }
-        // move position one tick forward
-        void advance(float_frames_t dist = 0.0);
-
-        // get current tick
-        const Tick tick() const;
-        // end of tempomap reached?
-        bool end() const { return _end; }
-
-        float_frames_t frame() const { return _frame; }
-        int entry() const { return _entry; }
-        int bar() const { return _bar; }
-        int beat() const { return _beat; }
-        int bar_total() const { return _bar_total; }
-
-        // current tempomap entry
-        const TempoMap::Entry & map_entry() const {
-            return (*_tempomap)[_entry];
-        }
-
-      private:
-        // reset, locate at start of tempomap
-        void reset();
-
-        // calculate length of entry or beat(s)
-        float_frames_t entry_frames(const TempoMap::Entry & e,
-            int bar_start = 0, int beat_start = 0,
-            int bar_end = -1, int beat_end = -1) const;
-
-        float_frames_t _frame;      // frame position of current tick
-        int _entry, _bar, _beat;    // current position in tempomap
-        int _bar_total;             // current bar number (including previous entries)
-        bool _init, _end;
-
-        TempoMapConstPtr _tempomap;
-        std::vector<float_frames_t> _start_frames;
-        float _multiplier;
-    };
 
     virtual void process_callback(sample_t *, nframes_t);
     virtual void timebase_callback(jack_position_t *);

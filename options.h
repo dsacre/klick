@@ -38,9 +38,12 @@ class Options
     std::string click_filename_emphasis;
     std::string click_filename_normal;
 
-    enum { EMPHASIS_NORMAL,
-           EMPHASIS_NONE,
-           EMPHASIS_ALL } emphasis;
+    enum {
+        EMPHASIS_NORMAL,
+        EMPHASIS_NONE,
+        EMPHASIS_ALL
+    } emphasis;
+
     float volume;
     float frequency;
     bool transport_enabled;

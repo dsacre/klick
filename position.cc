@@ -20,6 +20,9 @@
 #include <boost/lambda/lambda.hpp>
 #include <cmath>
 
+#include <sys/time.h> /////////////
+#include <time.h>
+
 using namespace std;
 using namespace boost::lambda;
 
@@ -35,10 +38,11 @@ Position::Position(TempoMapConstPtr tempomap, float multiplier)
     for (TempoMap::Entries::const_iterator i = tempomap->entries().begin(); i != tempomap->entries().end(); ++i) {
         _start_frames.push_back(f);
         _start_bars.push_back(b);
+        cout << f << " ";
         f += frame_dist(*i);
         b += i->bars;
     }
-
+    cout << endl;
     // add end of tempomap
     _start_frames.push_back(f);
     _start_bars.push_back(b);
@@ -93,7 +97,11 @@ void Position::add_preroll(int nbars)
 
 void Position::locate(nframes_t f)
 {
-#if 0
+//#if 0
+
+    timeval tv1, tv2, tv3, tv4;
+    gettimeofday(&tv1, NULL);
+
     reset();
 
     if (f == 0) return;
@@ -111,19 +119,23 @@ void Position::locate(nframes_t f)
         _init = true;
     }
 
+    gettimeofday(&tv2, NULL);
+
     float_frames_t xframe = _frame;
     int xentry = _entry, xbar = _bar, xbeat = _beat;
     int xbar_total = _bar_total;
     bool xinit = _init, xend = _end;
 
-#endif
+//#endif
+
+    gettimeofday(&tv3, NULL);
 
     reset();
 
     if (f == 0) return;
 
     _entry = distance(_start_frames.begin(),
-                      lower_bound(_start_frames.begin(), _start_frames.end(), f) - 1);
+                      upper_bound(_start_frames.begin(), _start_frames.end(), f) - 1);
 
     if (_entry == (int)_tempomap->size()) {
         _end = true;
@@ -146,14 +158,43 @@ void Position::locate(nframes_t f)
         _frame = _start_frames[_entry] + frame_dist(e, 0, 0, _bar, _beat);
         _bar_total = _start_bars[_entry] + _bar;
     }
-/*
     // gradual tempo change
     else if (e.tempo && e.tempo2) {
-        FAIL();
+        float_frames_t v = f - _start_frames[_entry];
+        int nbeats = 0;
+
+        int low = 0;
+        int high = e.bars * e.beats;
+
+        while(low <= high) {
+            int mid = (low + high) / 2;
+            float_frames_t d = frame_dist(e, 0, 0, 0, mid);
+            //cout << "d:" << d << endl;
+            if (d > v) {
+                //cout << "A" << endl;
+                high = mid - 1;
+            } else if (d <= v) {
+                float_frames_t dd = frame_dist(e, 0, 0, 0, mid + 1);
+                //cout << "dd:" << dd << endl;
+                if (dd < v) {
+                    //cout << "B" << endl;
+                    low = mid + 1;
+                } else {
+                    //cout << "nbeats = " << mid << endl;
+                    nbeats = mid;
+                    break;
+                }
+            }
+        }
+
+        _bar  = nbeats / e.beats;
+        _beat = nbeats % e.beats;
+
+        _frame = _start_frames[_entry] + frame_dist(e, 0, 0, _bar, _beat);
+        _bar_total = _start_bars[_entry] + _bar;
     }
     // tempo per beat
-*/
-    else /*if (!e.tempo)*/ {
+    else if (!e.tempo) {
         _bar = _beat = 0;
         _frame = _start_frames[_entry];
         _bar_total = _start_bars[_entry];
@@ -169,15 +210,22 @@ void Position::locate(nframes_t f)
 
     //cout << _frame << ": " << _bar << "|" << _beat << endl;
 
-#if 0
-    ASSERT(_frame == xframe);
+    gettimeofday(&tv4, NULL);
+
+//#if 0
+//    if (_entry != xentry) cout << _entry << " " << xentry << endl;
+//    if (_frame != xframe) cout << _frame << " " << xframe << endl;
+    ASSERT(abs(_frame - xframe) < 0.0000001);
     ASSERT(_entry == xentry);
     ASSERT(_bar == xbar);
     ASSERT(_beat == xbeat);
     ASSERT(_bar_total == xbar_total);
     ASSERT(_init == xinit);
     ASSERT(_end == xend);
-#endif
+//#endif
+
+    cout << "before: " << (tv2.tv_usec - tv1.tv_usec) << endl;
+    cout << "after:  " << (tv4.tv_usec - tv3.tv_usec) << endl;
 }
 
 
@@ -214,8 +262,8 @@ Position::float_frames_t Position::frame_dist(
     else if (e.tempo && e.tempo2) {
         double tdiff = e.tempo2 - e.tempo;
 
-        double t1 = (double)e.tempo + tdiff * (double(bar_start * e.beats) + beat_start) / (e.bars * e.beats);
-        double t2 = (double)e.tempo + tdiff * (double(bar_end   * e.beats) + beat_end  ) / (e.bars * e.beats);
+        double t1 = (double)e.tempo + tdiff * ((double)(bar_start * e.beats) + beat_start) / (e.bars * e.beats);
+        double t2 = (double)e.tempo + tdiff * ((double)(bar_end   * e.beats) + beat_end  ) / (e.bars * e.beats);
 
         double avg_tempo = (t1 - t2) / (log(t1) - log(t2));
         secs = (nbeats * 240.0) / (avg_tempo * e.denom);

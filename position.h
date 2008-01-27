@@ -41,13 +41,13 @@ class Position
 
     // move to frame
     void locate(nframes_t f);
+    // move position one tick forward
+    void advance();
 
     // distance from previous (current) tick to the next
     float_frames_t dist_to_next() const;
     // frame of next tick
     float_frames_t next_frame() const { return frame() + dist_to_next(); }
-    // move position one tick forward
-    void advance();
 
     // get current tick
     const Tick tick() const;
@@ -70,9 +70,7 @@ class Position
     void reset();
 
     // calculate length of entry or beat(s)
-    float_frames_t frame_dist(const TempoMap::Entry & e,
-        int bar_start = 0, int beat_start = 0,
-        int bar_end = -2 /* last bar */, int beat_end = 0) const;
+    float_frames_t frame_dist(const TempoMap::Entry & e, int start, int end) const;
 
     float_frames_t _frame;      // frame position of current tick
     int _entry, _bar, _beat;    // current position in tempomap

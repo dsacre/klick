@@ -1,3 +1,11 @@
+2008-01-27: Version 0.6
+
+ * Fixed a segfault when changing the position via JACK transport.
+ * Vastly more efficient seeking in the tempo map.
+ * Fixed erroneous behaviour of JACK transport BBT slave mode (-j), and be a
+   little more tolerant of faulty BBT information from the timebase master.
+ * Try to send more sensible BBT information in timebase master mode.
+
 2007-12-02: Version 0.5
 
  * Additional sound (bell/click).

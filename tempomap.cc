@@ -103,13 +103,13 @@ static const char regex_cmdline[] =
     "([[:blank:]]+"REGEX_PATTERN")?[[:blank:]]*$";
 
 static const int
-    RE_NMATCHES_CMD = 12,
+    RE_NMATCHES_CMD = 13,
     IDX_BEATS_CMD   =  2,
     IDX_DENOM_CMD   =  3,
     IDX_TEMPO_CMD   =  4,
     IDX_TEMPO2_CMD  =  7,
     IDX_ACCEL_CMD   =  9,
-    IDX_PATTERN_CMD = 11;
+    IDX_PATTERN_CMD = 12;
 
 
 

@@ -1,3 +1,8 @@
+2008-02-02: Version 0.6.1
+
+ * Fixed parsing of patterns on the command line.
+ * Don't choke on tempo map entries where tempo == tempo2.
+
 2008-01-27: Version 0.6
 
  * Fixed a segfault when changing the position via JACK transport.

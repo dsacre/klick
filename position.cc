@@ -239,7 +239,7 @@ Position::float_frames_t Position::frame_dist(const TempoMap::Entry & e, int sta
     double secs = 0.0;
 
     // constant tempo
-    if (e.tempo && !e.tempo2 || (e.tempo == e.tempo2)) {
+    if ((e.tempo && !e.tempo2) || (e.tempo && e.tempo == e.tempo2)) {
         secs = nbeats * 240.0 / (e.tempo * e.denom);
     }
     // gradual tempo change

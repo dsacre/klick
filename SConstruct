@@ -2,7 +2,7 @@
 
 import os
 
-version = '0.6.1'
+version = '0.6.2'
 
 env = Environment(
     CCFLAGS = [ '-O2', '-Wall' ],

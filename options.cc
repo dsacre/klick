@@ -134,7 +134,7 @@ void Options::parse(int argc, char *argv[])
                 tokenizer tok(str, sep);
                 tokenizer::iterator i = tok.begin();
                 click_filename_emphasis = *i++;
-                switch (count_iter(tok)) {
+                switch (distance(tok.begin(), tok.end())) {
                   case 1:
                     click_filename_normal = click_filename_emphasis;
                     break;

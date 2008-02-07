@@ -31,9 +31,10 @@ AudioInterface::AudioInterface(const string & name,
     _shutdown(false),
     _next_chunk(0)
 {
-    if ((_client = jack_client_new(name.c_str())) == 0) {
+    if ((_client = jack_client_open(name.c_str(), (jack_options_t)0, NULL)) == 0) {
         throw AudioError("can't connect to jack server");
     }
+
     jack_set_process_callback(_client, &process_callback_, static_cast<void*>(this));
     jack_on_shutdown(_client, &shutdown_callback_, static_cast<void*>(this));
 
@@ -73,6 +74,12 @@ AudioInterface::~AudioInterface()
 {
     jack_deactivate(_client);
     jack_client_close(_client);
+}
+
+
+string AudioInterface::client_name() const
+{
+    return string(jack_get_client_name(_client));
 }
 
 

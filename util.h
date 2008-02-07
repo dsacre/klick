@@ -106,16 +106,6 @@ class make_string
 std::string indent(const std::string & s, int n);
 
 
-template <typename T>
-int count_iter(const T &t) {
-    int c = 0;
-    for (typename T::const_iterator i = t.begin(); i != t.end(); ++i) {
-        c++;
-    }
-    return c;
-}
-
-
 class exception : public std::exception {
   public:
     exception(const std::string & what) : _what(what) { }

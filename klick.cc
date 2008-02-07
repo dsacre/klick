@@ -35,16 +35,17 @@ Klick::Klick(int argc, char *argv[])
     _options->parse(argc, argv);
     logv.enable(_options->verbose);
 
-    // determine client name (if not specified)
+    // determine client name
     if (_options->client_name.empty()) {
-        _options->client_name = make_string() << "klick-" << getpid();
+        _options->client_name = "klick";
     }
-    logv << "jack client name: " << _options->client_name << endl;
 
     // setup jack
     _audio.reset(new AudioInterface(_options->client_name,
                                     _options->connect_ports,
                                     _options->auto_connect));
+
+    logv << "jack client name: " << _audio->client_name() << endl;
 
     if (_options->follow_transport) {
         logv << "using follow transport, no tempomap" << endl;

@@ -137,7 +137,7 @@ vector<float> TempoMap::parse_tempi(const string &s, float tempo1, int nbeats_to
 
     char_sep sep(",");
     tokenizer tok(s, sep);
-    if (count_iter(tok) != nbeats_total - 1) {
+    if (distance(tok.begin(), tok.end()) != nbeats_total - 1) {
         throw ParseError("number of tempo values doesn't match number of beats");
     }
     tempi.push_back(tempo1);

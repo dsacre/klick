@@ -58,6 +58,8 @@ class AudioInterface
                    bool auto_connect);
     ~AudioInterface();
 
+    std::string client_name() const;
+
     void set_process_callback(ProcessCallback *, bool mix = false);
     void set_timebase_callback(TimebaseCallback *);
 

@@ -11,7 +11,7 @@
 
 #include "metronome.h"
 #include "audio_interface.h"
-#include "util.h"
+#include "util/debug.h"
 
 
 Metronome::Metronome(AudioChunkConstPtr emphasis,

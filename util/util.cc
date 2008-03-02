@@ -1,6 +1,4 @@
 /*
- * klick - an advanced metronome for jack
- *
  * Copyright (C) 2007  Dominic Sacré  <dominic.sacre@gmx.de>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -9,28 +7,27 @@
  * (at your option) any later version.
  */
 
-#include "util.h"
+#include "util/logstream.h"
+#include "util/string.h"
 
+#include <iostream>
 #include <sstream>
 #include <cstring>
-
-using namespace std;
-
 
 namespace das {
 
 logstream logv(std::cout);
 
 
-string indent(const string & s, int n) {
+std::string indent(const std::string & s, int n) {
     char buf[n + 256];
-    memset(buf, ' ', n);
-    istringstream is(s);
-    ostringstream os;
+    std::memset(buf, ' ', n);
+    std::istringstream is(s);
+    std::ostringstream os;
     while (true) {
         is.getline(buf + n, 256);
         if (is.eof()) break;
-        os << buf << endl;
+        os << buf << std::endl;
     }
     return os.str();
 }

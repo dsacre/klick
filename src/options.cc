@@ -18,10 +18,7 @@
 #include <cstdlib>
 #include <unistd.h>
 
-#include "util.h"
-
 using namespace std;
-using namespace das;
 typedef boost::char_separator<char> char_sep;
 typedef boost::tokenizer<char_sep> tokenizer;
 

@@ -22,7 +22,9 @@
 #include <iostream>
 #include <unistd.h>
 
-#include "util.h"
+#include "util/string.h"
+#include "util/exception.h"
+#include "util/logstream.h"
 
 using namespace std;
 using namespace das;

@@ -13,7 +13,10 @@
 
 #include <jack/jack.h>
 #include <jack/transport.h>
+#include <iostream>
 #include <cerrno>
+
+#include "util/logstream.h"
 
 using namespace std;
 using namespace das;

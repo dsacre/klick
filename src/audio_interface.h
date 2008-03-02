@@ -14,7 +14,8 @@
 
 #include "audio.h"
 #include "audio_chunk.h"
-#include "util.h"
+#include "util/global_object.h"
+#include "util/exception.h"
 
 #include <string>
 #include <vector>

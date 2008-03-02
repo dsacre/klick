@@ -20,7 +20,7 @@
 #include <functional>
 #include <algorithm>
 
-#include "util.h"
+#include "util/string.h"
 
 using namespace std;
 using namespace das;

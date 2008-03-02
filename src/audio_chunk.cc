@@ -19,7 +19,9 @@
 #include <samplerate.h>
 #include <sndfile.h>
 
-#include "util.h"
+#include "util/exception.h"
+#include "util/string.h"
+#include "util/debug.h"
 
 using namespace std;
 using namespace das;

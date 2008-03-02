@@ -15,7 +15,7 @@
 #include <string>
 #include <vector>
 #include <boost/shared_ptr.hpp>
-#include "util.h"
+#include "util/exception.h"
 
 typedef boost::shared_ptr<class TempoMap> TempoMapPtr;
 typedef boost::shared_ptr<const class TempoMap> TempoMapConstPtr;

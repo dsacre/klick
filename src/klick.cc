@@ -16,7 +16,6 @@
 #include "tempomap.h"
 #include "metronome_map.h"
 #include "metronome_jack.h"
-#include "click_data.h"
 
 #include <string>
 #include <iostream>
@@ -114,34 +113,33 @@ void Klick::load_samples()
                << "  normal: " << _options->click_filename_normal << endl;
     }
 
-    const AudioChunkStaticBase *data_emphasis, *data_normal;
+    string emphasis, normal;
 
     switch (_options->click_sample) {
+      case 0:
+        emphasis = "sounds/square_emphasis.flac";
+        normal   = "sounds/square_normal.flac";
+        break;
       case 1:
-        data_emphasis = &CLICK_1_EMPHASIS_DATA;
-        data_normal = &CLICK_1_NORMAL_DATA;
+        emphasis = "sounds/sine_emphasis.flac";
+        normal   = "sounds/sine_normal.flac";
         break;
       case 2:
-        data_emphasis = &CLICK_2_EMPHASIS_DATA;
-        data_normal = &CLICK_2_NORMAL_DATA;
+        emphasis = "sounds/noise_emphasis.flac";
+        normal   = "sounds/noise_normal.flac";
         break;
       case 3:
-        data_emphasis = &CLICK_3_EMPHASIS_DATA;
-        data_normal = &CLICK_3_NORMAL_DATA;
+        emphasis = "sounds/bell_click_emphasis.flac";
+        normal   = "sounds/bell_click_normal.flac";
         break;
       default:
-        data_emphasis = NULL;
-        data_normal = NULL;
+        emphasis = _options->click_filename_emphasis;
+        normal   = _options->click_filename_normal;
         break;
     }
 
-    if (data_normal) {
-        _click_emphasis = data_emphasis->load(Audio->samplerate());
-        _click_normal = data_normal->load(Audio->samplerate());
-    } else {
-        _click_emphasis.reset(new AudioChunk(_options->click_filename_emphasis, Audio->samplerate()));
-        _click_normal.reset(new AudioChunk(_options->click_filename_normal, Audio->samplerate()));
-    }
+    _click_emphasis.reset(new AudioChunk(emphasis, Audio->samplerate()));
+    _click_normal.reset(new AudioChunk(normal, Audio->samplerate()));
 
     switch (_options->emphasis) {
       case Options::EMPHASIS_NONE:

@@ -56,47 +56,4 @@ class AudioChunk
 };
 
 
-
-class AudioChunkStaticBase
-{
-  protected:
-    AudioChunkStaticBase() { }
-    virtual ~AudioChunkStaticBase() { }
-
-  public:
-    // loads the audio data into an AudioChunk object, converting sample
-    // format and samplerate if necessary.
-    // pass samplerate = 0 to leave the samplerate as is
-    AudioChunkPtr load(nframes_t samplerate = 0) const;
-
-  protected:
-    nframes_t _length;
-    nframes_t _samplerate;
-    float _volume;
-};
-
-
-template <typename T>
-class AudioChunkStatic
-  : public AudioChunkStaticBase
-{
-    friend class AudioChunkStaticBase;
-
-  public:
-    template<size_t N>
-    AudioChunkStatic(T (&samples)[N], nframes_t samplerate, float volume = 1.0f) {
-        _samples = samples;
-        _length = sizeof(samples) / sizeof(samples[0]);
-        _samplerate = samplerate;
-        _volume = volume;
-    }
-
-  protected:
-    T *_samples;
-};
-
-typedef AudioChunkStatic<const sample_t> AudioChunkStaticFloat;
-typedef AudioChunkStatic<const short> AudioChunkStaticInt16;
-
-
 #endif // _AUDIO_CHUNK_H

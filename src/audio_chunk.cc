@@ -155,32 +155,3 @@ void AudioChunk::resample(nframes_t samplerate)
     _samplerate = samplerate;
 }
 
-
-AudioChunkPtr AudioChunkStaticBase::load(nframes_t samplerate) const
-{
-    AudioChunkPtr r;
-
-    const AudioChunkStaticFloat *float_data = dynamic_cast<const AudioChunkStaticFloat *>(this);
-    if (float_data) {
-        r.reset(new AudioChunk(float_data->_samples, float_data->_length, float_data->_samplerate));
-    }
-
-    const AudioChunkStaticInt16 *int16_data = dynamic_cast<const AudioChunkStaticInt16 *>(this);
-    if (int16_data) {
-        sample_t *s = (sample_t *)calloc(int16_data->_length, sizeof(sample_t));
-
-        for (nframes_t i = 0; i < int16_data->_length; i++) {
-            // yeah, this is probably the most naive way possible to do this.
-            // let's improve this some day...
-            s[i] = float(int16_data->_samples[i]) / float(numeric_limits<short>::max());
-        }
-        r.reset(new AudioChunk(s, int16_data->_length, int16_data->_samplerate));
-        free(s);
-    }
-
-    ASSERT(r);
-
-    r->adjust_volume(_volume);
-    if (samplerate) r->resample(samplerate);
-    return r;
-}

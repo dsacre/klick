@@ -18,6 +18,11 @@ opts.AddOptions(
 )
 opts.Update(env)
 
+env['PREFIX_BIN'] = env['PREFIX'] + '/bin'
+env['PREFIX_SHARE'] = env['PREFIX'] + '/share/klick'
+
+env['CPPDEFINES'] += [ ('DATA_DIR', '\\"%s\\"' % env['PREFIX_SHARE']) ]
+
 if env['DEBUG'] == 1:
     env['CPPDEFINES'] += [ '_DEBUG' ]
     env['CCFLAGS'] = [ '-g', '-Wall' ]
@@ -38,10 +43,8 @@ env.Program('src/klick', [
     'src/metronome_map.cc',
     'src/metronome_jack.cc',
     'src/position.cc',
-    'src/click_data.cc',
     'util/util.cc'
 ])
 
-env['PREFIX_BIN'] = env['PREFIX'] + '/bin'
 env.Alias('install', env['PREFIX_BIN'])
 env.Install(env['PREFIX_BIN'], ['klick'])

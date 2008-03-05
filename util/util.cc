@@ -12,22 +12,22 @@
 
 #include <iostream>
 #include <sstream>
-#include <cstring>
 
 namespace das {
 
 logstream logv(std::cout);
 
 
-std::string indent(const std::string & s, int n) {
-    char buf[n + 256];
-    std::memset(buf, ' ', n);
+std::string indent(const std::string & s, int n)
+{
+    std::string ws(n, ' ');
     std::istringstream is(s);
     std::ostringstream os;
     while (true) {
-        is.getline(buf + n, 256);
+        std::string tmp;
+        std::getline(is, tmp);
         if (is.eof()) break;
-        os << buf << std::endl;
+        os << ws << tmp << std::endl;
     }
     return os.str();
 }

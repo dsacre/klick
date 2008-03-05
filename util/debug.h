@@ -11,7 +11,7 @@
 #define _DAS_DEBUG_H
 
 
-#ifdef _DEBUG
+#ifndef NDEBUG
     #include <assert.h>
     #define ASSERT(f) assert(f)
     #define VERIFY(f) assert(f)

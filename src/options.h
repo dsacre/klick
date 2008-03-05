@@ -34,7 +34,7 @@ class Options
     std::string filename;
     std::string cmdline;
 
-    static const int CLICK_SAMPLE_FROM_FILE = 0;
+    static const int CLICK_SAMPLE_FROM_FILE = -1;
     int click_sample;
     std::string click_filename_emphasis;
     std::string click_filename_normal;

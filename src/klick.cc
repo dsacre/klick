@@ -19,6 +19,7 @@
 
 #include <string>
 #include <iostream>
+#include <fstream>
 #include <unistd.h>
 
 #include "util/string.h"
@@ -117,22 +118,22 @@ void Klick::load_samples()
 
     switch (_options->click_sample) {
       case 0:
-        emphasis = "sounds/square_emphasis.flac";
-        normal   = "sounds/square_normal.flac";
+        emphasis = data_file("sounds/square_emphasis.flac");
+        normal   = data_file("sounds/square_normal.flac");
         break;
       case 1:
-        emphasis = "sounds/sine_emphasis.flac";
-        normal   = "sounds/sine_normal.flac";
+        emphasis = data_file("sounds/sine_emphasis.flac");
+        normal   = data_file("sounds/sine_normal.flac");
         break;
       case 2:
-        emphasis = "sounds/noise_emphasis.flac";
-        normal   = "sounds/noise_normal.flac";
+        emphasis = data_file("sounds/noise_emphasis.flac");
+        normal   = data_file("sounds/noise_normal.flac");
         break;
       case 3:
-        emphasis = "sounds/bell_click_emphasis.flac";
-        normal   = "sounds/bell_click_normal.flac";
+        emphasis = data_file("sounds/bell_click_emphasis.flac");
+        normal   = data_file("sounds/bell_click_normal.flac");
         break;
-      default:
+      case Options::CLICK_SAMPLE_FROM_FILE:
         emphasis = _options->click_filename_emphasis;
         normal   = _options->click_filename_normal;
         break;
@@ -192,4 +193,16 @@ void Klick::run()
 void Klick::signal_quit()
 {
     _quit = true;
+}
+
+
+string Klick::data_file(const string & path)
+{
+    fstream f;
+    f.open(path.c_str(), ios::in);
+    if (f.is_open()) {
+        f.close();
+        return path;
+    }
+    return string(DATA_DIR"/") + path;
 }

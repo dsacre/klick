@@ -72,7 +72,11 @@ Command Line Options:
 -n name           set jack client name
 -p port,..        jack port(s) to connect to
 -P                automatically connect to hardware ports
--s number         use built-in sounds 1 (sine), 2 (noise) or 3 (bell/click)
+-s number         use built-in sounds:
+                    0: square wave (default)
+                    1: sine wave
+                    2: noise
+                    3: bell/click
 -S file[,file]    load sounds from file(s)
 -e                no emphasized beats
 -E                emphasized beats only
@@ -94,7 +98,7 @@ A tempo map consists of an arbitrary number of lines which will be played
 sequentially. Each line must have the following format:
 
 
-[label:] bars [meter] tempo[-tempo2] [pattern] [volume]
+[label:] bars [meter] tempo [pattern] [volume]
 
 
 Everything written in brackets is optional, and can be omitted if the
@@ -114,8 +118,16 @@ tempo   The tempo in beats per minute, with a "beat" always referring to
         different from Ardour/JACK, but similar to most other audio
         software).
 
-tempo2  The tempo at the end of this entry, can be used for
-        accelerando/ritardando.
+        tempo:              Sets the tempo for the duration of the whole
+                            tempo map entry.
+
+        tempo1-tempo2:      Specifies the tempo for the start and the end of
+                            this entry, with a gradual tempo change in
+                            between.
+
+        tempo1,tempo2,...:  Sets a different tempo for each beat. The number
+                            of tempo values must be the same as the total
+                            number of beats for this entry (bars * beats).
 
 pattern This can be used to alter the pattern of accented/normal beats.
         Use 'X' (upper case) for accented beats, 'x' (lower case) for

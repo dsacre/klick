@@ -12,6 +12,7 @@
 #ifndef _KLICK_H
 #define _KLICK_H
 
+#include <string>
 #include <boost/shared_ptr.hpp>
 #include <boost/scoped_ptr.hpp>
 #include <boost/noncopyable.hpp>
@@ -37,6 +38,8 @@ class Klick
 
     void run();
     void signal_quit();
+
+    static std::string data_file(const std::string & path);
 
   private:
     boost::scoped_ptr<Options> _options;

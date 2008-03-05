@@ -26,7 +26,7 @@ typedef boost::tokenizer<char_sep> tokenizer;
 Options::Options()
   : auto_connect(false),
     follow_transport(false),
-    click_sample(1),
+    click_sample(0),
     emphasis(EMPHASIS_NORMAL),
     volume(1.0),
     frequency(1.0),
@@ -48,33 +48,37 @@ void Options::print_version(ostream & out)
 
 void Options::print_usage(ostream & out)
 {
-    out << "Usage:" << endl
-        << "  klick [ options ] [meter] tempo[-tempo2/accel] [pattern]" << endl
-        << "  klick [ options ] -f filename" << endl
-        << "  klick [ options ] -j" << endl
-        << endl
-        << "Options:" << endl
-        << "  -f filename       load tempomap from file" << endl
-        << "  -j                no tempomap, just follow jack transport" << endl
-        << "  -n name           set jack client name" << endl
-        << "  -p port,..        jack port(s) to connect to" << endl
-        << "  -P                automatically connect to hardware ports" << endl
-        << "  -s number         use built-in sounds 1 (sine), 2 (noise) or 3 (bell/click)" << endl
-        << "  -S file[,file]    load sounds from file(s)" << endl
-        << "  -e                no emphasized beats" << endl
-        << "  -E                emphasized beats only" << endl
-        << "  -v multiplier     adjust playback volume" << endl
-        << "  -w multiplier     adjust playback pitch" << endl
-        << "  -t                enable jack transport" << endl
-        << "  -T                become transport master (implies -t)" << endl
-        << "  -d seconds        delay before starting playback" << endl
-        << "  -c bars           pre-roll. use -c 0 for 2 beats" << endl
-        << "  -l label          start playback at the given label" << endl
-        << "  -x multiplier     multiply tempo by the given factor" << endl
-        << "  -h                show this help" << endl
-        << endl
-        << "Tempomap file format:" << endl
-        << "  [label:] bars [meter] tempo[-tempo2] [pattern] [volume]" << endl
+    out << "Usage:\n"
+        << "  klick [ options ] [meter] tempo[-tempo2/accel] [pattern]\n"
+        << "  klick [ options ] -f filename\n"
+        << "  klick [ options ] -j\n"
+        << "\n"
+        << "Options:\n"
+        << "  -f filename       load tempomap from file\n"
+        << "  -j                no tempomap, just follow jack transport\n"
+        << "  -n name           set jack client name\n"
+        << "  -p port,..        jack port(s) to connect to\n"
+        << "  -P                automatically connect to hardware ports\n"
+        << "  -s number         use built-in sounds:\n"
+        << "                      0: square wave (default)\n"
+        << "                      1: sine wave\n"
+        << "                      2: noise\n"
+        << "                      3: bell/click\n"
+        << "  -S file[,file]    load sounds from file(s)\n"
+        << "  -e                no emphasized beats\n"
+        << "  -E                emphasized beats only\n"
+        << "  -v multiplier     adjust playback volume\n"
+        << "  -w multiplier     adjust playback pitch\n"
+        << "  -t                enable jack transport\n"
+        << "  -T                become transport master (implies -t)\n"
+        << "  -d seconds        delay before starting playback\n"
+        << "  -c bars           pre-roll. use -c 0 for 2 beats\n"
+        << "  -l label          start playback at the given label\n"
+        << "  -x multiplier     multiply tempo by the given factor\n"
+        << "  -h                show this help\n"
+        << "\n"
+        << "Tempomap file format:\n"
+        << "  [label:] bars [meter] tempo [pattern] [volume]\n"
         << "  ..." << endl;
 }
 
@@ -120,7 +124,7 @@ void Options::parse(int argc, char *argv[])
 
             case 's':
                 click_sample = strtoul(::optarg, &end, 10);
-                if (*end != '\0' || click_sample < 1 || click_sample > 3) {
+                if (*end != '\0' || click_sample < 0 || click_sample > 3) {
                     throw InvalidArgument("click sample");
                 }
                 break;
@@ -130,13 +134,13 @@ void Options::parse(int argc, char *argv[])
                 string str(::optarg);
                 tokenizer tok(str, sep);
                 tokenizer::iterator i = tok.begin();
-                click_filename_emphasis = *i++;
+                click_filename_emphasis = *i;
                 switch (distance(tok.begin(), tok.end())) {
                   case 1:
                     click_filename_normal = click_filename_emphasis;
                     break;
                   case 2:
-                    click_filename_normal = *i;
+                    click_filename_normal = *(++i);
                     break;
                   default:
                     throw InvalidArgument("sample file names");

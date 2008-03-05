@@ -2,37 +2,44 @@
 
 import os
 
-version = '0.6.2'
+version = '0.7.0'
 
 env = Environment(
-    CCFLAGS = [ '-O2', '-Wall' ],
-    CPPDEFINES = [ ('VERSION', '\\"%s\\"' % version) ],
-    CPPPATH = [ '.' ],
+    CPPDEFINES = [('VERSION', '\\"%s\\"' % version)],
+    CPPPATH = ['.'],
     ENV = os.environ,
 )
 
-opts = Options('custom.py')
+# build options
+opts = Options('scache.conf')
 opts.AddOptions(
-    BoolOption('DEBUG', 'debug mode', 0),
+    BoolOption('DEBUG', 'debug mode', False),
     PathOption('PREFIX', 'install prefix', '/usr/local'),
 )
 opts.Update(env)
+opts.Save('scache.conf', env)
+Help(opts.GenerateHelpText(env))
 
-env['PREFIX_BIN'] = env['PREFIX'] + '/bin'
-env['PREFIX_SHARE'] = env['PREFIX'] + '/share/klick'
+if env['DEBUG']:
+    env.Append(CCFLAGS = ['-g', '-Wall'])
+    env.Append(CCFLAGS = '-Werror')
+else:
+    env.Append(CCFLAGS = ['-O2', '-Wall'])
+    env.Prepend(CPPDEFINES = 'NDEBUG')
 
-env['CPPDEFINES'] += [ ('DATA_DIR', '\\"%s\\"' % env['PREFIX_SHARE']) ]
+# install paths
+env['PREFIX_BIN'] = os.path.join(env['PREFIX'], 'bin')
+env['PREFIX_SHARE'] = os.path.join(env['PREFIX'], 'share/klick')
 
-if env['DEBUG'] == 1:
-    env['CPPDEFINES'] += [ '_DEBUG' ]
-    env['CCFLAGS'] = [ '-g', '-Wall' ]
-    env['CCFLAGS'] += [ '-Werror' ]
+env.Append(CPPDEFINES = ('DATA_DIR', '\\"%s\\"' % env['PREFIX_SHARE']))
 
+# required libraries
 env.ParseConfig(
     'pkg-config --cflags --libs jack samplerate sndfile'
 )
 
-env.Program('src/klick', [
+# source files
+sources = [
     'src/main.cc',
     'src/klick.cc',
     'src/options.cc',
@@ -44,7 +51,22 @@ env.Program('src/klick', [
     'src/metronome_jack.cc',
     'src/position.cc',
     'util/util.cc'
-])
+]
 
-env.Alias('install', env['PREFIX_BIN'])
-env.Install(env['PREFIX_BIN'], ['klick'])
+env.Program('klick', sources)
+
+sounds = [
+    'sounds/square_emphasis.flac',
+    'sounds/square_normal.flac',
+    'sounds/sine_emphasis.flac',
+    'sounds/sine_normal.flac',
+    'sounds/noise_emphasis.flac',
+    'sounds/noise_normal.flac',
+    'sounds/click_emphasis.flac',
+    'sounds/click_normal.flac',
+]
+
+# installation
+env.Alias('install', [env['PREFIX_BIN'], env['PREFIX_SHARE']])
+env.Install(env['PREFIX_BIN'], 'klick')
+env.Install(os.path.join(env['PREFIX_SHARE'], 'sounds'), sounds)

@@ -1,7 +1,7 @@
 /*
  * klick - an advanced metronome for jack
  *
- * Copyright (C) 2007  Dominic Sacré  <dominic.sacre@gmx.de>
+ * Copyright (C) 2007-2008  Dominic Sacré  <dominic.sacre@gmx.de>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -9,12 +9,12 @@
  * (at your option) any later version.
  */
 
-#include "metronome_map.h"
-#include "klick.h"
-#include "options.h"
-#include "audio_interface.h"
-#include "audio_chunk.h"
-#include "tempomap.h"
+#include "metronome_map.hh"
+#include "klick.hh"
+#include "options.hh"
+#include "audio_interface.hh"
+#include "audio_chunk.hh"
+#include "tempomap.hh"
 
 #include <jack/jack.h>
 #include <jack/transport.h>

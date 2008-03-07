@@ -1,7 +1,7 @@
 /*
  * klick - an advanced metronome for jack
  *
- * Copyright (C) 2007  Dominic Sacré  <dominic.sacre@gmx.de>
+ * Copyright (C) 2007-2008  Dominic Sacré  <dominic.sacre@gmx.de>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -9,14 +9,14 @@
  * (at your option) any later version.
  */
 
-#ifndef _OPTIONS_H
-#define _OPTIONS_H
+#ifndef _OPTIONS_HH
+#define _OPTIONS_HH
 
 #include <string>
 #include <iostream>
 #include <vector>
 
-#include "util/exception.h"
+#include "util/exception.hh"
 
 
 class Options
@@ -71,9 +71,7 @@ class Options
 
     void print_version(std::ostream & = std::cout);
     void print_usage(std::ostream & = std::cout);
-
-    std::vector<std::string> split_arguments(const std::string & str);
 };
 
 
-#endif // _OPTIONS_H
+#endif // _OPTIONS_HH

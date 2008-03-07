@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007  Dominic Sacré  <dominic.sacre@gmx.de>
+ * Copyright (C) 2007-2008  Dominic Sacré  <dominic.sacre@gmx.de>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -7,8 +7,8 @@
  * (at your option) any later version.
  */
 
-#ifndef _DAS_DEBUG_H
-#define _DAS_DEBUG_H
+#ifndef _DAS_DEBUG_HH
+#define _DAS_DEBUG_HH
 
 
 #ifndef NDEBUG
@@ -23,4 +23,4 @@
 #endif
 
 
-#endif // _DAS_DEBUG_H
+#endif // _DAS_DEBUG_HH

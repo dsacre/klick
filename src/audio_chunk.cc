@@ -1,7 +1,7 @@
 /*
  * klick - an advanced metronome for jack
  *
- * Copyright (C) 2007  Dominic Sacré  <dominic.sacre@gmx.de>
+ * Copyright (C) 2007-2008  Dominic Sacré  <dominic.sacre@gmx.de>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -9,7 +9,7 @@
  * (at your option) any later version.
  */
 
-#include "audio_chunk.h"
+#include "audio_chunk.hh"
 
 #include <sstream>
 #include <cmath>
@@ -19,9 +19,9 @@
 #include <samplerate.h>
 #include <sndfile.h>
 
-#include "util/exception.h"
-#include "util/string.h"
-#include "util/debug.h"
+#include "util/exception.hh"
+#include "util/string.hh"
+#include "util/debug.hh"
 
 using namespace std;
 using namespace das;

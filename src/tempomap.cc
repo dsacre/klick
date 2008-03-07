@@ -1,7 +1,7 @@
 /*
  * klick - an advanced metronome for jack
  *
- * Copyright (C) 2007  Dominic Sacré  <dominic.sacre@gmx.de>
+ * Copyright (C) 2007-2008  Dominic Sacré  <dominic.sacre@gmx.de>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -9,7 +9,7 @@
  * (at your option) any later version.
  */
 
-#include "tempomap.h"
+#include "tempomap.hh"
 
 #include <sstream>
 #include <fstream>
@@ -20,7 +20,7 @@
 #include <functional>
 #include <algorithm>
 
-#include "util/string.h"
+#include "util/string.hh"
 
 using namespace std;
 using namespace das;

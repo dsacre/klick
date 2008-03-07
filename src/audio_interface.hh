@@ -1,7 +1,7 @@
 /*
  * klick - an advanced metronome for jack
  *
- * Copyright (C) 2007  Dominic Sacré  <dominic.sacre@gmx.de>
+ * Copyright (C) 2007-2008  Dominic Sacré  <dominic.sacre@gmx.de>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -9,13 +9,13 @@
  * (at your option) any later version.
  */
 
-#ifndef _AUDIO_INTERFACE_H
-#define _AUDIO_INTERFACE_H
+#ifndef _AUDIO_INTERFACE_HH
+#define _AUDIO_INTERFACE_HH
 
-#include "audio.h"
-#include "audio_chunk.h"
-#include "util/global_object.h"
-#include "util/exception.h"
+#include "audio.hh"
+#include "audio_chunk.hh"
+#include "util/global_object.hh"
+#include "util/exception.hh"
 
 #include <string>
 #include <vector>
@@ -106,4 +106,4 @@ class AudioInterface
     int _next_chunk;
 };
 
-#endif // _AUDIO_INTERFACE_H
+#endif // _AUDIO_INTERFACE_HH

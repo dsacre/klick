@@ -1,7 +1,7 @@
 /*
  * klick - an advanced metronome for jack
  *
- * Copyright (C) 2007  Dominic Sacré  <dominic.sacre@gmx.de>
+ * Copyright (C) 2007-2008  Dominic Sacré  <dominic.sacre@gmx.de>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -9,12 +9,12 @@
  * (at your option) any later version.
  */
 
-#ifndef _METRONOME_MAP_H
-#define _METRONOME_MAP_H
+#ifndef _METRONOME_MAP_HH
+#define _METRONOME_MAP_HH
 
-#include "metronome.h"
-#include "tempomap.h"
-#include "position.h"
+#include "metronome.hh"
+#include "tempomap.hh"
+#include "position.hh"
 
 #include <string>
 
@@ -59,4 +59,4 @@ class MetronomeMap
 };
 
 
-#endif // _METRONOME_MAP_H
+#endif // _METRONOME_MAP_HH

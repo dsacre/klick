@@ -1,7 +1,7 @@
 /*
  * klick - an advanced metronome for jack
  *
- * Copyright (C) 2007  Dominic Sacré  <dominic.sacre@gmx.de>
+ * Copyright (C) 2007-2008  Dominic Sacré  <dominic.sacre@gmx.de>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -9,15 +9,15 @@
  * (at your option) any later version.
  */
 
-#ifndef _KLICK_H
-#define _KLICK_H
+#ifndef _KLICK_HH
+#define _KLICK_HH
 
 #include <string>
 #include <boost/shared_ptr.hpp>
 #include <boost/scoped_ptr.hpp>
 #include <boost/noncopyable.hpp>
 
-#include "audio.h"
+#include "audio.hh"
 
 
 class Options;
@@ -55,4 +55,4 @@ class Klick
 };
 
 
-#endif // _KLICK_H
+#endif // _KLICK_HH

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007  Dominic Sacré  <dominic.sacre@gmx.de>
+ * Copyright (C) 2007-2008  Dominic Sacré  <dominic.sacre@gmx.de>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -7,8 +7,8 @@
  * (at your option) any later version.
  */
 
-#ifndef _DAS_STRING_H
-#define _DAS_STRING_H
+#ifndef _DAS_STRING_HH
+#define _DAS_STRING_HH
 
 #include <string>
 #include <sstream>
@@ -44,4 +44,4 @@ std::string indent(const std::string & s, int n);
 
 } // namespace das
 
-#endif // _DAS_STRING_H
+#endif // _DAS_STRING_HH

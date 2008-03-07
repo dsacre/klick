@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007  Dominic Sacré  <dominic.sacre@gmx.de>
+ * Copyright (C) 2007-2008  Dominic Sacré  <dominic.sacre@gmx.de>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -7,11 +7,11 @@
  * (at your option) any later version.
  */
 
-#ifndef _DAS_GLOBAL_OBJECT_H
-#define _DAS_GLOBAL_OBJECT_H
+#ifndef _DAS_GLOBAL_OBJECT_HH
+#define _DAS_GLOBAL_OBJECT_HH
 
 #include <boost/noncopyable.hpp>
-#include "util/debug.h"
+#include "util/debug.hh"
 
 namespace das {
 
@@ -35,4 +35,4 @@ class global_object
 
 } // namespace das
 
-#endif // _DAS_GLOBAL_OBJECT_H
+#endif // _DAS_GLOBAL_OBJECT_HH

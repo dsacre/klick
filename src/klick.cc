@@ -130,8 +130,8 @@ void Klick::load_samples()
         normal   = data_file("sounds/noise_normal.flac");
         break;
       case 3:
-        emphasis = data_file("sounds/bell_click_emphasis.flac");
-        normal   = data_file("sounds/bell_click_normal.flac");
+        emphasis = data_file("sounds/click_emphasis.flac");
+        normal   = data_file("sounds/click_normal.flac");
         break;
       case Options::CLICK_SAMPLE_FROM_FILE:
         emphasis = _options->click_filename_emphasis;

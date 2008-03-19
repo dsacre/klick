@@ -155,12 +155,16 @@ void Klick::load_samples()
 
     if (_options->volume != 1.0f) {
         _click_emphasis->adjust_volume(_options->volume);
-        _click_normal->adjust_volume(_options->volume);
+        if (_click_normal != _click_emphasis) {
+            _click_normal->adjust_volume(_options->volume);
+        }
     }
 
     if (_options->frequency != 1.0f) {
         _click_emphasis->adjust_frequency(_options->frequency);
-        _click_normal->adjust_frequency(_options->frequency);
+        if (_click_normal != _click_emphasis) {
+            _click_normal->adjust_frequency(_options->frequency);
+        }
     }
 }
 

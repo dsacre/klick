@@ -29,7 +29,7 @@ using namespace das;
 
 AudioChunk::AudioChunk(const string & filename, nframes_t samplerate)
 {
-    SF_INFO sfinfo = { 0 };
+    SF_INFO sfinfo = { 0, 0, 0, 0, 0, 0 };
     SNDFILE *f;
 
     if ((f = sf_open(filename.c_str(), SFM_READ, &sfinfo)) == NULL) {

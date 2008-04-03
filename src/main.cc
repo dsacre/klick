@@ -20,7 +20,7 @@
 static Klick *app = NULL;
 
 
-static void signal_handler(int sig)
+static void signal_handler(int /*sig*/)
 {
     app->signal_quit();
 }

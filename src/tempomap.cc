@@ -43,7 +43,7 @@ struct regfreeer {
 };
 
 
-static inline bool is_specified(const string &s, const regmatch_t &m) {
+static inline bool is_specified(const regmatch_t &m) {
     return ((m.rm_eo - m.rm_so) != 0);
 }
 static inline string extract_string(const string &s, const regmatch_t &m) {
@@ -264,15 +264,12 @@ TempoMapPtr TempoMap::new_from_file(const string & filename)
             e.bars    = extract_int(line, match[IDX_BARS]);
             e.tempo   = extract_float(line, match[IDX_TEMPO]);
             e.tempo2  = extract_float(line, match[IDX_TEMPO2]);   // 0 if empty
-            e.beats   = is_specified(line, match[IDX_BEATS]) ?
-                            extract_int(line, match[IDX_BEATS]) : 4;
-            e.denom   = is_specified(line, match[IDX_DENOM]) ?
-                            extract_int(line, match[IDX_DENOM]) : 4;
+            e.beats   = is_specified(match[IDX_BEATS]) ? extract_int(line, match[IDX_BEATS]) : 4;
+            e.denom   = is_specified(match[IDX_DENOM]) ? extract_int(line, match[IDX_DENOM]) : 4;
             e.pattern = parse_pattern(extract_string(line, match[IDX_PATTERN]), e.beats);
-            e.volume  = is_specified(line, match[IDX_VOLUME]) ?
-                            extract_float(line, match[IDX_VOLUME]) : 1.0f;
+            e.volume  = is_specified(match[IDX_VOLUME]) ? extract_float(line, match[IDX_VOLUME]) : 1.0f;
 
-            if (is_specified(line, match[IDX_TEMPI])) {
+            if (is_specified(match[IDX_TEMPI])) {
                 e.tempi = parse_tempi(extract_string(line, match[IDX_TEMPI]), e.tempo, e.beats * e.bars);
                 e.tempo = 0.0f;
             }
@@ -311,10 +308,8 @@ TempoMapPtr TempoMap::new_from_cmdline(const string & line)
 
         e.label   = "";
         e.bars    = -1;
-        e.beats   = is_specified(line, match[IDX_BEATS_CMD]) ?
-                        extract_int(line, match[IDX_BEATS_CMD]) : 4;
-        e.denom   = is_specified(line, match[IDX_DENOM_CMD]) ?
-                        extract_int(line, match[IDX_DENOM_CMD]) : 4;
+        e.beats   = is_specified(match[IDX_BEATS_CMD]) ? extract_int(line, match[IDX_BEATS_CMD]) : 4;
+        e.denom   = is_specified(match[IDX_DENOM_CMD]) ? extract_int(line, match[IDX_DENOM_CMD]) : 4;
         e.tempo   = extract_float(line, match[IDX_TEMPO_CMD]);
         e.tempo2  = 0.0f;
         e.pattern = parse_pattern(extract_string(line, match[IDX_PATTERN_CMD]), e.beats);
@@ -322,7 +317,7 @@ TempoMapPtr TempoMap::new_from_cmdline(const string & line)
 
         check_entry(e);
 
-        if (is_specified(line, match[IDX_TEMPO2_CMD])) {
+        if (is_specified(match[IDX_TEMPO2_CMD])) {
             // tempo change...
             e.tempo2 = extract_float(line, match[IDX_TEMPO2_CMD]);
             float accel = extract_float(line, match[IDX_ACCEL_CMD]);

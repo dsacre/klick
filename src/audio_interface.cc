@@ -154,8 +154,8 @@ int AudioInterface::process_callback_(nframes_t nframes, void *arg)
 }
 
 
-void AudioInterface::timebase_callback_(jack_transport_state_t state, nframes_t nframes,
-                                        jack_position_t *pos, int new_pos, void *arg)
+void AudioInterface::timebase_callback_(jack_transport_state_t /*state*/, nframes_t /*nframes*/,
+                                        jack_position_t *pos, int /*new_pos*/, void *arg)
 {
     AudioInterface *this_ = static_cast<AudioInterface*>(arg);
 

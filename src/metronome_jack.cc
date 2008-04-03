@@ -30,7 +30,7 @@ MetronomeJack::~MetronomeJack()
 }
 
 
-void MetronomeJack::process_callback(sample_t *buffer, nframes_t nframes)
+void MetronomeJack::process_callback(sample_t * /*buffer*/, nframes_t nframes)
 {
     if (!Audio->transport_rolling()) {
         return;

@@ -21,10 +21,10 @@ opts.Save('scache.conf', env)
 Help(opts.GenerateHelpText(env))
 
 if env['DEBUG']:
-    env.Append(CCFLAGS = ['-g', '-Wall'])
+    env.Append(CCFLAGS = ['-g', '-W', '-Wall'])
     env.Append(CCFLAGS = '-Werror')
 else:
-    env.Append(CCFLAGS = ['-O2', '-Wall'])
+    env.Append(CCFLAGS = ['-O2', '-W', '-Wall'])
     env.Prepend(CPPDEFINES = 'NDEBUG')
 
 # install paths

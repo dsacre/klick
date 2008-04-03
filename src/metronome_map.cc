@@ -78,7 +78,7 @@ bool MetronomeMap::running() const
 }
 
 
-void MetronomeMap::process_callback(sample_t *buffer, nframes_t nframes)
+void MetronomeMap::process_callback(sample_t * /*buffer*/, nframes_t nframes)
 {
     if (_transport_enabled) {
         if (!Audio->transport_rolling()) return;

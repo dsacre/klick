@@ -102,12 +102,13 @@ void MetronomeMap::process_callback(sample_t * /*buffer*/, nframes_t nframes)
         do { _pos.advance(); } while (_pos.frame() < _current);
 
         Position::Tick tick = _pos.tick();
-        if (tick.type == TempoMap::BEAT_SILENT) return;
 
         //cout << tick.frame << ": " << (tick.type == TempoMap::BEAT_EMPHASIS) << endl;
 
-        // start playing the click sample
-        play_click(tick.type == TempoMap::BEAT_EMPHASIS, tick.frame - _current, tick.volume);
+        if (tick.type != TempoMap::BEAT_SILENT) {
+            // start playing the click sample
+            play_click(tick.type == TempoMap::BEAT_EMPHASIS, tick.frame - _current, tick.volume);
+        }
     }
 
     _current += nframes;

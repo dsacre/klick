@@ -45,8 +45,8 @@ class Options
         EMPHASIS_ALL
     } emphasis;
 
-    float volume;
-    float frequency;
+    float volume_emphasis, volume_normal;
+    float frequency_emphasis, frequency_normal;
     bool transport_enabled;
     bool transport_master;
     float delay;

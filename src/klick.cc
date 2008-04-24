@@ -118,20 +118,20 @@ void Klick::load_samples()
 
     switch (_options->click_sample) {
       case 0:
-        emphasis = data_file("sounds/square_emphasis.flac");
-        normal   = data_file("sounds/square_normal.flac");
+        emphasis = data_file("samples/square_emphasis.wav");
+        normal   = data_file("samples/square_normal.wav");
         break;
       case 1:
-        emphasis = data_file("sounds/sine_emphasis.flac");
-        normal   = data_file("sounds/sine_normal.flac");
+        emphasis = data_file("samples/sine_emphasis.wav");
+        normal   = data_file("samples/sine_normal.wav");
         break;
       case 2:
-        emphasis = data_file("sounds/noise_emphasis.flac");
-        normal   = data_file("sounds/noise_normal.flac");
+        emphasis = data_file("samples/noise_emphasis.wav");
+        normal   = data_file("samples/noise_normal.wav");
         break;
       case 3:
-        emphasis = data_file("sounds/click_emphasis.flac");
-        normal   = data_file("sounds/click_normal.flac");
+        emphasis = data_file("samples/click_emphasis.wav");
+        normal   = data_file("samples/click_normal.wav");
         break;
       case Options::CLICK_SAMPLE_FROM_FILE:
         emphasis = _options->click_filename_emphasis;
@@ -153,17 +153,21 @@ void Klick::load_samples()
         break;
     }
 
-    if (_options->volume != 1.0f) {
-        _click_emphasis->adjust_volume(_options->volume);
-        if (_click_normal != _click_emphasis) {
-            _click_normal->adjust_volume(_options->volume);
-        }
+    cout << _options->volume_emphasis << " " << _options->volume_normal << endl;
+
+    if (_options->volume_emphasis != 1.0f) {
+        _click_emphasis->adjust_volume(_options->volume_emphasis);
+    }
+    if (_options->frequency_emphasis != 1.0f) {
+        _click_emphasis->adjust_frequency(_options->frequency_emphasis);
     }
 
-    if (_options->frequency != 1.0f) {
-        _click_emphasis->adjust_frequency(_options->frequency);
-        if (_click_normal != _click_emphasis) {
-            _click_normal->adjust_frequency(_options->frequency);
+    if (_click_normal != _click_emphasis) {
+        if (_options->volume_normal != 1.0f) {
+            _click_normal->adjust_volume(_options->volume_normal);
+        }
+        if (_options->volume_normal != 1.0f) {
+            _click_normal->adjust_frequency(_options->frequency_normal);
         }
     }
 }

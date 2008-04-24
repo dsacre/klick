@@ -55,18 +55,18 @@ sources = [
 
 env.Program('klick', sources)
 
-sounds = [
-    'sounds/square_emphasis.flac',
-    'sounds/square_normal.flac',
-    'sounds/sine_emphasis.flac',
-    'sounds/sine_normal.flac',
-    'sounds/noise_emphasis.flac',
-    'sounds/noise_normal.flac',
-    'sounds/click_emphasis.flac',
-    'sounds/click_normal.flac',
+samples = [
+    'samples/square_emphasis.flac',
+    'samples/square_normal.flac',
+    'samples/sine_emphasis.flac',
+    'samples/sine_normal.flac',
+    'samples/noise_emphasis.flac',
+    'samples/noise_normal.flac',
+    'samples/click_emphasis.flac',
+    'samples/click_normal.flac',
 ]
 
 # installation
 env.Alias('install', [env['PREFIX_BIN'], env['PREFIX_SHARE']])
 env.Install(env['PREFIX_BIN'], 'klick')
-env.Install(os.path.join(env['PREFIX_SHARE'], 'sounds'), sounds)
+env.Install(os.path.join(env['PREFIX_SHARE'], 'samples'), samples)

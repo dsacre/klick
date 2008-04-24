@@ -28,8 +28,10 @@ Options::Options()
     follow_transport(false),
     click_sample(0),
     emphasis(EMPHASIS_NORMAL),
-    volume(1.0),
-    frequency(1.0),
+    volume_emphasis(1.0),
+    volume_normal(1.0),
+    frequency_emphasis(1.0),
+    frequency_normal(1.0),
     transport_enabled(false),
     transport_master(false),
     delay(0.0f),
@@ -157,14 +159,47 @@ void Options::parse(int argc, char *argv[])
                 break;
 
             case 'v':
-                volume = strtof(::optarg, &end);
+              { char_sep sep(",");
+                tokenizer tok(string(::optarg), sep);
+                tokenizer::iterator i = tok.begin();
+                cout << *i << endl;
+                volume_emphasis = strtof(i->c_str(), &end);
+                i++;
+                cout << *i << endl;
                 if (*end != '\0') throw InvalidArgument("volume");
-                break;
+                switch (distance(tok.begin(), tok.end())) {
+                  case 0:
+                    cout << "A" << endl;
+                    volume_normal = volume_emphasis;
+                    break;
+                  case 1:
+                    cout << "B" << endl;
+                    volume_normal = strtof((++i)->c_str(), &end);
+                    if (*end != '\0') throw InvalidArgument("volume");
+                    break;
+                  default:
+                    throw InvalidArgument("volume");
+                }
+              } break;
 
             case 'w':
-                frequency = strtof(::optarg, &end);
+              { char_sep sep(",");
+                tokenizer tok(string(::optarg), sep);
+                tokenizer::iterator i = tok.begin();
+                frequency_emphasis = strtof(i->c_str(), &end);
                 if (*end != '\0') throw InvalidArgument("frequency");
-                break;
+                switch (distance(tok.begin(), tok.end())) {
+                  case 1:
+                    frequency_normal = frequency_emphasis;
+                    break;
+                  case 2:
+                    frequency_normal = strtof((++i)->c_str(), &end);
+                    if (*end != '\0') throw InvalidArgument("frequency");
+                    break;
+                  default:
+                    throw InvalidArgument("frequency");
+                }
+              } break;
 
             case 't':
                 transport_enabled = true;

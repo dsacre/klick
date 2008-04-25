@@ -15,11 +15,11 @@
 #include "audio.hh"
 #include "audio_chunk.hh"
 #include "util/global_object.hh"
-#include "util/exception.hh"
 
 #include <string>
 #include <vector>
 #include <boost/array.hpp>
+#include <stdexcept>
 
 #include <jack/transport.h>
 
@@ -33,9 +33,9 @@ class AudioInterface
     static const int MAX_PLAYING_CHUNKS = 4;
 
   public:
-    struct AudioError : public das::exception {
+    struct AudioError : public std::runtime_error {
         AudioError(const std::string & w)
-          : das::exception(w) { }
+          : std::runtime_error(w) { }
     };
 
     class ProcessCallback {

@@ -15,11 +15,11 @@
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
+#include <stdexcept>
 
 #include <samplerate.h>
 #include <sndfile.h>
 
-#include "util/exception.hh"
 #include "util/string.hh"
 #include "util/debug.hh"
 
@@ -33,21 +33,21 @@ AudioChunk::AudioChunk(const string & filename, nframes_t samplerate)
     SNDFILE *f;
 
     if ((f = sf_open(filename.c_str(), SFM_READ, &sfinfo)) == NULL) {
-        throw das::exception(make_string() << "failed to open audio file '" << filename << "'");
+        throw runtime_error(make_string() << "failed to open audio file '" << filename << "'");
     }
 
-    sample_t *buf = (sample_t*)calloc(sfinfo.frames * sfinfo.channels, sizeof(sample_t));
+    sample_t *buf = new sample_t[sfinfo.frames * sfinfo.channels];
     sf_readf_float(f, buf, sfinfo.frames);
 
     // convert stereo to mono
-    sample_t *mono_buf;
+    sample_t *mono_buf = NULL;
 
     if (sfinfo.channels == 2) {
-        mono_buf = (sample_t*)calloc(sfinfo.frames, sizeof(sample_t));
+        mono_buf = new sample_t[sfinfo.frames];
         for (int i = 0; i < sfinfo.frames; i++) {
             mono_buf[i] = (buf[i*2] + buf[i*2 + 1]) / 2;
         }
-        free(buf);
+        delete [] buf;
     } else {
         // mono or more than 2 channels.
         // in case there are more than 2 channels, use only the first
@@ -62,45 +62,21 @@ AudioChunk::AudioChunk(const string & filename, nframes_t samplerate)
     }
     resample(mono_buf, sfinfo.frames, sfinfo.samplerate, _samples, _length, _samplerate);
 
-    free(mono_buf);
+    delete [] mono_buf;
 
     sf_close(f);
-}
-
-
-AudioChunk::AudioChunk(const AudioChunk & in)
-  : _length(in.length()),
-    _samplerate(in.samplerate())
-{
-    size_t s = in.length() * sizeof(sample_t);
-    _samples = (sample_t*)malloc(s);
-    memcpy(_samples, in.samples(), s);
-}
-
-
-AudioChunk::AudioChunk(const sample_t * samples, nframes_t length, nframes_t samplerate)
-  : _length(length),
-    _samplerate(samplerate)
-{
-    size_t s = length * sizeof(sample_t);
-    _samples = (sample_t*)malloc(s);
-    memcpy(_samples, samples, s);
 }
 
 
 AudioChunk::~AudioChunk()
 {
     ASSERT(_samples);
-    free(_samples);
+    delete [] _samples;
 }
 
 
-void AudioChunk::resample(const sample_t *samples_in,
-                          nframes_t length_in,
-                          nframes_t samplerate_in,
-                          sample_t *& samples_out,
-                          nframes_t & length_out,
-                          nframes_t samplerate_out)
+void AudioChunk::resample(const sample_t *samples_in, nframes_t length_in, nframes_t samplerate_in,
+                          sample_t *& samples_out, nframes_t & length_out, nframes_t samplerate_out)
 {
     SRC_DATA src_data;
     int error;
@@ -111,11 +87,11 @@ void AudioChunk::resample(const sample_t *samples_in,
     src_data.src_ratio = (float)samplerate_out / (float)samplerate_in;
 
     src_data.output_frames = (long)ceil((float)length_in * src_data.src_ratio);
-    src_data.data_out = (sample_t*)calloc(src_data.output_frames, sizeof(sample_t));
+    src_data.data_out = new sample_t[src_data.output_frames];
 
     if ((error = src_simple(&src_data, SRC_SINC_BEST_QUALITY, 1)) != 0) {
-        free(src_data.data_out);
-        throw das::exception(make_string() << "error converting samplerate: " << src_strerror(error));
+        delete [] src_data.data_out;
+        throw runtime_error(make_string() << "error converting samplerate: " << src_strerror(error));
     }
 
     samples_out = src_data.data_out;
@@ -141,7 +117,7 @@ void AudioChunk::adjust_frequency(float factor)
     nframes_t l;
 
     resample(_samples, _length, (nframes_t)(_samplerate * factor), s, l, _samplerate);
-    free(_samples);
+    delete [] _samples;
     _samples = s;
     _length = l;
 }

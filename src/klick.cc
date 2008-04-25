@@ -20,10 +20,10 @@
 #include <string>
 #include <iostream>
 #include <fstream>
+#include <stdexcept>
 #include <unistd.h>
 
 #include "util/string.hh"
-#include "util/exception.hh"
 #include "util/logstream.hh"
 
 using namespace std;
@@ -100,7 +100,7 @@ void Klick::load_tempomap()
         if (_map->entry(_options->start_label)) {
             logv << "starting at label: " << _options->start_label << endl;
         } else {
-            throw das::exception(make_string() << "label '" << _options->start_label << "' not found in tempomap");
+            throw runtime_error(make_string() << "label '" << _options->start_label << "' not found in tempomap");
         }
     }
 }
@@ -153,8 +153,6 @@ void Klick::load_samples()
         break;
     }
 
-    cout << _options->volume_emphasis << " " << _options->volume_normal << endl;
-
     if (_options->volume_emphasis != 1.0f) {
         _click_emphasis->adjust_volume(_options->volume_emphasis);
     }
@@ -166,7 +164,7 @@ void Klick::load_samples()
         if (_options->volume_normal != 1.0f) {
             _click_normal->adjust_volume(_options->volume_normal);
         }
-        if (_options->volume_normal != 1.0f) {
+        if (_options->frequency_normal != 1.0f) {
             _click_normal->adjust_frequency(_options->frequency_normal);
         }
     }
@@ -192,7 +190,7 @@ void Klick::run()
             logv << "end of tempomap reached" << endl;
             break;
         } else if (_audio->is_shutdown()) {
-            throw das::exception("shut down by the jack server");
+            throw runtime_error("shut down by the jack server");
         }
     }
 }

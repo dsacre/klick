@@ -69,8 +69,8 @@ void Options::print_usage(ostream & out)
         << "  -S file[,file]    load sounds from file(s)\n"
         << "  -e                no emphasized beats\n"
         << "  -E                emphasized beats only\n"
-        << "  -v multiplier     adjust playback volume\n"
-        << "  -w multiplier     adjust playback pitch\n"
+        << "  -v coeff[,coeff]  adjust playback volume\n"
+        << "  -w coeff[,coeff]  adjust playback pitch\n"
         << "  -t                enable jack transport\n"
         << "  -T                become transport master (implies -t)\n"
         << "  -d seconds        delay before starting playback\n"
@@ -113,8 +113,9 @@ void Options::parse(int argc, char *argv[])
                 break;
 
             case 'p':
-              { char_sep sep(",");
-                tokenizer tok(string(::optarg), sep);
+              { string str(::optarg);
+                char_sep sep(",");
+                tokenizer tok(str, sep);
                 for (tokenizer::iterator i = tok.begin(); i != tok.end(); ++i) {
                     connect_ports.push_back(*i);
                 }
@@ -132,20 +133,16 @@ void Options::parse(int argc, char *argv[])
                 break;
 
             case 'S':
-              { char_sep sep(",");
-                string str(::optarg);
+              { string str(::optarg);
+                char_sep sep(",");
                 tokenizer tok(str, sep);
                 tokenizer::iterator i = tok.begin();
                 click_filename_emphasis = *i;
-                switch (distance(tok.begin(), tok.end())) {
-                  case 1:
+                if (++i == tok.end()) {
                     click_filename_normal = click_filename_emphasis;
-                    break;
-                  case 2:
-                    click_filename_normal = *(++i);
-                    break;
-                  default:
-                    throw InvalidArgument("sample file names");
+                } else {
+                    click_filename_normal = *i;
+                    if (++i != tok.end()) throw InvalidArgument("sample file names");
                 }
                 click_sample = CLICK_SAMPLE_FROM_FILE;
               } break;
@@ -159,45 +156,34 @@ void Options::parse(int argc, char *argv[])
                 break;
 
             case 'v':
-              { char_sep sep(",");
-                tokenizer tok(string(::optarg), sep);
+              { string str(::optarg);
+                char_sep sep(",");
+                tokenizer tok(str, sep);
                 tokenizer::iterator i = tok.begin();
-                cout << *i << endl;
                 volume_emphasis = strtof(i->c_str(), &end);
-                i++;
-                cout << *i << endl;
                 if (*end != '\0') throw InvalidArgument("volume");
-                switch (distance(tok.begin(), tok.end())) {
-                  case 0:
-                    cout << "A" << endl;
+                i++;
+                if (i == tok.end()) {
                     volume_normal = volume_emphasis;
-                    break;
-                  case 1:
-                    cout << "B" << endl;
-                    volume_normal = strtof((++i)->c_str(), &end);
-                    if (*end != '\0') throw InvalidArgument("volume");
-                    break;
-                  default:
-                    throw InvalidArgument("volume");
+                } else {
+                    volume_normal = strtof(i->c_str(), &end);
+                    if (*end != '\0' || ++i != tok.end()) throw InvalidArgument("volume");
                 }
               } break;
 
             case 'w':
-              { char_sep sep(",");
-                tokenizer tok(string(::optarg), sep);
+              { string str(::optarg);
+                char_sep sep(",");
+                tokenizer tok(str, sep);
                 tokenizer::iterator i = tok.begin();
                 frequency_emphasis = strtof(i->c_str(), &end);
                 if (*end != '\0') throw InvalidArgument("frequency");
-                switch (distance(tok.begin(), tok.end())) {
-                  case 1:
+                i++;
+                if (i == tok.end()) {
                     frequency_normal = frequency_emphasis;
-                    break;
-                  case 2:
-                    frequency_normal = strtof((++i)->c_str(), &end);
-                    if (*end != '\0') throw InvalidArgument("frequency");
-                    break;
-                  default:
-                    throw InvalidArgument("frequency");
+                } else {
+                    frequency_normal = strtof(i->c_str(), &end);
+                    if (*end != '\0' || ++i != tok.end()) throw InvalidArgument("frequency");
                 }
               } break;
 

@@ -229,7 +229,7 @@ TempoMapPtr TempoMap::new_from_file(const string & filename)
     ifstream file(filename.c_str());
 
     if (!file.is_open()) {
-        throw das::exception(make_string() << "can't open tempomap file: '" << filename << "'");
+        throw runtime_error(make_string() << "can't open tempomap file: '" << filename << "'");
     }
 
     regex_t re_blank, re;

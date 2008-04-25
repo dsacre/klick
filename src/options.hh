@@ -15,8 +15,7 @@
 #include <string>
 #include <iostream>
 #include <vector>
-
-#include "util/exception.hh"
+#include <stdexcept>
 
 
 class Options
@@ -59,14 +58,14 @@ class Options
     bool verbose;
 
   private:
-    struct CmdlineError : public das::exception {
+    struct CmdlineError : public std::runtime_error {
         CmdlineError(const std::string & w)
-          : das::exception(w) { }
+          : std::runtime_error(w) { }
     };
 
-    struct InvalidArgument : public das::exception {
+    struct InvalidArgument : public std::runtime_error {
         InvalidArgument(const std::string & w)
-          : das::exception("invalid argument (" + w + ")") { }
+          : std::runtime_error("invalid argument (" + w + ")") { }
     };
 
     void print_version(std::ostream & = std::cout);

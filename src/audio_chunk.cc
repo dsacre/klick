@@ -12,7 +12,6 @@
 #include "audio_chunk.hh"
 
 #include <sstream>
-#include <cmath>
 #include <cstdlib>
 #include <cstring>
 #include <stdexcept>
@@ -86,8 +85,9 @@ void AudioChunk::resample(const sample_t *samples_in, nframes_t length_in, nfram
 
     src_data.src_ratio = (float)samplerate_out / (float)samplerate_in;
 
-    src_data.output_frames = (long)ceil((float)length_in * src_data.src_ratio);
+    src_data.output_frames = (long)((float)length_in * src_data.src_ratio);
     src_data.data_out = new sample_t[src_data.output_frames];
+    src_data.data_out[src_data.output_frames-1] = 0;
 
     if ((error = src_simple(&src_data, SRC_SINC_BEST_QUALITY, 1)) != 0) {
         delete [] src_data.data_out;

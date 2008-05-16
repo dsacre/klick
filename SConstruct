@@ -56,14 +56,14 @@ sources = [
 env.Program('klick', sources)
 
 samples = [
-    'samples/square_emphasis.flac',
-    'samples/square_normal.flac',
-    'samples/sine_emphasis.flac',
-    'samples/sine_normal.flac',
-    'samples/noise_emphasis.flac',
-    'samples/noise_normal.flac',
-    'samples/click_emphasis.flac',
-    'samples/click_normal.flac',
+    'samples/square_emphasis.wav',
+    'samples/square_normal.wav',
+    'samples/sine_emphasis.wav',
+    'samples/sine_normal.wav',
+    'samples/noise_emphasis.wav',
+    'samples/noise_normal.wav',
+    'samples/click_emphasis.wav',
+    'samples/click_normal.wav',
 ]
 
 # installation

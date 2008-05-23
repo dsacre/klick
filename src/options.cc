@@ -65,7 +65,7 @@ void Options::print_usage(ostream & out)
         << "                      0: square wave (default)\n"
         << "                      1: sine wave\n"
         << "                      2: noise\n"
-        << "                      3: bell/click\n"
+        << "                      3: acoustic bell/click\n"
         << "  -S file[,file]    load sounds from file(s)\n"
         << "  -e                no emphasized beats\n"
         << "  -E                emphasized beats only\n"

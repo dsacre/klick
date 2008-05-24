@@ -1,3 +1,24 @@
+2008-05-24: Version 0.7.0
+ * New default sound (square wave).
+ * Allow volume and pitch of emphasized and normal beats to be adjusted
+   individually.
+ * Provide samples as regular wave files, rather than compiling them into the
+   executable.
+ * Some source code restructuring.
+
+2008-04-08: Version 0.6.3
+ * Fixed a bug that caused klick to play at a slightly wrong tempo when using
+   silent beats (with the pattern feature).
+ * Made klick compile cleanly with -W -Wall.
+
+2008-03-19: Version 0.6.2
+
+ * Fixed a bug when using -E or -e and either -v or -w parameters at the same
+   time.
+ * Fixed (and actually documented) tempo-per-beat feature.
+ * Use jack_client_open() instead of deprecated jack_client_new(), default
+   client name is now simply "klick".
+
 2008-02-02: Version 0.6.1
 
  * Fixed parsing of patterns on the command line.

@@ -76,12 +76,12 @@ Command Line Options:
                     0: square wave (default)
                     1: sine wave
                     2: noise
-                    3: bell/click
+                    3: acoustic bell/click
 -S file[,file]    load sounds from file(s)
 -e                no emphasized beats
 -E                emphasized beats only
--v multiplier     adjust playback volume
--w multiplier     adjust playback frequency
+-v mult[,mult]    adjust playback volume (default: 1.0)
+-w mult[,mult]    adjust playback pitch (default: 1.0)
 -t                enable jack transport
 -T                become transport master (implies -t)
 -d seconds        delay before starting playback

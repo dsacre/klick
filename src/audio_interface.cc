@@ -15,6 +15,7 @@
 #include <jack/transport.h>
 #include <iostream>
 #include <cerrno>
+#include <cstring>
 
 #include "util/logstream.hh"
 

@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <iterator>
 #include <numeric>
+#include <limits>
 #include <boost/lambda/lambda.hpp>
 #include <cmath>
 

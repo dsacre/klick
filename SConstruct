@@ -2,11 +2,12 @@
 
 import os
 
-version = '0.7.0'
+version = '0.8.0'
 
 env = Environment(
-    CPPDEFINES = [('VERSION', '\\"%s\\"' % version)],
-    CPPPATH = ['.'],
+    CPPDEFINES = [
+        ('VERSION', '\\"%s\\"' % version),
+    ],
     ENV = os.environ,
 )
 
@@ -15,6 +16,8 @@ opts = Options('scache.conf')
 opts.AddOptions(
     BoolOption('DEBUG', 'debug mode', False),
     PathOption('PREFIX', 'install prefix', '/usr/local'),
+    BoolOption('OSC', 'OSC support', 1),
+    BoolOption('TERMINAL', 'terminal control support', 1)
 )
 opts.Update(env)
 opts.Save('scache.conf', env)
@@ -22,7 +25,7 @@ Help(opts.GenerateHelpText(env))
 
 if env['DEBUG']:
     env.Append(CCFLAGS = ['-g', '-W', '-Wall'])
-    env.Append(CCFLAGS = '-Werror')
+#    env.Append(CCFLAGS = '-Werror')
 else:
     env.Append(CCFLAGS = ['-O2', '-W', '-Wall'])
     env.Prepend(CPPDEFINES = 'NDEBUG')
@@ -47,11 +50,28 @@ sources = [
     'src/audio_chunk.cc',
     'src/tempomap.cc',
     'src/metronome.cc',
+    'src/metronome_simple.cc',
     'src/metronome_map.cc',
     'src/metronome_jack.cc',
     'src/position.cc',
-    'util/util.cc'
+    'src/util/util.cc'
 ]
+
+if env['OSC']:
+    env.ParseConfig(
+        'pkg-config --cflags --libs liblo'
+    )
+    env.Append(CPPDEFINES = ['ENABLE_OSC'])
+    sources += [
+        'src/osc_interface.cc',
+        'src/osc_handler.cc',
+    ]
+
+if env['TERMINAL']:
+    env.Append(CPPDEFINES = ['ENABLE_TERMINAL'])
+    sources += [
+        'src/terminal_handler.cc',
+    ]
 
 env.Program('klick', sources)
 

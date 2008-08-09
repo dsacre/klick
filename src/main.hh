@@ -13,16 +13,23 @@
 #define _MAIN_HH
 
 #include <exception>
+#include <string>
 
 
-class Exit : public std::exception {
+class Exit : public std::exception
+{
   public:
     Exit(int status) : _status(status) { }
     virtual ~Exit() throw () { }
+
     int status() const throw() { return _status; }
+
   protected:
     int _status;
 };
+
+
+std::string data_file(std::string const & path);
 
 
 #endif // _MAIN_HH

@@ -21,29 +21,26 @@
 /*
  * plays a click track using a predefined tempomap
  */
-
 class MetronomeMap
   : public Metronome,
-    protected AudioInterface::TimebaseCallback
+    public AudioInterface::TimebaseCallback
 {
   public:
     MetronomeMap(
+        AudioInterface & audio,
         TempoMapConstPtr tempomap,
         float tempo_multiplier,
         bool transport,
         bool master,
         int preroll,
-        const std::string & start_label,
-        AudioChunkConstPtr emphasis,
-        AudioChunkConstPtr normal
+        std::string const & start_label
     );
     virtual ~MetronomeMap();
 
-    void start();
     bool running() const;
 
   protected:
-    static const double TICKS_PER_BEAT = 1920.0;
+    static double const TICKS_PER_BEAT = 1920.0;
 
     virtual void process_callback(sample_t *, nframes_t);
     virtual void timebase_callback(jack_position_t *);

@@ -18,13 +18,14 @@
 #include <cstdlib>
 #include <unistd.h>
 
-using namespace std;
 typedef boost::char_separator<char> char_sep;
 typedef boost::tokenizer<char_sep> tokenizer;
 
 
 Options::Options()
   : auto_connect(false),
+    use_osc(false),
+    interactive(false),
     follow_transport(false),
     click_sample(0),
     emphasis(EMPHASIS_NORMAL),
@@ -42,13 +43,13 @@ Options::Options()
 }
 
 
-void Options::print_version(ostream & out)
+void Options::print_version(std::ostream & out)
 {
-    out << "klick " VERSION << endl << endl;
+    out << "klick " VERSION << std::endl;
 }
 
 
-void Options::print_usage(ostream & out)
+void Options::print_usage(std::ostream & out)
 {
     out << "Usage:\n"
         << "  klick [ options ] [meter] tempo[-tempo2/accel] [pattern]\n"
@@ -61,6 +62,12 @@ void Options::print_usage(ostream & out)
         << "  -n name           set jack client name\n"
         << "  -p port,..        jack port(s) to connect to\n"
         << "  -P                automatically connect to hardware ports\n"
+#ifdef ENABLE_OSC
+        << "  -o port           OSC port to listen on\n"
+#endif
+#ifdef ENABLE_TERMINAL
+        << "  -i                enable terminal control\n"
+#endif
         << "  -s number         use built-in sounds:\n"
         << "                      0: square wave (default)\n"
         << "                      1: sine wave\n"
@@ -81,27 +88,28 @@ void Options::print_usage(ostream & out)
         << "\n"
         << "Tempomap file format:\n"
         << "  [label:] bars [meter] tempo [pattern] [volume]\n"
-        << "  ..." << endl;
+        << "  ..." << std::endl;
 }
 
 
 void Options::parse(int argc, char *argv[])
 {
     int c;
-    char optstring[] = "+f:jn:p:Ps:S:eEv:w:tTd:c:l:x:Vh";
+    char optstring[] = "+f:jn:p:Po:R:is:S:eEv:w:tTd:c:l:x:LVh";
     char *end;
 
     if (argc < 2) {
         // run with no arguments, print usage
         print_version();
+        std::cout << std::endl;
         print_usage();
         throw Exit(EXIT_SUCCESS);
     }
 
-    while ((c = getopt(argc, argv, optstring)) != -1) {
+    while ((c = ::getopt(argc, argv, optstring)) != -1) {
         switch (c) {
             case 'f':
-                filename = string(::optarg);
+                filename = std::string(::optarg);
                 break;
 
             case 'j':
@@ -109,11 +117,11 @@ void Options::parse(int argc, char *argv[])
                 break;
 
             case 'n':
-                client_name = string(::optarg);
+                client_name = std::string(::optarg);
                 break;
 
             case 'p':
-              { string str(::optarg);
+              { std::string str(::optarg);
                 char_sep sep(",");
                 tokenizer tok(str, sep);
                 for (tokenizer::iterator i = tok.begin(); i != tok.end(); ++i) {
@@ -125,15 +133,33 @@ void Options::parse(int argc, char *argv[])
                 auto_connect = true;
                 break;
 
+#ifdef ENABLE_OSC
+            case 'o':
+                use_osc = true;
+                osc_port = ::optarg;
+                break;
+
+            case 'R':
+                use_osc = true;
+                osc_return_port = ::optarg;
+                break;
+#endif
+
+#ifdef ENABLE_TERMINAL
+            case 'i':
+                interactive = true;
+                break;
+#endif
+
             case 's':
-                click_sample = strtoul(::optarg, &end, 10);
+                click_sample = ::strtoul(::optarg, &end, 10);
                 if (*end != '\0' || click_sample < 0 || click_sample > 3) {
                     throw InvalidArgument("click sample");
                 }
                 break;
 
             case 'S':
-              { string str(::optarg);
+              { std::string str(::optarg);
                 char_sep sep(",");
                 tokenizer tok(str, sep);
                 tokenizer::iterator i = tok.begin();
@@ -156,33 +182,33 @@ void Options::parse(int argc, char *argv[])
                 break;
 
             case 'v':
-              { string str(::optarg);
+              { std::string str(::optarg);
                 char_sep sep(",");
                 tokenizer tok(str, sep);
                 tokenizer::iterator i = tok.begin();
-                volume_emphasis = strtof(i->c_str(), &end);
+                volume_emphasis = ::strtof(i->c_str(), &end);
                 if (*end != '\0') throw InvalidArgument("volume");
                 i++;
                 if (i == tok.end()) {
                     volume_normal = volume_emphasis;
                 } else {
-                    volume_normal = strtof(i->c_str(), &end);
+                    volume_normal = ::strtof(i->c_str(), &end);
                     if (*end != '\0' || ++i != tok.end()) throw InvalidArgument("volume");
                 }
               } break;
 
             case 'w':
-              { string str(::optarg);
+              { std::string str(::optarg);
                 char_sep sep(",");
                 tokenizer tok(str, sep);
                 tokenizer::iterator i = tok.begin();
-                frequency_emphasis = strtof(i->c_str(), &end);
+                frequency_emphasis = ::strtof(i->c_str(), &end);
                 if (*end != '\0') throw InvalidArgument("frequency");
                 i++;
                 if (i == tok.end()) {
                     frequency_normal = frequency_emphasis;
                 } else {
-                    frequency_normal = strtof(i->c_str(), &end);
+                    frequency_normal = ::strtof(i->c_str(), &end);
                     if (*end != '\0' || ++i != tok.end()) throw InvalidArgument("frequency");
                 }
               } break;
@@ -197,38 +223,43 @@ void Options::parse(int argc, char *argv[])
                 break;
 
             case 'd':
-                delay = strtod(::optarg, &end);
+                delay = ::strtod(::optarg, &end);
                 if (*end != '\0' || delay < 0.0f) throw InvalidArgument("delay");
                 break;
 
             case 'c':
-                preroll = strtoul(::optarg, &end, 10);
+                preroll = ::strtoul(::optarg, &end, 10);
                 if (*end != '\0') throw InvalidArgument("pre-roll");
                 break;
 
             case 'l':
-                start_label = string(::optarg);
+                start_label = std::string(::optarg);
                 break;
 
             case 'x':
-                tempo_multiplier = strtof(::optarg, &end);
+                tempo_multiplier = ::strtof(::optarg, &end);
                 if (*end != '\0' || tempo_multiplier <= 0.0f) {
                     throw InvalidArgument("tempo multiplier");
                 }
                 break;
 
-            case 'V':
+            case 'L':
                 verbose = true;
                 break;
 
+            case 'V':
+                print_version();
+                throw Exit(EXIT_SUCCESS);
+
             case 'h':
                 print_version();
+                std::cout << std::endl;
                 print_usage();
                 throw Exit(EXIT_SUCCESS);
                 break;
 
             default:
-                print_usage(cerr);
+                print_usage(std::cerr);
                 throw Exit(EXIT_FAILURE);
                 break;
         }
@@ -236,19 +267,26 @@ void Options::parse(int argc, char *argv[])
 
     // all remaining arguments make up the "tempomap"
     for (int n = ::optind; n < argc; n++) {
-        cmdline += string(argv[n]);
+        cmdline += std::string(argv[n]);
         if (n < argc - 1) cmdline += " ";
     }
 
-    if (follow_transport && (filename.length() || cmdline.length())) {
-        throw CmdlineError("can't use tempo/tempomap together with -j option");
+    if (!use_osc)
+    {
+        if (follow_transport && (filename.length() || cmdline.length())) {
+            throw CmdlineError("can't use tempo/tempomap together with -j option");
+        }
+
+        if (filename.length() && cmdline.length()) {
+            throw CmdlineError("can't use tempomap from file and command line at the same time");
+        }
+
+        if (!follow_transport && !interactive && filename.empty() && cmdline.empty()) {
+            throw CmdlineError("no tempo specified");
+        }
     }
 
-    if (filename.length() && cmdline.length()) {
-        throw CmdlineError("can't use tempomap from file and command line at the same time");
-    }
-
-    if ((!follow_transport) && filename.empty() && cmdline.empty()) {
-        throw CmdlineError("no tempo specified");
+    if (use_osc && interactive) {
+        throw CmdlineError("can't enable OSC and terminal control at the same time, sorry");
     }
 }

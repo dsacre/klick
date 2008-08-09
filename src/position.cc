@@ -21,12 +21,12 @@
 #include <boost/lambda/lambda.hpp>
 #include <cmath>
 
-using namespace std;
-using namespace boost::lambda;
+#include "util/debug.hh"
 
 
-Position::Position(TempoMapConstPtr tempomap, float multiplier)
+Position::Position(TempoMapConstPtr tempomap, float_frames_t samplerate, float multiplier)
   : _tempomap(tempomap),
+    _samplerate(samplerate),
     _multiplier(multiplier)
 {
     float_frames_t f = 0.0;
@@ -41,8 +41,8 @@ Position::Position(TempoMapConstPtr tempomap, float multiplier)
             b += i->bars;
         } else {
             // play entry ad infinitum
-            f = numeric_limits<float_frames_t>::max();
-            b = numeric_limits<int>::max();
+            f = std::numeric_limits<float_frames_t>::max();
+            b = std::numeric_limits<int>::max();
         }
     }
 
@@ -64,7 +64,7 @@ void Position::reset()
 }
 
 
-void Position::set_start_label(const string & start_label)
+void Position::set_start_label(std::string const & start_label)
 {
     TempoMapPtr t(new TempoMap());
 
@@ -78,13 +78,13 @@ void Position::set_start_label(const string & start_label)
 
 void Position::add_preroll(int nbars)
 {
-    const TempoMap::Entry & e = (*_tempomap)[0];
+    TempoMap::Entry const & e = (*_tempomap)[0];
 
     TempoMapPtr preroll;
 
     // create a new tempomap for preroll
     if (nbars == Options::PREROLL_2_BEATS) {
-        vector<TempoMap::BeatType> pattern;
+        std::vector<TempoMap::BeatType> pattern;
         for (int n = 0; n < e.denom; n++) {
             pattern.push_back(TempoMap::BEAT_NORMAL);
         }
@@ -108,8 +108,8 @@ void Position::locate(nframes_t f)
     }
 
     // find the tempomap entry f is in
-    _entry = distance(_start_frames.begin(),
-                      upper_bound(_start_frames.begin(), _start_frames.end(), f) - 1);
+    _entry = std::distance(_start_frames.begin(),
+                           std::upper_bound(_start_frames.begin(), _start_frames.end(), f) - 1);
 
     if (_entry == (int)_tempomap->size()) {
         // end of tempomap
@@ -117,11 +117,11 @@ void Position::locate(nframes_t f)
         return;
     }
 
-    const TempoMap::Entry & e = (*_tempomap)[_entry];
+    TempoMap::Entry const & e = (*_tempomap)[_entry];
 
     // difference between start of entry and desired position
     float_frames_t diff = f - _start_frames[_entry];
-    double secs = diff / (float_frames_t)Audio->samplerate() * _multiplier;
+    double secs = diff / (float_frames_t)_samplerate * _multiplier;
 
     // constant tempo
     if (e.tempo && !e.tempo2) {
@@ -196,7 +196,7 @@ void Position::advance()
 
     _frame += dist_to_next();
 
-    const TempoMap::Entry & e = (*_tempomap)[_entry];
+    TempoMap::Entry const & e = (*_tempomap)[_entry];
 
     // move to next beat
     if (++_beat >= e.beats) {
@@ -219,16 +219,16 @@ Position::float_frames_t Position::dist_to_next() const
 {
     // no valid next tick
     if (_init) return 0.0;
-    if (_end) return numeric_limits<float_frames_t>::max();
+    if (_end) return std::numeric_limits<float_frames_t>::max();
 
-    const TempoMap::Entry & e = (*_tempomap)[_entry];
+    TempoMap::Entry const & e = (*_tempomap)[_entry];
 
     return frame_dist(e, _bar * e.beats + _beat,
                          _bar * e.beats + _beat + 1);
 }
 
 
-Position::float_frames_t Position::frame_dist(const TempoMap::Entry & e, int start, int end) const
+Position::float_frames_t Position::frame_dist(TempoMap::Entry const & e, int start, int end) const
 {
     if (start == end) {
         return 0.0;
@@ -255,23 +255,24 @@ Position::float_frames_t Position::frame_dist(const TempoMap::Entry & e, int sta
     }
     // different tempo for each beat
     else if (!e.tempo) {
-        secs = accumulate(e.tempi.begin() + start,
-                          e.tempi.begin() + end,
-                          0.0, _1 + 240.0 / (_2 * e.denom));
+        secs = std::accumulate(e.tempi.begin() + start,
+                               e.tempi.begin() + end,
+                               0.0,
+                               boost::lambda::_1 + 240.0 / (boost::lambda::_2 * e.denom));
     }
 
-    return secs * (float_frames_t)Audio->samplerate() / _multiplier;
+    return secs * (float_frames_t)_samplerate / _multiplier;
 }
 
 
-const Position::Tick Position::tick() const
+Position::Tick const Position::tick() const
 {
     if (_end) {
         // end of tempomap, return "nothing"
         return (Tick) { (nframes_t)_frame, TempoMap::BEAT_SILENT, 0 };
     }
 
-    const TempoMap::Entry & e = (*_tempomap)[_entry];
+    TempoMap::Entry const & e = (*_tempomap)[_entry];
 
     TempoMap::BeatType t;
     if (e.pattern.empty()) {

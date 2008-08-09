@@ -17,29 +17,44 @@
 
 #include <boost/noncopyable.hpp>
 
+#include "util/disposable.hh"
+
+
 /*
  * abstract metronome base class
  */
-
 class Metronome
-  : protected AudioInterface::ProcessCallback,
+  : public AudioInterface::ProcessCallback,
+    public das::disposable,
     boost::noncopyable
 {
   public:
-    Metronome(AudioChunkConstPtr emphasis,
-              AudioChunkConstPtr normal);
+
+    Metronome(AudioInterface & audio);
     virtual ~Metronome();
 
-    virtual void start();
+    void set_sound(AudioChunkConstPtr emphasis, AudioChunkConstPtr normal);
+
+    void start() { set_active(true); }
+    void stop() { set_active(false); }
+    virtual void set_active(bool b) { _active = b; }
+
+    bool active() const { return _active; }
+
     virtual bool running() const = 0;
 
   protected:
+
     virtual void process_callback(sample_t *, nframes_t) = 0;
 
     void play_click(bool emphasis, nframes_t offset, float volume = 1.0f);
 
+    AudioInterface & _audio;
+
     AudioChunkConstPtr _click_emphasis;
     AudioChunkConstPtr _click_normal;
+
+    bool _active;
 };
 
 

@@ -16,11 +16,12 @@
 #include <jack/jack.h>
 #include <jack/transport.h>
 
+#include "util/debug.hh"
 
-MetronomeJack::MetronomeJack(AudioChunkConstPtr emphasis,
-                             AudioChunkConstPtr normal)
-  : Metronome(emphasis, normal),
-    _last_click_frame(0)
+
+MetronomeJack::MetronomeJack(AudioInterface & audio)
+  : Metronome(audio)
+  , _last_click_frame(0)
 {
 }
 
@@ -32,11 +33,11 @@ MetronomeJack::~MetronomeJack()
 
 void MetronomeJack::process_callback(sample_t * /*buffer*/, nframes_t nframes)
 {
-    if (!Audio->transport_rolling()) {
+    if (!active() || !_audio.transport_rolling()) {
         return;
     }
 
-    jack_position_t pos = Audio->position();
+    jack_position_t pos = _audio.position();
 
     if (!(pos.valid & JackPositionBBT)) {
         // not much we can do
@@ -51,7 +52,7 @@ void MetronomeJack::process_callback(sample_t * /*buffer*/, nframes_t nframes)
     ASSERT(pos.tick >= 0 && pos.tick < pos.ticks_per_beat);
 
     // convert BBT position to a frame number in this period
-    double frames_per_beat = Audio->samplerate() * 60.0 / pos.beats_per_minute;
+    double frames_per_beat = _audio.samplerate() * 60.0 / pos.beats_per_minute;
     nframes_t offset = (nframes_t)(frames_per_beat * (1.0 - (pos.tick / pos.ticks_per_beat)));
     bool emphasis;
 
@@ -85,8 +86,6 @@ void MetronomeJack::process_callback(sample_t * /*buffer*/, nframes_t nframes)
         // no click in this period
         return;
     }
-
-    //std::cout << (pos.frame + offset) << ": " << emphasis << std::endl;
 
     play_click(emphasis, offset);
 }

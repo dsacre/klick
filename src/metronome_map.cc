@@ -10,7 +10,6 @@
  */
 
 #include "metronome_map.hh"
-#include "klick.hh"
 #include "options.hh"
 #include "audio_interface.hh"
 #include "audio_chunk.hh"
@@ -19,22 +18,21 @@
 #include <jack/jack.h>
 #include <jack/transport.h>
 
-using namespace std;
+#include "util/debug.hh"
 
 
 MetronomeMap::MetronomeMap(
+    AudioInterface & audio,
     TempoMapConstPtr tempomap,
     float tempo_multiplier,
     bool transport,
     bool master,
     int preroll,
-    const string & start_label,
-    AudioChunkConstPtr emphasis,
-    AudioChunkConstPtr normal
+    std::string const & start_label
 )
-  : Metronome(emphasis, normal),
+  : Metronome(audio),
     _current(0),
-    _pos(tempomap, tempo_multiplier),
+    _pos(tempomap, audio.samplerate(), tempo_multiplier),
     _transport_enabled(transport),
     _transport_master(master)
 {
@@ -55,19 +53,6 @@ MetronomeMap::MetronomeMap(
 
 MetronomeMap::~MetronomeMap()
 {
-    Audio->set_timebase_callback(NULL);
-}
-
-
-void MetronomeMap::start()
-{
-    if (_transport_master) {
-        // receive jack timebase callbacks
-        Audio->set_timebase_callback(this);
-    }
-    // base class sets process callback
-
-    Metronome::start();
 }
 
 
@@ -80,10 +65,14 @@ bool MetronomeMap::running() const
 
 void MetronomeMap::process_callback(sample_t * /*buffer*/, nframes_t nframes)
 {
-    if (_transport_enabled) {
-        if (!Audio->transport_rolling()) return;
+    if (!active()) {
+        return;
+    }
 
-        nframes_t p = Audio->frame();
+    if (_transport_enabled) {
+        if (!_audio.transport_rolling()) return;
+
+        nframes_t p = _audio.frame();
 
         if (p != _current) {
             // position changed since last period, need to relocate
@@ -172,11 +161,11 @@ void MetronomeMap::timebase_callback(jack_position_t *p)
     }
     else if (_pos.map_entry().tempo2) {
         // tempo change, use average tempo for this beat
-        p->beats_per_minute = (double)Audio->samplerate() * 60.0 / d;
+        p->beats_per_minute = (double)_audio.samplerate() * 60.0 / d;
     }
     else if (!_pos.map_entry().tempo) {
         // tempo per beat
-        size_t n = _pos.bar() * _pos.map_entry().beats + _pos.beat();
+        std::size_t n = _pos.bar() * _pos.map_entry().beats + _pos.beat();
         p->beats_per_minute = _pos.map_entry().tempi[n];
     }
 }

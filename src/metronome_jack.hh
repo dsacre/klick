@@ -18,13 +18,11 @@
 /*
  * plays a click track following jack transport; no tempomap!
  */
-
 class MetronomeJack
   : public Metronome
 {
   public:
-    MetronomeJack(AudioChunkConstPtr emphasis,
-                  AudioChunkConstPtr normal);
+    MetronomeJack(AudioInterface & audio);
     virtual ~MetronomeJack();
 
     virtual bool running() const {
@@ -32,7 +30,7 @@ class MetronomeJack
     }
 
   protected:
-    static const nframes_t MIN_FRAMES_DIFF = 64;
+    static nframes_t const MIN_FRAMES_DIFF = 64;
 
     virtual void process_callback(sample_t *, nframes_t);
 

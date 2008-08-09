@@ -28,12 +28,15 @@ class Options
     std::string client_name;
     std::vector<std::string> connect_ports;
     bool auto_connect;
-
+    bool use_osc;
+    std::string osc_port;
+    std::string osc_return_port;
+    bool interactive;
     bool follow_transport;
     std::string filename;
     std::string cmdline;
 
-    static const int CLICK_SAMPLE_FROM_FILE = -1;
+    static int const CLICK_SAMPLE_FROM_FILE = -1;
     int click_sample;
     std::string click_filename_emphasis;
     std::string click_filename_normal;
@@ -50,7 +53,7 @@ class Options
     bool transport_master;
     float delay;
 
-    static const int PREROLL_NONE = -1,
+    static int const PREROLL_NONE = -1,
                      PREROLL_2_BEATS = 0;
     int preroll;
     std::string start_label;
@@ -58,13 +61,17 @@ class Options
     bool verbose;
 
   private:
-    struct CmdlineError : public std::runtime_error {
-        CmdlineError(const std::string & w)
+    struct CmdlineError
+      : public std::runtime_error
+    {
+        CmdlineError(std::string const & w)
           : std::runtime_error(w) { }
     };
 
-    struct InvalidArgument : public std::runtime_error {
-        InvalidArgument(const std::string & w)
+    struct InvalidArgument
+      : public std::runtime_error
+    {
+        InvalidArgument(std::string const & w)
           : std::runtime_error("invalid argument (" + w + ")") { }
     };
 

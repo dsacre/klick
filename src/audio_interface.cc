@@ -18,24 +18,18 @@
 #include <cstring>
 
 #include "util/logstream.hh"
-
-using namespace std;
-using namespace das;
-using boost::array;
-
-AudioInterface *Audio = NULL;
+#include "util/debug.hh"
 
 
-AudioInterface::AudioInterface(const string & name,
-                               const vector<string> & connect_ports,
-                               bool auto_connect)
-  : _process_obj(NULL),
-    _timebase_obj(NULL),
+AudioInterface::AudioInterface(std::string const & name)
+  : _process_obj(),
+    _timebase_obj(),
     _process_mix(false),
     _shutdown(false),
+    _volume(1.0f),
     _next_chunk(0)
 {
-    if ((_client = jack_client_open(name.c_str(), (jack_options_t)0, NULL)) == 0) {
+    if ((_client = jack_client_open(name.c_str(), JackNullOption, NULL)) == 0) {
         throw AudioError("can't connect to jack server");
     }
 
@@ -49,28 +43,6 @@ AudioInterface::AudioInterface(const string & name,
     if (jack_activate(_client)) {
         throw AudioError("can't activate client");
     }
-
-    for (vector<string>::const_iterator i = connect_ports.begin(); i != connect_ports.end(); ++i) {
-        int error = jack_connect(_client, jack_port_name(_output_port), i->c_str());
-        if (error && error != EEXIST) {
-            cerr << "can't connect " << jack_port_name(_output_port) << " to " << i->c_str() << endl;
-        } else {
-            logv << "connected to " << i->c_str() << "" << endl;
-        }
-    }
-
-    if (auto_connect) {
-        // connect to first two hardware outs
-        const char **hw_ports = jack_get_ports(_client, NULL, NULL, JackPortIsPhysical | JackPortIsInput);
-        if (hw_ports) {
-            for (int n = 0; n < 2 && hw_ports[n] != NULL; ++n) {
-                jack_connect(_client, jack_port_name(_output_port), hw_ports[n]);
-            }
-            free(hw_ports);
-        }
-    }
-
-    _samplerate = jack_get_sample_rate(_client);
 }
 
 
@@ -81,24 +53,36 @@ AudioInterface::~AudioInterface()
 }
 
 
-string AudioInterface::client_name() const
+std::string AudioInterface::client_name() const
 {
-    return string(jack_get_client_name(_client));
+    return std::string(jack_get_client_name(_client));
 }
 
 
-void AudioInterface::set_process_callback(ProcessCallback *obj, bool mix)
+nframes_t AudioInterface::samplerate() const
+{
+    return jack_get_sample_rate(_client);
+}
+
+
+pthread_t AudioInterface::client_thread() const
+{
+    return jack_client_thread_id(_client);
+}
+
+
+void AudioInterface::set_process_callback(boost::shared_ptr<ProcessCallback> obj, bool mix)
 {
     _process_obj = obj;
     _process_mix = mix;
 }
 
 
-void AudioInterface::set_timebase_callback(TimebaseCallback *obj)
+void AudioInterface::set_timebase_callback(boost::shared_ptr<TimebaseCallback> obj)
 {
     if (obj) {
         if (jack_set_timebase_callback(_client, 0, &timebase_callback_, static_cast<void*>(this)) != 0) {
-            cerr << "failed to become jack transport master" << endl;
+            std::cerr << "failed to become jack transport master" << std::endl;
         }
     } else {
         if (_timebase_obj) {
@@ -106,6 +90,33 @@ void AudioInterface::set_timebase_callback(TimebaseCallback *obj)
         }
     }
     _timebase_obj = obj;
+}
+
+
+void AudioInterface::connect(std::vector<std::string> const & ports)
+{
+    for (std::vector<std::string>::const_iterator i = ports.begin(); i != ports.end(); ++i) {
+        int error = jack_connect(_client, jack_port_name(_output_port), i->c_str());
+        if (error && error != EEXIST) {
+            std::cerr << "can't connect " << jack_port_name(_output_port) << " to " << i->c_str() << std::endl;
+        } else {
+            das::logv << "connected to " << i->c_str() << "" << std::endl;
+        }
+    }
+}
+
+
+void AudioInterface::autoconnect()
+{
+    // find first two hardware outs
+    char const **hw_ports = jack_get_ports(_client, NULL, NULL, JackPortIsPhysical | JackPortIsInput);
+
+    if (hw_ports) {
+        for (int n = 0; n < 2 && hw_ports[n] != NULL; ++n) {
+            jack_connect(_client, jack_port_name(_output_port), hw_ports[n]);
+        }
+        free(hw_ports);
+    }
 }
 
 
@@ -123,9 +134,9 @@ jack_position_t AudioInterface::position() const
 }
 
 
-bool AudioInterface::set_position(const jack_position_t & pos)
+bool AudioInterface::set_position(jack_position_t const & pos)
 {
-    // jack doesn't modify pos, should have been const anyway
+    // jack doesn't modify pos, should have been const anyway, i guess...
     return (jack_transport_reposition(_client, const_cast<jack_position_t*>(&pos)) == 0);
 }
 
@@ -141,7 +152,7 @@ int AudioInterface::process_callback_(nframes_t nframes, void *arg)
     AudioInterface *this_ = static_cast<AudioInterface*>(arg);
     sample_t *buffer = (sample_t *)jack_port_get_buffer(this_->_output_port, nframes);
 
-    memset(buffer, 0, nframes * sizeof(sample_t));
+    ::memset(buffer, 0, nframes * sizeof(sample_t));
 
     if (this_->_process_obj) {
         (this_->_process_obj)->process_callback(buffer, nframes);
@@ -174,6 +185,8 @@ void AudioInterface::shutdown_callback_(void *arg)
 
 void AudioInterface::play(AudioChunkConstPtr chunk, nframes_t offset, float volume)
 {
+    ASSERT(chunk->samplerate() == samplerate());
+
     _chunks[_next_chunk].chunk  = chunk;
     _chunks[_next_chunk].offset = offset;
     _chunks[_next_chunk].pos    = 0;
@@ -189,8 +202,8 @@ void AudioInterface::process_mix(sample_t *buffer, nframes_t nframes)
         if (i->chunk) {
             process_mix_samples(buffer + i->offset,
                                 i->chunk->samples() + i->pos,
-                                min(nframes - i->offset, i->chunk->length() - i->pos),
-                                i->volume);
+                                std::min(nframes - i->offset, i->chunk->length() - i->pos),
+                                i->volume * _volume);
 
             i->pos += nframes - i->offset;
             i->offset = 0;
@@ -203,7 +216,7 @@ void AudioInterface::process_mix(sample_t *buffer, nframes_t nframes)
 }
 
 
-void AudioInterface::process_mix_samples(sample_t *dest, const sample_t *src, nframes_t length, float volume)
+void AudioInterface::process_mix_samples(sample_t *dest, sample_t const * src, nframes_t length, float volume)
 {
     for (sample_t *end = dest + length; dest < end; dest++, src++) {
         *dest += *src * volume;

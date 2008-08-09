@@ -22,17 +22,14 @@
 #include "util/string.hh"
 #include "util/debug.hh"
 
-using namespace std;
-using namespace das;
 
-
-AudioChunk::AudioChunk(const string & filename, nframes_t samplerate)
+AudioChunk::AudioChunk(std::string const & filename, nframes_t samplerate)
 {
     SF_INFO sfinfo = { 0, 0, 0, 0, 0, 0 };
     SNDFILE *f;
 
     if ((f = sf_open(filename.c_str(), SFM_READ, &sfinfo)) == NULL) {
-        throw runtime_error(make_string() << "failed to open audio file '" << filename << "'");
+        throw std::runtime_error(das::make_string() << "failed to open audio file '" << filename << "'");
     }
 
     sample_t *buf = new sample_t[sfinfo.frames * sfinfo.channels];
@@ -74,7 +71,7 @@ AudioChunk::~AudioChunk()
 }
 
 
-void AudioChunk::resample(const sample_t *samples_in, nframes_t length_in, nframes_t samplerate_in,
+void AudioChunk::resample(sample_t const * samples_in, nframes_t length_in, nframes_t samplerate_in,
                           sample_t *& samples_out, nframes_t & length_out, nframes_t samplerate_out)
 {
     SRC_DATA src_data;
@@ -91,7 +88,7 @@ void AudioChunk::resample(const sample_t *samples_in, nframes_t length_in, nfram
 
     if ((error = src_simple(&src_data, SRC_SINC_BEST_QUALITY, 1)) != 0) {
         delete [] src_data.data_out;
-        throw runtime_error(make_string() << "error converting samplerate: " << src_strerror(error));
+        throw std::runtime_error(das::make_string() << "error converting samplerate: " << src_strerror(error));
     }
 
     samples_out = src_data.data_out;

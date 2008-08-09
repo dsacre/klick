@@ -14,15 +14,18 @@
 
 #include "audio.hh"
 
+#include "util/disposable.hh"
+
 
 /*
  * mono 32-bit float audio sample
  */
 class AudioChunk
+  : public das::disposable
 {
   public:
     // loads sample from file, converting to the given samplerate if samplerate is non-zero
-    AudioChunk(const std::string & filename, nframes_t samplerate = 0);
+    AudioChunk(std::string const & filename, nframes_t samplerate = 0);
 
     ~AudioChunk();
 
@@ -32,12 +35,12 @@ class AudioChunk
     // resample to the given samplerate
     void resample(nframes_t samplerate);
 
-    const sample_t * samples() const { return _samples; }
+    sample_t const * samples() const { return _samples; }
     nframes_t length() const { return _length; }
     nframes_t samplerate() const { return _samplerate; }
 
   protected:
-    static void resample(const sample_t *samples_in, nframes_t length_in, nframes_t samplerate_in,
+    static void resample(sample_t const * samples_in, nframes_t length_in, nframes_t samplerate_in,
                          sample_t *& samples_out, nframes_t & length_out, nframes_t samplerate_out);
 
     sample_t *_samples;

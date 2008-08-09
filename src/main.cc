@@ -14,15 +14,34 @@
 
 #include <string>
 #include <iostream>
+#include <fstream>
 #include <csignal>
 
 
 static Klick *app = NULL;
 
+static int ret = EXIT_SUCCESS;
 
-static void signal_handler(int /*sig*/)
+
+std::string data_file(std::string const & path)
+{
+    std::fstream f;
+    f.open(path.c_str(), std::ios::in);
+    if (f.is_open()) {
+        f.close();
+        return path;
+    }
+    return std::string(DATA_DIR"/") + path;
+}
+
+
+static void signal_handler(int sig)
 {
     app->signal_quit();
+
+    if (sig != SIGINT) {
+        ret = EXIT_FAILURE;
+    }
 }
 
 
@@ -39,7 +58,7 @@ int main(int argc, char *argv[])
         app->run();
 
         delete app;
-        return EXIT_SUCCESS;
+        return ret;
     }
     catch (Exit & e) {
         delete app;

@@ -34,9 +34,9 @@ class Position
         float volume;
     };
 
-    Position(TempoMapConstPtr tempomap, float multiplier);
+    Position(TempoMapConstPtr tempomap, float_frames_t samplerate, float multiplier);
 
-    void set_start_label(const std::string & start_label);
+    void set_start_label(std::string const & start_label);
     void add_preroll(int nbars);
 
     // move to frame
@@ -61,7 +61,7 @@ class Position
     int bar_total() const { return _bar_total; }
 
     // current tempomap entry
-    const TempoMap::Entry & map_entry() const {
+    TempoMap::Entry const & map_entry() const {
         return (*_tempomap)[_entry];
     }
 
@@ -70,7 +70,7 @@ class Position
     void reset();
 
     // calculate length of entry or beat(s)
-    float_frames_t frame_dist(const TempoMap::Entry & e, int start, int end) const;
+    float_frames_t frame_dist(TempoMap::Entry const & e, int start, int end) const;
 
     float_frames_t _frame;      // frame position of current tick
     int _entry, _bar, _beat;    // current position in tempomap
@@ -78,6 +78,7 @@ class Position
     bool _init, _end;
 
     TempoMapConstPtr _tempomap;
+    float_frames_t _samplerate;
     float _multiplier;
 
     std::vector<float_frames_t> _start_frames;

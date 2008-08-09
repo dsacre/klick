@@ -15,33 +15,31 @@
 #include "util/debug.hh"
 
 
-Metronome::Metronome(AudioChunkConstPtr emphasis,
-                     AudioChunkConstPtr normal)
-  : _click_emphasis(emphasis),
-    _click_normal(normal)
+Metronome::Metronome(AudioInterface & audio)
+  : _audio(audio)
+  , _active(false)
 {
-    ASSERT(_click_emphasis);
-    ASSERT(_click_normal);
-    ASSERT(_click_emphasis->samplerate() == Audio->samplerate());
-    ASSERT(_click_normal->samplerate() == Audio->samplerate());
 }
 
 
 Metronome::~Metronome()
 {
-    Audio->set_process_callback(NULL);
 }
 
 
-void Metronome::start()
+void Metronome::set_sound(AudioChunkConstPtr emphasis, AudioChunkConstPtr normal)
 {
-    Audio->set_process_callback(this, true);
+    _click_emphasis = emphasis;
+    _click_normal = normal;
 }
 
 
 void Metronome::play_click(bool emphasis, nframes_t offset, float volume)
 {
+    ASSERT(_click_emphasis);
+    ASSERT(_click_normal);
+
     AudioChunkConstPtr click = emphasis ? _click_emphasis : _click_normal;
 
-    Audio->play(click, offset, volume);
+    _audio.play(click, offset, volume);
 }

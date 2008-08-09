@@ -14,30 +14,32 @@
 
 #include "audio.hh"
 #include "audio_chunk.hh"
-#include "util/global_object.hh"
 
 #include <string>
 #include <vector>
 #include <boost/array.hpp>
 #include <stdexcept>
+#include <boost/noncopyable.hpp>
 
 #include <jack/transport.h>
 
 
-extern class AudioInterface *Audio;
-
-
 class AudioInterface
-  : public das::global_object<AudioInterface, ::Audio>
+  : boost::noncopyable
 {
-    static const int MAX_PLAYING_CHUNKS = 4;
+    // maximum number of audio chunks that can be played simultaneously
+    static int const MAX_PLAYING_CHUNKS = 4;
 
   public:
     struct AudioError : public std::runtime_error {
-        AudioError(const std::string & w)
+        AudioError(std::string const & w)
           : std::runtime_error(w) { }
     };
 
+    AudioInterface(std::string const & name);
+    ~AudioInterface();
+
+    // abstract base class for process callbacks
     class ProcessCallback {
       protected:
         ProcessCallback() { }
@@ -46,6 +48,7 @@ class AudioInterface
         virtual void process_callback(sample_t *, nframes_t) = 0;
     };
 
+    // abstract base class for timebase callbacks
     class TimebaseCallback {
       protected:
         TimebaseCallback() { }
@@ -54,24 +57,32 @@ class AudioInterface
         virtual void timebase_callback(jack_position_t *) = 0;
     };
 
-    AudioInterface(const std::string & name,
-                   const std::vector<std::string> & connect_ports,
-                   bool auto_connect);
-    ~AudioInterface();
+    void set_process_callback(boost::shared_ptr<ProcessCallback>, bool mix = false);
+    void set_timebase_callback(boost::shared_ptr<TimebaseCallback>);
 
+    // get client name
     std::string client_name() const;
+    // get sample rate
+    nframes_t samplerate() const;
 
-    void set_process_callback(ProcessCallback *, bool mix = false);
-    void set_timebase_callback(TimebaseCallback *);
+    pthread_t client_thread() const;
 
-    nframes_t samplerate() const { return _samplerate; }
+    void set_volume(float v) { _volume = v; }
+    float volume() const { return _volume; }
+
+    void connect(std::vector<std::string> const & ports);
+    void autoconnect();
+
+    // JACK transport
     bool transport_rolling() const;
     jack_position_t position() const;
     nframes_t frame() const { return position().frame; }
-    bool set_position(const jack_position_t &);
+    bool set_position(jack_position_t const &);
     bool set_frame(nframes_t);
+
     bool is_shutdown() const { return _shutdown; }
 
+    // start playing audio chunk at offset into the current period
     void play(AudioChunkConstPtr chunk,
               nframes_t offset,
               float volume = 1.0);
@@ -82,16 +93,17 @@ class AudioInterface
     static void shutdown_callback_(void *);
 
     void process_mix(sample_t *, nframes_t);
-    void process_mix_samples(sample_t *dest, const sample_t *src, nframes_t length, float volume = 1.0);
+    void process_mix_samples(sample_t *dest, sample_t const * src, nframes_t length, float volume = 1.0);
 
-    ProcessCallback *_process_obj;
-    TimebaseCallback *_timebase_obj;
+    boost::shared_ptr<ProcessCallback> _process_obj;
+    boost::shared_ptr<TimebaseCallback> _timebase_obj;
     bool _process_mix;
     volatile bool _shutdown;
 
     jack_client_t *_client;
-    jack_port_t   *_output_port;
-    nframes_t      _samplerate;
+    jack_port_t *_output_port;
+
+    float _volume;
 
     struct PlayingChunk {
         AudioChunkConstPtr chunk;

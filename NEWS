@@ -1,3 +1,7 @@
+2008-08-11: Version 0.8.0
+ * Added basic OSC support.
+ * Added interactive mode (klick -i).
+
 2008-05-24: Version 0.7.0
  * New default sound (square wave).
  * Allow volume and pitch of emphasized and normal beats to be adjusted

@@ -66,7 +66,7 @@ void Options::print_usage(std::ostream & out)
         << "  -o port           OSC port to listen on\n"
 #endif
 #ifdef ENABLE_TERMINAL
-        << "  -i                enable terminal control\n"
+        << "  -i                interactive mode\n"
 #endif
         << "  -s number         use built-in sounds:\n"
         << "                      0: square wave (default)\n"

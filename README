@@ -30,8 +30,8 @@ to install to /usr rather than /usr/local:
 scons PREFIX=/usr install
 
 
-Usage
-=====
+Usage:
+======
 
 klick has three basic modes of operation:
 
@@ -72,6 +72,8 @@ Command Line Options:
 -n name           set jack client name
 -p port,..        jack port(s) to connect to
 -P                automatically connect to hardware ports
+-o port           OSC port to listen on
+-i                interactive mode
 -s number         use built-in sounds:
                     0: square wave (default)
                     1: sine wave
@@ -89,6 +91,20 @@ Command Line Options:
 -l label          start playback at the given label
 -x multiplier     multiply tempo by the given factor
 -h                show this help
+
+
+Interactive Mode:
+=================
+
+The following keyboard commands are available in interactive mode:
+
+Arrow up/down: increase/reduce tempo by 10 bpm
+Arrow right/left: increase/reduce tempo by 1 bpm
+0-9: set beats per bar (0/1: all beats are even)
+q/w/e/r: set beat type (whole, half, quarter, eighth note)
++/=, -: increase/reduce volume
+Space: start/stop metronome
+Escape: exit klick
 
 
 Tempo Map File Format:
@@ -151,3 +167,66 @@ verse2:   12 120          # back to 4/4 (implied)
 chorus2:  16 140          # jump to 140 bpm
 outro:    6 140
           2 140-80        # ritardando over the last 2 bars
+
+
+OSC Commands:
+=============
+
+klick understands the following OSC messages:
+
+/klick/ping
+responds: /klick/pong
+
+/klick/register_client
+registers a client to receive notifications when any parameter changes
+
+/klick/unregister_client
+unregisters a client
+
+/klick/query
+reports current state (same as /klick/*/query)
+
+/klick/quit
+terminates klick
+
+/klick/config/set_sound ,i <number>
+sets the sound to one of the built-in ones
+
+/klick/config/set_sound ,ss <filename> <filename>
+loads the sound from two audio files
+
+/klick/config/set_volume ,f <volume>
+sets the output volume
+
+/klick/config/autoconnect
+connects klick's output port to the first two hardware ports
+
+/klick/config/query
+reports current state:
+    /klick/config/sound ,i
+    /klick/config/sound ,ss
+    /klick/config/volume ,f
+
+/klick/metro/start
+starts the metronome
+
+/klick/metro/stop
+stops the metronome
+
+/klick/metro/query
+reports current state:
+    /klick/metro/active ,i
+
+/klick/simple/set_tempo ,f <tempo>
+sets the metronome's tempo
+
+/klick/simple/set_meter ,ii <beats> <denom>
+sets the metronome's meter
+
+/klick/simple/tap
+tap tempo
+
+/klick/simple/query
+reports current state:
+    /klick/simple/tempo ,f
+    /klick/simple/meter ,ii

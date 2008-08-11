@@ -76,6 +76,7 @@ OSCHandler::OSCHandler(std::string const & port,
 
 OSCHandler::~OSCHandler()
 {
+    _osc.reset();
 }
 
 

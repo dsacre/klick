@@ -83,7 +83,7 @@ int OSCInterface::callback_(char const *path, char const *types, lo_arg **argv, 
             break;
           case 's':
             m.args.push_back(std::string(&argv[i]->s));
-            das::logv << argv[i]->s;
+            das::logv << &argv[i]->s;
             break;
           default:
             FAIL();

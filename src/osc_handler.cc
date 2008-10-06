@@ -16,6 +16,7 @@
 #include "metronome_map.hh"
 #include "metronome_jack.hh"
 #include "audio_interface.hh"
+#include "tempomap.hh"
 
 #include <iostream>
 
@@ -61,6 +62,7 @@ OSCHandler::OSCHandler(std::string const & port,
     _osc->add_method("/klick/simple/set_meter", "ii", this, &OSCHandler::on_simple_set_meter);
     _osc->add_method("/klick/simple/tap", "", this, &OSCHandler::on_simple_tap);
     _osc->add_method("/klick/simple/tap", "d", this, &OSCHandler::on_simple_tap);
+    _osc->add_method("/klick/simple/set_pattern", "s", this, &OSCHandler::on_simple_set_pattern);
     _osc->add_method("/klick/simple/query", "", this, &OSCHandler::on_simple_query);
 
     _osc->add_method("/klick/map/load_file", "s", this, &OSCHandler::on_map_load_file);
@@ -299,12 +301,28 @@ void OSCHandler::on_simple_tap(Message const & msg)
 }
 
 
+void OSCHandler::on_simple_set_pattern(Message const & msg)
+{
+    MetronomeSimplePtr m = cast_metronome<MetronomeSimple>(msg.path);
+    if (m) {
+        try {
+            TempoMap::Pattern p = TempoMap::parse_pattern(boost::any_cast<std::string>(msg.args[0]), std::max(1, m->beats()));
+            m->set_pattern(p);
+        } catch (TempoMap::ParseError & e) {
+            std::cout << e.what() << std::endl;
+        }
+        _osc->send(_clients, "/klick/simple/pattern", TempoMap::pattern_to_string(m->pattern()));
+    }
+}
+
+
 void OSCHandler::on_simple_query(Message const & msg)
 {
     MetronomeSimplePtr m = cast_metronome<MetronomeSimple>(msg.path);
     if (m) {
         _osc->send(msg.src, "/klick/simple/tempo", m->tempo());
         _osc->send(msg.src, "/klick/simple/meter", m->beats(), m->denom());
+        _osc->send(msg.src, "/klick/simple/pattern", TempoMap::pattern_to_string(m->pattern()));
     }
 }
 

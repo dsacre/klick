@@ -85,9 +85,13 @@ class TempoMap
                                   Pattern const & pattern = Pattern(),
                                   float volume = 1.0f);
 
-  protected:
+  public:
     // builds a vector of beat types, based on the string description
     static Pattern parse_pattern(std::string const &s, int nbeats);
+
+    static std::string pattern_to_string(Pattern const & p);
+
+  private:
     // parses a comma-separated tempo string
     static std::vector<float> parse_tempi(std::string const &s, float tempo1, int nbeats_total);
 

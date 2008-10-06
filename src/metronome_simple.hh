@@ -43,6 +43,7 @@ class MetronomeSimple
     float tempo() const { return _tempo; }
     int beats() const { return _beats; }
     int denom() const { return _denom; }
+    TempoMap::Pattern const & pattern() const { return _pattern; }
 
     virtual void set_active(bool);
 

@@ -157,7 +157,7 @@ void MetronomeSimple::process_callback(sample_t * /*buffer*/, nframes_t nframes)
         nframes_t offset = _next - _frame;
 
         if (_pattern.size()) {
-            ASSERT((int)_pattern.size() == _beats);
+            ASSERT((int)_pattern.size() == std::max(1, _beats));
             if (_pattern[_beat] != TempoMap::BEAT_SILENT) {
                 bool emphasis = (_pattern[_beat] == TempoMap::BEAT_EMPHASIS);
                 play_click(emphasis, offset);

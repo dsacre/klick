@@ -67,6 +67,7 @@ class OSCHandler
     void on_simple_set_tempo(Message const &);
     void on_simple_set_meter(Message const &);
     void on_simple_tap(Message const &);
+    void on_simple_set_pattern(Message const &);
     void on_simple_query(Message const &);
 
     void on_map_load_file(Message const &);

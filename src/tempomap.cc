@@ -120,6 +120,18 @@ TempoMap::Pattern TempoMap::parse_pattern(std::string const &s, int nbeats)
 }
 
 
+std::string TempoMap::pattern_to_string(Pattern const & p)
+{
+    std::ostringstream os;
+
+    for (Pattern::const_iterator i = p.begin(); i != p.end(); ++i) {
+        os << (*i == BEAT_EMPHASIS ? "X" : *i == BEAT_NORMAL ? "x" : ".");
+    }
+
+    return os.str();
+}
+
+
 std::vector<float> TempoMap::parse_tempi(std::string const &s, float tempo1, int nbeats_total)
 {
     std::vector<float> tempi;
@@ -182,8 +194,7 @@ std::string TempoMap::dump() const
         if (i->pattern.empty()) {
             os << "-";
         } else {
-            for (Pattern::const_iterator j = i->pattern.begin(); j != i->pattern.end(); ++j)
-                os << (*j == BEAT_EMPHASIS ? "X" : *j == BEAT_NORMAL ? "x" : ".");
+            os << pattern_to_string(i->pattern);
         }
         os << " ";
         // volume

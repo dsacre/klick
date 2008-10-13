@@ -22,7 +22,9 @@
 
 MetronomeSimple::MetronomeSimple(AudioInterface & audio)
   : Metronome(audio)
-  , _tempo(120)
+  , _tempo(120.0)
+  , _tempo_increment(0.0)
+  , _tempo_limit(120.0)
   , _beats(4)
   , _denom(4)
   , _frame(0)
@@ -35,7 +37,9 @@ MetronomeSimple::MetronomeSimple(AudioInterface & audio)
 
 MetronomeSimple::MetronomeSimple(AudioInterface & audio, TempoMap::Entry const & params)
   : Metronome(audio)
-  , _tempo(0)
+  , _tempo(0.0)
+  , _tempo_increment(0.0)
+  , _tempo_limit(120.0)
   , _beats(0)
   , _denom(0)
   , _frame(0)
@@ -55,6 +59,18 @@ MetronomeSimple::~MetronomeSimple()
 void MetronomeSimple::set_tempo(float tempo)
 {
     _tempo = tempo;
+}
+
+
+void MetronomeSimple::set_tempo_increment(float tempo_increment)
+{
+    _tempo_increment = tempo_increment;
+}
+
+
+void MetronomeSimple::set_tempo_limit(float tempo_limit)
+{
+    _tempo_limit = tempo_limit;
 }
 
 

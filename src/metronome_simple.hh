@@ -32,6 +32,8 @@ class MetronomeSimple
     virtual bool running() const { return true; }
 
     void set_tempo(float);
+    void set_tempo_increment(float);
+    void set_tempo_limit(float);
     void set_meter(int, int);
     void set_pattern(TempoMap::Pattern const &);
 
@@ -41,6 +43,8 @@ class MetronomeSimple
     void tap();
 
     float tempo() const { return _tempo; }
+    float tempo_increment() const { return _tempo_increment; }
+    float tempo_limit() const { return _tempo_limit; }
     int beats() const { return _beats; }
     int denom() const { return _denom; }
     TempoMap::Pattern const & pattern() const { return _pattern; }
@@ -58,6 +62,7 @@ class MetronomeSimple
     static float const TAP_DIFF = 0.2;
 
     float _tempo;
+    float _tempo_increment, _tempo_limit;
     int _beats, _denom;
     TempoMap::Pattern _pattern;
 

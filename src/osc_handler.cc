@@ -59,6 +59,8 @@ OSCHandler::OSCHandler(std::string const & port,
     _osc->add_method("/klick/metro/query", "", this, &OSCHandler::on_metro_query);
 
     _osc->add_method("/klick/simple/set_tempo", "f", this, &OSCHandler::on_simple_set_tempo);
+    _osc->add_method("/klick/simple/set_tempo_increment", "f", this, &OSCHandler::on_simple_set_tempo_increment);
+    _osc->add_method("/klick/simple/set_tempo_limit", "f", this, &OSCHandler::on_simple_set_tempo_limit);
     _osc->add_method("/klick/simple/set_meter", "ii", this, &OSCHandler::on_simple_set_meter);
     _osc->add_method("/klick/simple/tap", "", this, &OSCHandler::on_simple_tap);
     _osc->add_method("/klick/simple/tap", "d", this, &OSCHandler::on_simple_tap);
@@ -277,6 +279,26 @@ void OSCHandler::on_simple_set_tempo(Message const & msg)
 }
 
 
+void OSCHandler::on_simple_set_tempo_increment(Message const & msg)
+{
+    MetronomeSimplePtr m = cast_metronome<MetronomeSimple>(msg.path);
+    if (m) {
+        m->set_tempo_increment(boost::any_cast<float>(msg.args[0]));
+        _osc->send(_clients, "/klick/simple/tempo_increment", m->tempo_increment());
+    }
+}
+
+
+void OSCHandler::on_simple_set_tempo_limit(Message const & msg)
+{
+    MetronomeSimplePtr m = cast_metronome<MetronomeSimple>(msg.path);
+    if (m) {
+        m->set_tempo_limit(boost::any_cast<float>(msg.args[0]));
+        _osc->send(_clients, "/klick/simple/tempo_limit", m->tempo_limit());
+    }
+}
+
+
 void OSCHandler::on_simple_set_meter(Message const & msg)
 {
     MetronomeSimplePtr m = cast_metronome<MetronomeSimple>(msg.path);
@@ -321,6 +343,8 @@ void OSCHandler::on_simple_query(Message const & msg)
     MetronomeSimplePtr m = cast_metronome<MetronomeSimple>(msg.path);
     if (m) {
         _osc->send(msg.src, "/klick/simple/tempo", m->tempo());
+        _osc->send(msg.src, "/klick/simple/tempo_increment", m->tempo_increment());
+        _osc->send(msg.src, "/klick/simple/tempo_limit", m->tempo_limit());
         _osc->send(msg.src, "/klick/simple/meter", m->beats(), m->denom());
         _osc->send(msg.src, "/klick/simple/pattern", TempoMap::pattern_to_string(m->pattern()));
     }

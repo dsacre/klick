@@ -237,10 +237,6 @@ void OSCHandler::on_metro_start(Message const & /*msg*/)
     MetronomePtr m = _klick.metronome();
     m->start();
     _osc->send(_clients, "/klick/metro/active", m->active());
-
-    if (MetronomeSimplePtr sm = boost::dynamic_pointer_cast<MetronomeSimple>(m)) {
-        _osc->send(_clients, "/klick/simple/current_tempo", sm->current_tempo());
-    }
 }
 
 
@@ -249,10 +245,6 @@ void OSCHandler::on_metro_stop(Message const & /*msg*/)
     MetronomePtr m = _klick.metronome();
     m->stop();
     _osc->send(_clients, "/klick/metro/active", m->active());
-
-    if (MetronomeSimplePtr sm = boost::dynamic_pointer_cast<MetronomeSimple>(m)) {
-        _osc->send(_clients, "/klick/simple/current_tempo", 0.0f);
-    }
 }
 
 

@@ -276,9 +276,8 @@ void Klick::set_metronome(MetronomeType type)
     _audio->set_process_callback(_metro, true);
 
     if (_options->transport_master) {
-        boost::shared_ptr<AudioInterface::TimebaseCallback> cb =
-            boost::dynamic_pointer_cast<AudioInterface::TimebaseCallback>(_metro);
-        if (cb) {
+        if (boost::shared_ptr<AudioInterface::TimebaseCallback> cb =
+            boost::dynamic_pointer_cast<AudioInterface::TimebaseCallback>(_metro)) {
             _audio->set_timebase_callback(cb);
         }
     }
@@ -311,6 +310,12 @@ void Klick::run()
 #ifdef ENABLE_TERMINAL
         if (_term) {
             _term->handle_input();
+        }
+#endif
+
+#ifdef ENABLE_OSC
+        if (_osc) {
+            _osc->update();
         }
 #endif
 

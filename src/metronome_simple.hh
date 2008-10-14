@@ -45,6 +45,7 @@ class MetronomeSimple
     float tempo() const { return _tempo; }
     float tempo_increment() const { return _tempo_increment; }
     float tempo_limit() const { return _tempo_limit; }
+    float current_tempo() const { return _active ? _tempo : 0.0f; /*TODO*/ }
     int beats() const { return _beats; }
     int denom() const { return _denom; }
     TempoMap::Pattern const & pattern() const { return _pattern; }

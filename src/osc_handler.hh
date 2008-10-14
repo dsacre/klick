@@ -40,9 +40,11 @@ class OSCHandler
         _osc->start();
     }
 
+    void update();
+
   private:
     template <typename T>
-    boost::shared_ptr<T> cast_metronome(std::string const & f = std::string());
+    boost::shared_ptr<T> cast_metronome(std::string const & f = std::string()) const;
 
     typedef OSCInterface::Message Message;
 
@@ -85,6 +87,9 @@ class OSCHandler
 
     typedef std::list<OSCInterface::Address> ClientList;
     ClientList _clients;
+
+
+    float _current_tempo;
 };
 
 

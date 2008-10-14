@@ -37,6 +37,7 @@ OSCHandler::OSCHandler(std::string const & port,
   : _osc(new OSCInterface(port))
   , _klick(klick)
   , _audio(audio)
+  , _current_tempo(0.0f)
 {
     _osc->add_method("/klick/ping", "", this, &OSCHandler::on_ping);
     _osc->add_method("/klick/check","", this, &OSCHandler::on_check);
@@ -85,7 +86,7 @@ OSCHandler::~OSCHandler()
 
 
 template <typename T>
-boost::shared_ptr<T> OSCHandler::cast_metronome(std::string const & func)
+boost::shared_ptr<T> OSCHandler::cast_metronome(std::string const & func) const
 {
     boost::shared_ptr<T> m = boost::dynamic_pointer_cast<T>(_klick.metronome());
 
@@ -236,6 +237,10 @@ void OSCHandler::on_metro_start(Message const & /*msg*/)
     MetronomePtr m = _klick.metronome();
     m->start();
     _osc->send(_clients, "/klick/metro/active", m->active());
+
+    if (MetronomeSimplePtr sm = boost::dynamic_pointer_cast<MetronomeSimple>(m)) {
+        _osc->send(_clients, "/klick/simple/current_tempo", sm->current_tempo());
+    }
 }
 
 
@@ -244,6 +249,10 @@ void OSCHandler::on_metro_stop(Message const & /*msg*/)
     MetronomePtr m = _klick.metronome();
     m->stop();
     _osc->send(_clients, "/klick/metro/active", m->active());
+
+    if (MetronomeSimplePtr sm = boost::dynamic_pointer_cast<MetronomeSimple>(m)) {
+        _osc->send(_clients, "/klick/simple/current_tempo", 0.0f);
+    }
 }
 
 
@@ -345,6 +354,7 @@ void OSCHandler::on_simple_query(Message const & msg)
         _osc->send(msg.src, "/klick/simple/tempo", m->tempo());
         _osc->send(msg.src, "/klick/simple/tempo_increment", m->tempo_increment());
         _osc->send(msg.src, "/klick/simple/tempo_limit", m->tempo_limit());
+        _osc->send(msg.src, "/klick/simple/current_tempo", m->current_tempo());
         _osc->send(msg.src, "/klick/simple/meter", m->beats(), m->denom());
         _osc->send(msg.src, "/klick/simple/pattern", TempoMap::pattern_to_string(m->pattern()));
     }
@@ -378,4 +388,17 @@ void OSCHandler::on_map_query(Message const & msg)
 void OSCHandler::on_jack_query(Message const & /*msg*/)
 {
     // nothing
+}
+
+
+void OSCHandler::update()
+{
+    MetronomePtr m = _klick.metronome();
+
+    if (MetronomeSimplePtr sm = boost::dynamic_pointer_cast<MetronomeSimple>(m)) {
+        if (_current_tempo != sm->current_tempo()) {
+            _current_tempo = sm->current_tempo();
+            _osc->send(_clients, "/klick/simple/current_tempo", _current_tempo);
+        }
+    }
 }

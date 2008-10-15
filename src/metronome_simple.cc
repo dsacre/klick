@@ -59,6 +59,9 @@ MetronomeSimple::~MetronomeSimple()
 void MetronomeSimple::set_tempo(float tempo)
 {
     _tempo = tempo;
+    if (_active) {
+        _current_tempo = _tempo;
+    }
 }
 
 
@@ -106,7 +109,11 @@ void MetronomeSimple::set_active(bool b)
 
     if (b) {
         _beat = 0;
-        _next = _frame = 0;
+        _next = 0;
+        _frame = 0;
+        _current_tempo = _tempo;
+    } else {
+        _current_tempo = 0.0f;
     }
 }
 
@@ -132,6 +139,7 @@ void MetronomeSimple::tap(double now)
     if (_taps.size() > 1) {
         _tempo = 60.0f * (_taps.size() - 1) / (_taps.back() - _taps.front());
         if (active()) {
+            _current_tempo = _tempo;
             _tapped = true;
         }
     }
@@ -169,7 +177,14 @@ void MetronomeSimple::process_callback(sample_t * /*buffer*/, nframes_t nframes)
         return;
     }
 
-    if (_frame + nframes >= _next) {
+    if (_frame + nframes > _next)
+    {
+        // speed trainer
+        if (_frame) {
+            _current_tempo += _tempo_increment / std::max(_beats, 1);
+            _current_tempo = std::min(_tempo_limit, _current_tempo);
+        }
+
         nframes_t offset = _next - _frame;
 
         if (_pattern.size()) {
@@ -184,7 +199,7 @@ void MetronomeSimple::process_callback(sample_t * /*buffer*/, nframes_t nframes)
 
         _prev = _next;
 
-        _next += (nframes_t)(_audio.samplerate() * 240.0 / (_tempo * _denom));
+        _next += (nframes_t)(_audio.samplerate() * 240.0 / (_current_tempo * _denom));
 
         if (++_beat >= _beats) {
             _beat = 0;

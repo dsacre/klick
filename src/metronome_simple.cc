@@ -105,16 +105,16 @@ void MetronomeSimple::set_all(TempoMap::Entry const & params)
 
 void MetronomeSimple::set_active(bool b)
 {
-    _active = b;
-
-    if (b) {
+    if (b && !_active) {
         _beat = 0;
         _next = 0;
         _frame = 0;
         _current_tempo = _tempo;
-    } else {
+    } else if (!b) {
         _current_tempo = 0.0f;
     }
+
+    _active = b;
 }
 
 

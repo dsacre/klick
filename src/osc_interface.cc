@@ -12,6 +12,7 @@
 #include "osc_interface.hh"
 
 #include <iostream>
+#include <cstdlib>
 
 #include <lo/lo.h>
 
@@ -22,8 +23,8 @@
 OSCInterface::OSCInterface(std::string const & port)
 {
     struct error_handler {
-        static void func(int num, char const *msg, char const *where) {
-            std::cerr << "liblo server error " << num << " in " << where << ": " << msg << std::endl;
+        static void func(int num, char const *msg, char const * /*where*/) {
+            std::cerr << "liblo server error " << num << ": " << msg << std::endl;
         }
     };
     _thread = lo_server_thread_new(!port.empty() ? port.c_str() : NULL, error_handler::func);
@@ -31,7 +32,6 @@ OSCInterface::OSCInterface(std::string const & port)
     if (!_thread) {
         throw std::runtime_error("can't create OSC server thread");
     }
-
 
     char *tmp = lo_server_thread_get_url(_thread);
     _url = tmp;

@@ -121,7 +121,6 @@ void OSCHandler::on_ping(Message const & msg)
     OSCInterface::Address addr(optional_address(msg));
 
     std::cout << "ping from " << msg.src.url() << std::endl;
-    //std::cout << "replying to " << addr.url() << std::endl;
     _osc->send(addr, "/klick/pong");
 }
 

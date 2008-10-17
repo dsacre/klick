@@ -1,3 +1,8 @@
+2008-10-17: Version 0.9.0
+
+ * New OSC methods: set_tempo_increment, set_tempo_limit, set_pattern.
+ * Added optional return address parameter to all query methods.
+
 2008-08-11: Version 0.8.0
 
  * Added basic OSC support.

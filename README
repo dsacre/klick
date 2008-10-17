@@ -175,15 +175,19 @@ OSC Commands:
 klick understands the following OSC messages:
 
 /klick/ping
+/klick/ping ,s <return_address>
 responds: /klick/pong
 
 /klick/register_client
+/klick/register_client ,s <address>
 registers a client to receive notifications when any parameter changes
 
 /klick/unregister_client
+/klick/unregister_client ,s <address>
 unregisters a client
 
 /klick/query
+/klick/query ,s <return_address>
 reports current state (same as /klick/*/query)
 
 /klick/quit
@@ -202,6 +206,7 @@ sets the output volume
 connects klick's output port to the first two hardware ports
 
 /klick/config/query
+/klick/config/query ,s <return_address>
 reports current state:
     /klick/config/sound ,i
     /klick/config/sound ,ss
@@ -214,19 +219,37 @@ starts the metronome
 stops the metronome
 
 /klick/metro/query
+/klick/metro/query ,s <return_address>
 reports current state:
     /klick/metro/active ,i
 
 /klick/simple/set_tempo ,f <tempo>
 sets the metronome's tempo
 
+/klick/simple/set_tempo_increment ,f <increment>
+sets the tempo increment per bar
+
+/klick/simple/set_tempo_limit ,f <limit>
+sets the maximum tempo
+
 /klick/simple/set_meter ,ii <beats> <denom>
 sets the metronome's meter
+
+/klick/simple/set_pattern ,s <pattern>
+sets the beat pattern
 
 /klick/simple/tap
 tap tempo
 
 /klick/simple/query
+/klick/simple/query ,s <return_address>
 reports current state:
     /klick/simple/tempo ,f
+    /klick/simple/tempo_increment ,f
+    /klick/simple/tempo_limit ,f
+    /klick/simple/current_tempo ,f
     /klick/simple/meter ,ii
+    /klick/simple/pattern ,s
+
+
+

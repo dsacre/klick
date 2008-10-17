@@ -40,12 +40,15 @@ OSCHandler::OSCHandler(std::string const & port,
   , _current_tempo(0.0f)
 {
     _osc->add_method("/klick/ping", "", this, &OSCHandler::on_ping);
+    _osc->add_method("/klick/ping", "s", this, &OSCHandler::on_ping);
     _osc->add_method("/klick/check","", this, &OSCHandler::on_check);
+    _osc->add_method("/klick/check","s", this, &OSCHandler::on_check);
     _osc->add_method("/klick/register_client", "", this, &OSCHandler::on_register_client);
     _osc->add_method("/klick/register_client", "s", this, &OSCHandler::on_register_client);
     _osc->add_method("/klick/unregister_client", "", this, &OSCHandler::on_unregister_client);
     _osc->add_method("/klick/unregister_client", "s", this, &OSCHandler::on_unregister_client);
     _osc->add_method("/klick/query", "", this, &OSCHandler::on_query);
+    _osc->add_method("/klick/query", "s", this, &OSCHandler::on_query);
     _osc->add_method("/klick/quit", "", this, &OSCHandler::on_quit);
 
     _osc->add_method("/klick/config/set_sound", "i", this, &OSCHandler::on_config_set_sound);
@@ -53,11 +56,13 @@ OSCHandler::OSCHandler(std::string const & port,
     _osc->add_method("/klick/config/set_volume", "f", this, &OSCHandler::on_config_set_volume);
     _osc->add_method("/klick/config/autoconnect", "", this, &OSCHandler::on_config_autoconnect);
     _osc->add_method("/klick/config/query", "", this, &OSCHandler::on_config_query);
+    _osc->add_method("/klick/config/query", "s", this, &OSCHandler::on_config_query);
 
     _osc->add_method("/klick/metro/set_type", "s", this, &OSCHandler::on_metro_set_type);
     _osc->add_method("/klick/metro/start", "", this, &OSCHandler::on_metro_start);
     _osc->add_method("/klick/metro/stop", "", this, &OSCHandler::on_metro_stop);
     _osc->add_method("/klick/metro/query", "", this, &OSCHandler::on_metro_query);
+    _osc->add_method("/klick/metro/query", "s", this, &OSCHandler::on_metro_query);
 
     _osc->add_method("/klick/simple/set_tempo", "f", this, &OSCHandler::on_simple_set_tempo);
     _osc->add_method("/klick/simple/set_tempo_increment", "f", this, &OSCHandler::on_simple_set_tempo_increment);
@@ -67,11 +72,14 @@ OSCHandler::OSCHandler(std::string const & port,
     _osc->add_method("/klick/simple/tap", "d", this, &OSCHandler::on_simple_tap);
     _osc->add_method("/klick/simple/set_pattern", "s", this, &OSCHandler::on_simple_set_pattern);
     _osc->add_method("/klick/simple/query", "", this, &OSCHandler::on_simple_query);
+    _osc->add_method("/klick/simple/query", "s", this, &OSCHandler::on_simple_query);
 
     _osc->add_method("/klick/map/load_file", "s", this, &OSCHandler::on_map_load_file);
     _osc->add_method("/klick/map/query", "", this, &OSCHandler::on_map_query);
+    _osc->add_method("/klick/map/query", "s", this, &OSCHandler::on_map_query);
 
     _osc->add_method("/klick/jack/query", "", this, &OSCHandler::on_jack_query);
+    _osc->add_method("/klick/jack/query", "s", this, &OSCHandler::on_jack_query);
 
     if (!return_port.empty()) {
         _osc->send(return_port, "/klick/ready");
@@ -98,27 +106,35 @@ boost::shared_ptr<T> OSCHandler::cast_metronome(std::string const & func) const
 }
 
 
+OSCInterface::Address OSCHandler::optional_address(OSCInterface::Message const & msg, std::size_t i)
+{
+    if (msg.args.size() > i) {
+        return OSCInterface::Address(boost::any_cast<std::string>(msg.args[i]));
+    } else {
+        return msg.src;
+    }
+}
+
+
 void OSCHandler::on_ping(Message const & msg)
 {
+    OSCInterface::Address addr(optional_address(msg));
+
     std::cout << "ping from " << msg.src.url() << std::endl;
-    _osc->send(msg.src, "/klick/pong");
+    //std::cout << "replying to " << addr.url() << std::endl;
+    _osc->send(addr, "/klick/pong", 123);
 }
 
 
 void OSCHandler::on_check(Message const & msg)
 {
-    _osc->send(msg.src, "/klick/ready");
+    _osc->send(optional_address(msg), "/klick/ready");
 }
 
 
 void OSCHandler::on_register_client(Message const & msg)
 {
-    OSCInterface::Address addr;
-    if (msg.args.empty()) {
-        addr = msg.src;
-    } else {
-        addr = OSCInterface::Address(boost::any_cast<std::string>(msg.args[0]));
-    }
+    OSCInterface::Address addr(optional_address(msg));
 
     ClientList::iterator i = find(_clients.begin(), _clients.end(), addr);
     if (i == _clients.end()) {
@@ -130,12 +146,7 @@ void OSCHandler::on_register_client(Message const & msg)
 
 void OSCHandler::on_unregister_client(Message const & msg)
 {
-    OSCInterface::Address addr;
-    if (msg.args.empty()) {
-        addr = msg.src;
-    } else {
-        addr = OSCInterface::Address(boost::any_cast<std::string>(msg.args[0]));
-    }
+    OSCInterface::Address addr(optional_address(msg));
 
     ClientList::iterator i = find(_clients.begin(), _clients.end(), addr);
     if (i != _clients.end()) {
@@ -203,12 +214,14 @@ void OSCHandler::on_config_autoconnect(Message const & /*msg*/)
 
 void OSCHandler::on_config_query(Message const & msg)
 {
+    OSCInterface::Address addr(optional_address(msg));
+
     if (_klick.sound() != -1) {
-        _osc->send(msg.src, "/klick/config/sound", _klick.sound());
+        _osc->send(addr, "/klick/config/sound", _klick.sound());
     } else {
-        _osc->send(msg.src, "/klick/config/sound", _klick.sound_custom_emphasis(), _klick.sound_custom_normal());
+        _osc->send(addr, "/klick/config/sound", _klick.sound_custom_emphasis(), _klick.sound_custom_normal());
     }
-    _osc->send(msg.src, "/klick/config/volume", _audio.volume());
+    _osc->send(addr, "/klick/config/volume", _audio.volume());
 }
 
 
@@ -252,20 +265,22 @@ void OSCHandler::on_metro_query(Message const & msg)
 {
     MetronomePtr m = _klick.metronome();
 
+    OSCInterface::Address addr(optional_address(msg));
+
     if (boost::dynamic_pointer_cast<MetronomeSimple>(m)) {
-        _osc->send(msg.src, "/klick/metro/type", std::string("simple"));
+        _osc->send(addr, "/klick/metro/type", std::string("simple"));
     }
     else if (boost::dynamic_pointer_cast<MetronomeMap>(m)) {
-        _osc->send(msg.src, "/klick/metro/type", std::string("map"));
+        _osc->send(addr, "/klick/metro/type", std::string("map"));
     }
     else if (boost::dynamic_pointer_cast<MetronomeJack>(m)) {
-        _osc->send(msg.src, "/klick/metro/type", std::string("jack"));
+        _osc->send(addr, "/klick/metro/type", std::string("jack"));
     }
     else {
         FAIL();
     }
 
-    _osc->send(msg.src, "/klick/metro/active", m->active());
+    _osc->send(addr, "/klick/metro/active", m->active());
 }
 
 
@@ -342,13 +357,16 @@ void OSCHandler::on_simple_set_pattern(Message const & msg)
 void OSCHandler::on_simple_query(Message const & msg)
 {
     MetronomeSimplePtr m = cast_metronome<MetronomeSimple>(msg.path);
+
+    OSCInterface::Address addr(optional_address(msg));
+
     if (m) {
-        _osc->send(msg.src, "/klick/simple/tempo", m->tempo());
-        _osc->send(msg.src, "/klick/simple/tempo_increment", m->tempo_increment());
-        _osc->send(msg.src, "/klick/simple/tempo_limit", m->tempo_limit());
-        _osc->send(msg.src, "/klick/simple/current_tempo", m->current_tempo());
-        _osc->send(msg.src, "/klick/simple/meter", m->beats(), m->denom());
-        _osc->send(msg.src, "/klick/simple/pattern", TempoMap::pattern_to_string(m->pattern()));
+        _osc->send(addr, "/klick/simple/tempo", m->tempo());
+        _osc->send(addr, "/klick/simple/tempo_increment", m->tempo_increment());
+        _osc->send(addr, "/klick/simple/tempo_limit", m->tempo_limit());
+        _osc->send(addr, "/klick/simple/current_tempo", m->current_tempo());
+        _osc->send(addr, "/klick/simple/meter", m->beats(), m->denom());
+        _osc->send(addr, "/klick/simple/pattern", TempoMap::pattern_to_string(m->pattern()));
     }
 }
 
@@ -371,8 +389,11 @@ void OSCHandler::on_map_load_file(Message const & msg)
 void OSCHandler::on_map_query(Message const & msg)
 {
     MetronomeMapPtr m = cast_metronome<MetronomeMap>(msg.path);
+
+    OSCInterface::Address addr(optional_address(msg));
+
     if (m) {
-        _osc->send(msg.src, "/klick/map/file", _klick.tempomap_filename());
+        _osc->send(addr, "/klick/map/file", _klick.tempomap_filename());
     }
 }
 

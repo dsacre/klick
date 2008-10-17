@@ -46,6 +46,9 @@ class OSCHandler
     template <typename T>
     boost::shared_ptr<T> cast_metronome(std::string const & f = std::string()) const;
 
+    OSCInterface::Address optional_address(OSCInterface::Message const & msg, std::size_t i = 0);
+
+
     typedef OSCInterface::Message Message;
 
     void on_ping(Message const &);

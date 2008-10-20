@@ -180,7 +180,7 @@ void MetronomeSimple::process_callback(sample_t * /*buffer*/, nframes_t nframes)
     if (_frame + nframes > _next)
     {
         // speed trainer
-        if (_frame) {
+        if (_frame && _tempo_increment) {
             _current_tempo += _tempo_increment / std::max(_beats, 1);
             _current_tempo = std::min(_tempo_limit, _current_tempo);
         }

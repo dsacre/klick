@@ -1,3 +1,8 @@
+2008-10-23: Version 0.9.1
+
+ * Fixed a bug that restricted the tempo to tempo_limit even when
+   tempo_increment was disabled.
+
 2008-10-17: Version 0.9.0
 
  * New OSC methods: set_tempo_increment, set_tempo_limit, set_pattern.

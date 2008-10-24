@@ -2,7 +2,7 @@
 
 import os
 
-version = '0.9.0'
+version = '0.9.1'
 
 env = Environment(
     CPPDEFINES = [

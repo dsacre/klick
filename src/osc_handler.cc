@@ -54,6 +54,7 @@ OSCHandler::OSCHandler(std::string const & port,
     _osc->add_method("/klick/config/set_sound", "i", this, &OSCHandler::on_config_set_sound);
     _osc->add_method("/klick/config/set_sound", "ss", this, &OSCHandler::on_config_set_sound_custom);
     _osc->add_method("/klick/config/set_volume", "f", this, &OSCHandler::on_config_set_volume);
+    _osc->add_method("/klick/config/connect", NULL, this, &OSCHandler::on_config_connect);
     _osc->add_method("/klick/config/autoconnect", "", this, &OSCHandler::on_config_autoconnect);
     _osc->add_method("/klick/config/query", "", this, &OSCHandler::on_config_query);
     _osc->add_method("/klick/config/query", "s", this, &OSCHandler::on_config_query);
@@ -205,6 +206,23 @@ void OSCHandler::on_config_set_volume(Message const & msg)
 }
 
 
+void OSCHandler::on_config_connect(Message const & msg)
+{
+    if (msg.types.find_first_not_of("s") != std::string::npos) {
+        std::cerr << msg.path << ": invalid argument type" << std::endl;
+    }
+
+    for (std::vector<boost::any>::const_iterator i = msg.args.begin(); i != msg.args.end(); ++i) {
+        try {
+            _audio.connect(boost::any_cast<std::string>(*i));
+        }
+        catch (AudioInterface::AudioError & e) {
+            std::cerr << msg.path << ": " << e.what() << std::endl;
+        }
+    }
+}
+
+
 void OSCHandler::on_config_autoconnect(Message const & /*msg*/)
 {
     _audio.autoconnect();
@@ -239,7 +257,7 @@ void OSCHandler::on_metro_set_type(Message const & msg)
         _klick.set_metronome(Klick::METRONOME_TYPE_JACK);
     }
     else {
-        std::cerr << "invalid metronome type " << type << std::endl;
+        std::cerr << msg.path << ": invalid metronome type '" << type << "'" << std::endl;
     }
 }
 
@@ -346,7 +364,7 @@ void OSCHandler::on_simple_set_pattern(Message const & msg)
             TempoMap::Pattern p = TempoMap::parse_pattern(boost::any_cast<std::string>(msg.args[0]), std::max(1, m->beats()));
             m->set_pattern(p);
         } catch (TempoMap::ParseError & e) {
-            std::cout << e.what() << std::endl;
+            std::cerr << msg.path << ": " << e.what() << std::endl;
         }
         _osc->send(_clients, "/klick/simple/pattern", TempoMap::pattern_to_string(m->pattern()));
     }
@@ -377,7 +395,7 @@ void OSCHandler::on_map_load_file(Message const & msg)
         try {
             _klick.set_tempomap_filename(boost::any_cast<std::string>(msg.args[0]));
         } catch (std::runtime_error & e) {
-            std::cout << e.what() << std::endl;
+            std::cerr << msg.path << ": " << e.what() << std::endl;
         }
 
         _osc->send(_clients, "/klick/map/file", _klick.tempomap_filename());

@@ -55,7 +55,15 @@ Klick::Klick(int argc, char *argv[])
     _audio.reset(new AudioInterface(_options->client_name));
 
     if (_options->connect_ports.size()) {
-        _audio->connect(_options->connect_ports);
+        for (std::vector<std::string>::const_iterator i = _options->connect_ports.begin(); i != _options->connect_ports.end(); ++i) {
+            try {
+                _audio->connect(*i);
+                das::logv << "connected to " << i->c_str() << "" << std::endl;
+            }
+            catch (AudioInterface::AudioError & e) {
+                std::cerr << e.what() << std::endl;
+            }
+        }
     }
     if (_options->auto_connect) {
         _audio->autoconnect();
@@ -278,7 +286,11 @@ void Klick::set_metronome(MetronomeType type)
     if (_options->transport_master) {
         if (boost::shared_ptr<AudioInterface::TimebaseCallback> cb =
             boost::dynamic_pointer_cast<AudioInterface::TimebaseCallback>(_metro)) {
-            _audio->set_timebase_callback(cb);
+            try {
+                _audio->set_timebase_callback(cb);
+            } catch (AudioInterface::AudioError & e) {
+                std::cerr << e.what() << std::endl;
+            }
         }
     }
 }

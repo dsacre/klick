@@ -17,7 +17,7 @@
 #include <cerrno>
 #include <cstring>
 
-#include "util/logstream.hh"
+#include "util/string.hh"
 #include "util/debug.hh"
 
 
@@ -82,7 +82,7 @@ void AudioInterface::set_timebase_callback(boost::shared_ptr<TimebaseCallback> o
 {
     if (obj) {
         if (jack_set_timebase_callback(_client, 0, &timebase_callback_, static_cast<void*>(this)) != 0) {
-            std::cerr << "failed to become jack transport master" << std::endl;
+            throw AudioError("failed to become jack transport master");
         }
     } else {
         if (_timebase_obj) {
@@ -93,15 +93,11 @@ void AudioInterface::set_timebase_callback(boost::shared_ptr<TimebaseCallback> o
 }
 
 
-void AudioInterface::connect(std::vector<std::string> const & ports)
+void AudioInterface::connect(std::string const & port)
 {
-    for (std::vector<std::string>::const_iterator i = ports.begin(); i != ports.end(); ++i) {
-        int error = jack_connect(_client, jack_port_name(_output_port), i->c_str());
-        if (error && error != EEXIST) {
-            std::cerr << "can't connect " << jack_port_name(_output_port) << " to " << i->c_str() << std::endl;
-        } else {
-            das::logv << "connected to " << i->c_str() << "" << std::endl;
-        }
+    int error = jack_connect(_client, jack_port_name(_output_port), port.c_str());
+    if (error && error != EEXIST) {
+        throw AudioError(das::make_string() << "can't connect " << jack_port_name(_output_port) << " to " << port.c_str());
     }
 }
 

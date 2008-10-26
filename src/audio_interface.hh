@@ -70,7 +70,7 @@ class AudioInterface
     void set_volume(float v) { _volume = v; }
     float volume() const { return _volume; }
 
-    void connect(std::vector<std::string> const & ports);
+    void connect(std::string const & port);
     void autoconnect();
 
     // JACK transport

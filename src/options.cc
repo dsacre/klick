@@ -18,6 +18,8 @@
 #include <cstdlib>
 #include <unistd.h>
 
+#include "util/lexical_cast.hh"
+
 typedef boost::char_separator<char> char_sep;
 typedef boost::tokenizer<char_sep> tokenizer;
 
@@ -96,7 +98,6 @@ void Options::parse(int argc, char *argv[])
 {
     int c;
     char optstring[] = "+f:jn:p:Po:R:is:S:eEv:w:tTd:c:l:x:LVh";
-    char *end;
 
     if (argc < 2) {
         // run with no arguments, print usage
@@ -152,8 +153,8 @@ void Options::parse(int argc, char *argv[])
 #endif
 
             case 's':
-                click_sample = std::strtoul(::optarg, &end, 10);
-                if (*end != '\0' || click_sample < 0 || click_sample > 3) {
+                click_sample = das::lexical_cast<int>(::optarg, -1);
+                if (click_sample < 0 || click_sample > 3) {
                     throw InvalidArgument("click sample");
                 }
                 break;
@@ -186,14 +187,12 @@ void Options::parse(int argc, char *argv[])
                 char_sep sep(",");
                 tokenizer tok(str, sep);
                 tokenizer::iterator i = tok.begin();
-                volume_emphasis = std::strtof(i->c_str(), &end);
-                if (*end != '\0') throw InvalidArgument("volume");
+                volume_emphasis = das::lexical_cast<float>(*i, InvalidArgument("volume"));
                 i++;
                 if (i == tok.end()) {
                     volume_normal = volume_emphasis;
                 } else {
-                    volume_normal = std::strtof(i->c_str(), &end);
-                    if (*end != '\0' || ++i != tok.end()) throw InvalidArgument("volume");
+                    volume_normal = das::lexical_cast<float>(*i, InvalidArgument("volume"));
                 }
               } break;
 
@@ -202,14 +201,12 @@ void Options::parse(int argc, char *argv[])
                 char_sep sep(",");
                 tokenizer tok(str, sep);
                 tokenizer::iterator i = tok.begin();
-                frequency_emphasis = std::strtof(i->c_str(), &end);
-                if (*end != '\0') throw InvalidArgument("frequency");
+                frequency_emphasis = das::lexical_cast<float>(*i, InvalidArgument("frequency"));
                 i++;
                 if (i == tok.end()) {
                     frequency_normal = frequency_emphasis;
                 } else {
-                    frequency_normal = std::strtof(i->c_str(), &end);
-                    if (*end != '\0' || ++i != tok.end()) throw InvalidArgument("frequency");
+                    frequency_normal = das::lexical_cast<float>(*i, InvalidArgument("frequency"));
                 }
               } break;
 
@@ -223,13 +220,11 @@ void Options::parse(int argc, char *argv[])
                 break;
 
             case 'd':
-                delay = std::strtod(::optarg, &end);
-                if (*end != '\0' || delay < 0.0f) throw InvalidArgument("delay");
+                delay = das::lexical_cast<float>(::optarg, InvalidArgument("delay"));
                 break;
 
             case 'c':
-                preroll = std::strtoul(::optarg, &end, 10);
-                if (*end != '\0') throw InvalidArgument("pre-roll");
+                preroll = das::lexical_cast<int>(::optarg, InvalidArgument("pre-roll"));
                 break;
 
             case 'l':
@@ -237,10 +232,7 @@ void Options::parse(int argc, char *argv[])
                 break;
 
             case 'x':
-                tempo_multiplier = std::strtof(::optarg, &end);
-                if (*end != '\0' || tempo_multiplier <= 0.0f) {
-                    throw InvalidArgument("tempo multiplier");
-                }
+                tempo_multiplier = das::lexical_cast<float>(::optarg, InvalidArgument("tempo multiplier"));
                 break;
 
             case 'L':

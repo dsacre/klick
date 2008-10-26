@@ -22,6 +22,7 @@
 #include <algorithm>
 
 #include "util/string.hh"
+#include "util/lexical_cast.hh"
 
 typedef boost::char_separator<char> char_sep;
 typedef boost::tokenizer<char_sep> tokenizer;
@@ -144,7 +145,7 @@ std::vector<float> TempoMap::parse_tempi(std::string const &s, float tempo1, int
     }
     tempi.push_back(tempo1);
     for (tokenizer::iterator i = tok.begin(); i != tok.end(); ++i) {
-        tempi.push_back(std::strtof(i->c_str(), NULL));
+        tempi.push_back(das::lexical_cast<float>(*i));
     }
     return tempi;
 }

@@ -82,6 +82,8 @@ OSCHandler::OSCHandler(std::string const & port,
     _osc->add_method("/klick/jack/query", "", this, &OSCHandler::on_jack_query);
     _osc->add_method("/klick/jack/query", "s", this, &OSCHandler::on_jack_query);
 
+    _osc->add_method(NULL, NULL, this, &OSCHandler::fallback);
+
     if (!return_port.empty()) {
         _osc->send(return_port, "/klick/ready");
     }
@@ -418,6 +420,12 @@ void OSCHandler::on_map_query(Message const & msg)
 void OSCHandler::on_jack_query(Message const & /*msg*/)
 {
     // nothing
+}
+
+
+void OSCHandler::fallback(Message const & msg)
+{
+    std::cerr << "unknown message: " << msg.path << std::endl;
 }
 
 

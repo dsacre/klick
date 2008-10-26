@@ -83,6 +83,8 @@ class OSCHandler
 
     void on_jack_query(Message const &);
 
+    void fallback(Message const &);
+
 
     boost::shared_ptr<OSCInterface> _osc;
 

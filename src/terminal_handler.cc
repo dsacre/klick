@@ -17,9 +17,9 @@
 #include <iostream>
 #include <iomanip>
 #include <boost/shared_ptr.hpp>
+#include <cstdio>
 
 #include <sys/select.h>
-#include <stdio.h>
 #include <unistd.h>
 
 #include "util/debug.hh"
@@ -77,15 +77,15 @@ bool TerminalHandler::key_pressed()
 
 int TerminalHandler::get_key()
 {
-    return ::fgetc(stdin);
+    return std::fgetc(stdin);
 }
 
 
 int TerminalHandler::peek_key()
 {
     if (key_pressed()) {
-        int k = ::fgetc(stdin);
-        ::ungetc(k, stdin);
+        int k = std::fgetc(stdin);
+        std::ungetc(k, stdin);
         return k;
     } else {
         return 0;

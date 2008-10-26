@@ -152,7 +152,7 @@ void Options::parse(int argc, char *argv[])
 #endif
 
             case 's':
-                click_sample = ::strtoul(::optarg, &end, 10);
+                click_sample = std::strtoul(::optarg, &end, 10);
                 if (*end != '\0' || click_sample < 0 || click_sample > 3) {
                     throw InvalidArgument("click sample");
                 }
@@ -186,13 +186,13 @@ void Options::parse(int argc, char *argv[])
                 char_sep sep(",");
                 tokenizer tok(str, sep);
                 tokenizer::iterator i = tok.begin();
-                volume_emphasis = ::strtof(i->c_str(), &end);
+                volume_emphasis = std::strtof(i->c_str(), &end);
                 if (*end != '\0') throw InvalidArgument("volume");
                 i++;
                 if (i == tok.end()) {
                     volume_normal = volume_emphasis;
                 } else {
-                    volume_normal = ::strtof(i->c_str(), &end);
+                    volume_normal = std::strtof(i->c_str(), &end);
                     if (*end != '\0' || ++i != tok.end()) throw InvalidArgument("volume");
                 }
               } break;
@@ -202,13 +202,13 @@ void Options::parse(int argc, char *argv[])
                 char_sep sep(",");
                 tokenizer tok(str, sep);
                 tokenizer::iterator i = tok.begin();
-                frequency_emphasis = ::strtof(i->c_str(), &end);
+                frequency_emphasis = std::strtof(i->c_str(), &end);
                 if (*end != '\0') throw InvalidArgument("frequency");
                 i++;
                 if (i == tok.end()) {
                     frequency_normal = frequency_emphasis;
                 } else {
-                    frequency_normal = ::strtof(i->c_str(), &end);
+                    frequency_normal = std::strtof(i->c_str(), &end);
                     if (*end != '\0' || ++i != tok.end()) throw InvalidArgument("frequency");
                 }
               } break;
@@ -223,12 +223,12 @@ void Options::parse(int argc, char *argv[])
                 break;
 
             case 'd':
-                delay = ::strtod(::optarg, &end);
+                delay = std::strtod(::optarg, &end);
                 if (*end != '\0' || delay < 0.0f) throw InvalidArgument("delay");
                 break;
 
             case 'c':
-                preroll = ::strtoul(::optarg, &end, 10);
+                preroll = std::strtoul(::optarg, &end, 10);
                 if (*end != '\0') throw InvalidArgument("pre-roll");
                 break;
 
@@ -237,7 +237,7 @@ void Options::parse(int argc, char *argv[])
                 break;
 
             case 'x':
-                tempo_multiplier = ::strtof(::optarg, &end);
+                tempo_multiplier = std::strtof(::optarg, &end);
                 if (*end != '\0' || tempo_multiplier <= 0.0f) {
                     throw InvalidArgument("tempo multiplier");
                 }

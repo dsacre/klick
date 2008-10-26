@@ -148,7 +148,7 @@ int AudioInterface::process_callback_(nframes_t nframes, void *arg)
     AudioInterface *this_ = static_cast<AudioInterface*>(arg);
     sample_t *buffer = (sample_t *)jack_port_get_buffer(this_->_output_port, nframes);
 
-    ::memset(buffer, 0, nframes * sizeof(sample_t));
+    std::memset(buffer, 0, nframes * sizeof(sample_t));
 
     if (this_->_process_obj) {
         (this_->_process_obj)->process_callback(buffer, nframes);

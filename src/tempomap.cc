@@ -15,6 +15,7 @@
 #include <fstream>
 #include <iomanip>
 #include <cmath>
+#include <cstdlib>
 #include <regex.h>
 #include <boost/tokenizer.hpp>
 #include <functional>
@@ -143,7 +144,7 @@ std::vector<float> TempoMap::parse_tempi(std::string const &s, float tempo1, int
     }
     tempi.push_back(tempo1);
     for (tokenizer::iterator i = tok.begin(); i != tok.end(); ++i) {
-        tempi.push_back(::strtof(i->c_str(), NULL));
+        tempi.push_back(std::strtof(i->c_str(), NULL));
     }
     return tempi;
 }

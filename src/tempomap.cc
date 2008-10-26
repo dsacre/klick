@@ -278,7 +278,7 @@ TempoMapPtr TempoMap::new_from_file(std::string const & filename)
             check_entry(e);
             map->_entries.push_back(e);
         }
-        catch (ParseError & e) {
+        catch (ParseError const & e) {
             throw ParseError(das::make_string() << e.what() << ":\n"
                                 << "line " << lineno << ": " << line);
         }
@@ -336,7 +336,7 @@ TempoMapPtr TempoMap::new_from_cmdline(std::string const & line)
             map->_entries.push_back(e);
         }
     }
-    catch (ParseError & e) {
+    catch (ParseError const & e) {
         throw ParseError(das::make_string() << e.what() << ":\n" << line);
     }
 

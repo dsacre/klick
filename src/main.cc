@@ -60,11 +60,11 @@ int main(int argc, char *argv[])
         delete app;
         return ret;
     }
-    catch (Exit & e) {
+    catch (Exit const & e) {
         delete app;
         return e.status();
     }
-    catch (std::exception & e) {
+    catch (std::exception const & e) {
         std::cerr << e.what() << std::endl;
         delete app;
         return EXIT_FAILURE;

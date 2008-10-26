@@ -216,7 +216,7 @@ void OSCHandler::on_config_connect(Message const & msg)
         try {
             _audio.connect(boost::any_cast<std::string>(*i));
         }
-        catch (AudioInterface::AudioError & e) {
+        catch (AudioInterface::AudioError const & e) {
             std::cerr << msg.path << ": " << e.what() << std::endl;
         }
     }
@@ -363,7 +363,7 @@ void OSCHandler::on_simple_set_pattern(Message const & msg)
         try {
             TempoMap::Pattern p = TempoMap::parse_pattern(boost::any_cast<std::string>(msg.args[0]), std::max(1, m->beats()));
             m->set_pattern(p);
-        } catch (TempoMap::ParseError & e) {
+        } catch (TempoMap::ParseError const & e) {
             std::cerr << msg.path << ": " << e.what() << std::endl;
         }
         _osc->send(_clients, "/klick/simple/pattern", TempoMap::pattern_to_string(m->pattern()));
@@ -394,7 +394,7 @@ void OSCHandler::on_map_load_file(Message const & msg)
     if (m) {
         try {
             _klick.set_tempomap_filename(boost::any_cast<std::string>(msg.args[0]));
-        } catch (std::runtime_error & e) {
+        } catch (std::runtime_error const & e) {
             std::cerr << msg.path << ": " << e.what() << std::endl;
         }
 

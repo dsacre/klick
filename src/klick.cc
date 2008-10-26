@@ -60,7 +60,7 @@ Klick::Klick(int argc, char *argv[])
                 _audio->connect(*i);
                 das::logv << "connected to " << i->c_str() << "" << std::endl;
             }
-            catch (AudioInterface::AudioError & e) {
+            catch (AudioInterface::AudioError const & e) {
                 std::cerr << e.what() << std::endl;
             }
         }
@@ -288,7 +288,7 @@ void Klick::set_metronome(MetronomeType type)
             boost::dynamic_pointer_cast<AudioInterface::TimebaseCallback>(_metro)) {
             try {
                 _audio->set_timebase_callback(cb);
-            } catch (AudioInterface::AudioError & e) {
+            } catch (AudioInterface::AudioError const & e) {
                 std::cerr << e.what() << std::endl;
             }
         }

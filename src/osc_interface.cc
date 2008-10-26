@@ -143,14 +143,7 @@ void OSCInterface::send(Address const & target, std::string const & path, std::v
 
 OSCInterface::Address::Address(std::string const & url)
 {
-    std::istringstream ss(url);
-    unsigned int i;
-
-    if (ss >> i) {
-        _addr = lo_address_new(NULL, url.c_str());
-    } else {
-        _addr = lo_address_new_from_url(url.c_str());
-    }
+    _addr = lo_address_new_from_url(url.c_str());
 
     if (!_addr) {
         throw std::runtime_error("invalid OSC port/url");

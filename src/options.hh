@@ -17,6 +17,8 @@
 #include <vector>
 #include <stdexcept>
 
+#include "util/string.hh"
+
 
 class Options
 {
@@ -71,8 +73,10 @@ class Options
     struct InvalidArgument
       : public std::runtime_error
     {
-        InvalidArgument(std::string const & w)
-          : std::runtime_error("invalid argument (" + w + ")") { }
+        InvalidArgument(char a, std::string const & w)
+          : std::runtime_error(das::make_string() << "invalid argument to -" << a << " (" << w << ")")
+        {
+        }
     };
 
     void print_version(std::ostream & = std::cout);

@@ -155,7 +155,7 @@ void Options::parse(int argc, char *argv[])
             case 's':
                 click_sample = das::lexical_cast<int>(::optarg, -1);
                 if (click_sample < 0 || click_sample > 3) {
-                    throw InvalidArgument("click sample");
+                    throw InvalidArgument(c, "click sample");
                 }
                 break;
 
@@ -169,7 +169,7 @@ void Options::parse(int argc, char *argv[])
                     click_filename_normal = click_filename_emphasis;
                 } else {
                     click_filename_normal = *i;
-                    if (++i != tok.end()) throw InvalidArgument("sample file names");
+                    if (++i != tok.end()) throw InvalidArgument(c, "sample file names");
                 }
                 click_sample = CLICK_SAMPLE_FROM_FILE;
               } break;
@@ -187,12 +187,12 @@ void Options::parse(int argc, char *argv[])
                 char_sep sep(",");
                 tokenizer tok(str, sep);
                 tokenizer::iterator i = tok.begin();
-                volume_emphasis = das::lexical_cast<float>(*i, InvalidArgument("volume"));
+                volume_emphasis = das::lexical_cast<float>(*i, InvalidArgument(c, "volume"));
                 i++;
                 if (i == tok.end()) {
                     volume_normal = volume_emphasis;
                 } else {
-                    volume_normal = das::lexical_cast<float>(*i, InvalidArgument("volume"));
+                    volume_normal = das::lexical_cast<float>(*i, InvalidArgument(c, "volume"));
                 }
               } break;
 
@@ -201,12 +201,12 @@ void Options::parse(int argc, char *argv[])
                 char_sep sep(",");
                 tokenizer tok(str, sep);
                 tokenizer::iterator i = tok.begin();
-                frequency_emphasis = das::lexical_cast<float>(*i, InvalidArgument("frequency"));
+                frequency_emphasis = das::lexical_cast<float>(*i, InvalidArgument(c, "frequency"));
                 i++;
                 if (i == tok.end()) {
                     frequency_normal = frequency_emphasis;
                 } else {
-                    frequency_normal = das::lexical_cast<float>(*i, InvalidArgument("frequency"));
+                    frequency_normal = das::lexical_cast<float>(*i, InvalidArgument(c, "frequency"));
                 }
               } break;
 
@@ -220,11 +220,11 @@ void Options::parse(int argc, char *argv[])
                 break;
 
             case 'd':
-                delay = das::lexical_cast<float>(::optarg, InvalidArgument("delay"));
+                delay = das::lexical_cast<float>(::optarg, InvalidArgument(c, "delay"));
                 break;
 
             case 'c':
-                preroll = das::lexical_cast<int>(::optarg, InvalidArgument("pre-roll"));
+                preroll = das::lexical_cast<int>(::optarg, InvalidArgument(c, "pre-roll"));
                 break;
 
             case 'l':
@@ -232,7 +232,7 @@ void Options::parse(int argc, char *argv[])
                 break;
 
             case 'x':
-                tempo_multiplier = das::lexical_cast<float>(::optarg, InvalidArgument("tempo multiplier"));
+                tempo_multiplier = das::lexical_cast<float>(::optarg, InvalidArgument(c, "tempo multiplier"));
                 break;
 
             case 'L':

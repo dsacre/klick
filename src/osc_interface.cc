@@ -100,7 +100,7 @@ int OSCInterface::callback_(char const *path, char const *types, lo_arg **argv, 
 }
 
 
-void OSCInterface::add_method_(char const * path, char const * types, Callback const & func)
+void OSCInterface::add_method(char const *path, char const *types, Callback const & func)
 {
     Callback * cb = new Callback(func);
     _callbacks.push_back(cb);

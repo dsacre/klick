@@ -36,20 +36,29 @@ class OSCHandler
                AudioInterface & audio);
     ~OSCHandler();
 
-    void start() {
-        _osc->start();
-    }
-
+    void start();
     void update();
 
   private:
-    template <typename T>
-    boost::shared_ptr<T> cast_metronome(std::string const & f = std::string()) const;
+    typedef OSCInterface::Message Message;
+    typedef void (OSCHandler::*MessageHandler)(Message const &);
+
+    void add_method(char const *path, char const *types, MessageHandler func);
+
+    template <typename M>
+    void add_method(char const *path, char const *types, MessageHandler func);
+
+    template <typename M>
+    void type_specific_callback(MessageHandler func, Message const & msg);
 
     OSCInterface::Address optional_address(OSCInterface::Message const & msg, std::size_t i = 0);
 
 
-    typedef OSCInterface::Message Message;
+    boost::shared_ptr<class Metronome> metro() { return _klick.metronome(); }
+    boost::shared_ptr<class MetronomeSimple> metro_simple() { return boost::dynamic_pointer_cast<MetronomeSimple>(_klick.metronome()); }
+    boost::shared_ptr<class MetronomeMap> metro_map() { return boost::dynamic_pointer_cast<MetronomeMap>(_klick.metronome()); }
+    boost::shared_ptr<class MetronomeJack> metro_jack() { return boost::dynamic_pointer_cast<MetronomeJack>(_klick.metronome()); }
+
 
     void on_ping(Message const &);
     void on_check(Message const &);

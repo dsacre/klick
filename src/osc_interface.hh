@@ -55,20 +55,19 @@ class OSCInterface
         Address src;
     };
 
-    typedef boost::function<void(Message const &)> Callback;
-
 
     OSCInterface(std::string const & port);
     virtual ~OSCInterface();
 
 
-    template <typename T>
-    void add_method(char const *path, char const *types, T *obj,
-                    void (T::*func)(Message const &)) {
-        add_method_(path, types, boost::bind(func, obj, _1));
-    }
+    typedef boost::function<void(Message const &)> Callback;
 
-    void add_method_(char const * path, char const * types, Callback const & func);
+    void add_method(char const *path, char const *types, Callback const & func);
+
+    template <typename T>
+    void add_method(char const *path, char const *types, T *obj, void (T::*func)(Message const &)) {
+        add_method(path, types, boost::bind(func, obj, _1));
+    }
 
     void start();
 

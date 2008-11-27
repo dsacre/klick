@@ -14,10 +14,11 @@
 
 #include <string>
 #include <vector>
+#include <list>
 
-#include <boost/bind.hpp>
 #include <boost/function.hpp>
-#include <boost/any.hpp>
+#include <boost/variant.hpp>
+#include <boost/shared_ptr.hpp>
 #include <boost/preprocessor/repetition/repeat.hpp>
 #include <boost/preprocessor/repetition/repeat_from_to.hpp>
 #include <boost/preprocessor/repetition/enum_params.hpp>
@@ -44,48 +45,42 @@ class OSCInterface
 
         lo_address addr() const { return _addr; }
         std::string url() const;
+
       private:
         lo_address _addr;
     };
 
+    typedef boost::variant<int, bool, float, double, std::string, char const *> ArgumentVariant;
+    typedef std::vector<ArgumentVariant> ArgumentVector;
+
     struct Message {
         std::string path;
         std::string types;
-        std::vector<boost::any> args;
+        ArgumentVector args;
         Address src;
     };
+
+    typedef boost::function<void (Message const &)> Callback;
 
 
     OSCInterface(std::string const & port);
     virtual ~OSCInterface();
 
-
-    typedef boost::function<void(Message const &)> Callback;
-
-    void add_method(char const *path, char const *types, Callback const & func);
-
-    template <typename T>
-    void add_method(char const *path, char const *types, T *obj, void (T::*func)(Message const &)) {
-        add_method(path, types, boost::bind(func, obj, _1));
-    }
-
+    void add_method(char const *path, char const *types, Callback const & cb);
     void start();
 
 
     // basic send function
-    void send(Address const & target, std::string const & path,
-              std::vector<boost::any> const & args = std::vector<boost::any>());
+    void send(Address const & target, std::string const & path, ArgumentVector const & args = ArgumentVector());
 
     // address as string
-    void send(std::string const & target, std::string const & path,
-              std::vector<boost::any> const & args = std::vector<boost::any>()) {
+    void send(std::string const & target, std::string const & path, ArgumentVector const & args = ArgumentVector()) {
         send(Address(target), path, args);
     }
 
     // allow multiple recipients
     template <typename T>
-    void send(T const & targets, std::string const & path,
-              std::vector<boost::any> const & args = std::vector<boost::any>()) {
+    void send(T const & targets, std::string const & path, ArgumentVector const & args = ArgumentVector()) {
         for (typename T::const_iterator i = targets.begin(); i != targets.end(); ++i) {
             send(*i, path, args);
         }
@@ -96,7 +91,7 @@ class OSCInterface
     #define PP_SEND(z, n, data) \
         template <typename A, BOOST_PP_ENUM_PARAMS(n, typename T)> \
         void send(A target, std::string const & path, BOOST_PP_ENUM_BINARY_PARAMS(n, const T, & t)) { \
-            std::vector<boost::any> args; \
+            ArgumentVector args; \
             BOOST_PP_REPEAT_ ## z(n, PP_PUSH_BACK, t) \
             send(target, path, args); \
         }
@@ -113,7 +108,7 @@ class OSCInterface
     lo_server_thread _thread;
     std::string _url;
 
-    std::vector<Callback*> _callbacks;
+    std::list<Callback> _callbacks;
 };
 
 

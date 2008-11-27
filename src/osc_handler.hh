@@ -15,15 +15,11 @@
 #include <string>
 #include <list>
 #include <boost/shared_ptr.hpp>
-#include <boost/any.hpp>
 #include <boost/noncopyable.hpp>
 
 #include "klick.hh"
 #include "osc_interface.hh"
 #include "audio_interface.hh"
-
-class Metronome;
-class MetronomeSimple;
 
 
 class OSCHandler

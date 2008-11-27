@@ -46,10 +46,6 @@ OSCInterface::~OSCInterface()
 {
     lo_server_thread_stop(_thread);
     lo_server_thread_free(_thread);
-
-    for (std::vector<Callback*>::iterator i = _callbacks.begin(); i != _callbacks.end(); ++i) {
-        delete *i;
-    }
 }
 
 
@@ -100,11 +96,10 @@ int OSCInterface::callback_(char const *path, char const *types, lo_arg **argv, 
 }
 
 
-void OSCInterface::add_method(char const *path, char const *types, Callback const & func)
+void OSCInterface::add_method(char const *path, char const *types, Callback const & cb)
 {
-    Callback * cb = new Callback(func);
     _callbacks.push_back(cb);
-    lo_server_thread_add_method(_thread, path, types, &callback_, static_cast<void*>(cb));
+    lo_server_thread_add_method(_thread, path, types, &callback_, static_cast<void*>(&_callbacks.back()));
 }
 
 
@@ -114,24 +109,28 @@ void OSCInterface::start()
 }
 
 
-void OSCInterface::send(Address const & target, std::string const & path, std::vector<boost::any> const & args)
+class AddArgumentVisitor
+  : public boost::static_visitor<>
+{
+  public:
+    AddArgumentVisitor(lo_message & msg) : _msg(msg) { }
+
+    void operator()(int i) const { lo_message_add_int32(_msg, i); }
+    void operator()(float f) const { lo_message_add_float(_msg, f); }
+    void operator()(double d) const { lo_message_add_double(_msg, d); }
+    void operator()(std::string const & s) const { lo_message_add_string(_msg, s.c_str()); }
+
+  private:
+    lo_message & _msg;
+};
+
+
+void OSCInterface::send(Address const & target, std::string const & path, std::vector<ArgumentVariant> const & args)
 {
     lo_message msg = lo_message_new();
 
-    for (std::vector<boost::any>::const_iterator i = args.begin(); i != args.end(); ++i) {
-        if (i->type() == typeid(int)) {
-            lo_message_add_int32(msg, boost::any_cast<int>(*i));
-        } else if (i->type() == typeid(bool)) {
-            lo_message_add_int32(msg, boost::any_cast<bool>(*i));  // bools in OSC suck, use int32 instead
-        } else if (i->type() == typeid(float)) {
-            lo_message_add_float(msg, boost::any_cast<float>(*i));
-        } else if (i->type() == typeid(double)) {
-            lo_message_add_double(msg, boost::any_cast<double>(*i));
-        } else if (i->type() == typeid(std::string)) {
-            lo_message_add_string(msg, boost::any_cast<std::string>(*i).c_str());
-        } else {
-            FAIL();
-        }
+    for (ArgumentVector::const_iterator i = args.begin(); i != args.end(); ++i) {
+        boost::apply_visitor(AddArgumentVisitor(msg), *i);
     }
 
     lo_send_message_from(target.addr(), lo_server_thread_get_server(_thread), path.c_str(), msg);

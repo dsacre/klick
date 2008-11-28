@@ -84,10 +84,7 @@ void Position::add_preroll(int nbars)
 
     // create a new tempomap for preroll
     if (nbars == Options::PREROLL_2_BEATS) {
-        std::vector<TempoMap::BeatType> pattern;
-        for (int n = 0; n < e.denom; n++) {
-            pattern.push_back(TempoMap::BEAT_NORMAL);
-        }
+        std::vector<TempoMap::BeatType> pattern(2, TempoMap::BEAT_NORMAL);
         preroll = TempoMap::new_simple(1, e.tempo, 2, e.denom, pattern, 0.66f);
     } else {
         preroll = TempoMap::new_simple(nbars, e.tempo, e.beats, e.denom, e.pattern, 0.66f);
@@ -144,7 +141,7 @@ void Position::locate(nframes_t f)
         int high = e.bars * e.beats;
         float_frames_t v = f - _start_frames[_entry];
 
-        while(low <= high) {
+        while (low <= high) {
             int mid = (low + high) / 2;
             float_frames_t d = frame_dist(e, 0, mid);
             if (d > v) {

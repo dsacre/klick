@@ -32,6 +32,7 @@ class OSCInterface
   : boost::noncopyable
 {
   public:
+
     class Address {
       public:
         Address() : _addr(NULL) { }
@@ -50,7 +51,7 @@ class OSCInterface
         lo_address _addr;
     };
 
-    typedef boost::variant<int, bool, float, double, std::string, char const *> ArgumentVariant;
+    typedef boost::variant<int, float, double, std::string> ArgumentVariant;
     typedef std::vector<ArgumentVariant> ArgumentVector;
 
     struct Message {
@@ -102,7 +103,9 @@ class OSCInterface
 
     std::string const & url() const { return _url; }
 
+
   private:
+
     static int callback_(char const *path, char const *types, lo_arg **argv, int argc, lo_message msg, void *data);
 
     lo_server_thread _thread;

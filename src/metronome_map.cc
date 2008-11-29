@@ -30,11 +30,11 @@ MetronomeMap::MetronomeMap(
     int preroll,
     std::string const & start_label
 )
-  : Metronome(audio),
-    _current(0),
-    _pos(tempomap, audio.samplerate(), tempo_multiplier),
-    _transport_enabled(transport),
-    _transport_master(master)
+  : Metronome(audio)
+  , _current(0)
+  , _pos(tempomap, audio.samplerate(), tempo_multiplier)
+  , _transport_enabled(transport)
+  , _transport_master(master)
 {
     ASSERT(tempomap);
     ASSERT(tempomap->size() > 0);
@@ -52,6 +52,18 @@ MetronomeMap::MetronomeMap(
 
 
 MetronomeMap::~MetronomeMap()
+{
+}
+
+
+void MetronomeMap::do_start()
+{
+    _pos.locate(0);
+    _current = 0;
+}
+
+
+void MetronomeMap::do_stop()
 {
 }
 

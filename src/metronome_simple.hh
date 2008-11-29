@@ -50,7 +50,8 @@ class MetronomeSimple
     int denom() const { return _denom; }
     TempoMap::Pattern const & pattern() const { return _pattern; }
 
-    virtual void set_active(bool);
+    virtual void do_start();
+    virtual void do_stop();
 
   protected:
 

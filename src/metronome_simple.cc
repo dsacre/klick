@@ -61,7 +61,7 @@ MetronomeSimple::~MetronomeSimple()
 void MetronomeSimple::set_tempo(float tempo)
 {
     _tempo = tempo;
-    if (_active) {
+    if (active()) {
         _current_tempo = _tempo;
     }
 }
@@ -105,18 +105,20 @@ void MetronomeSimple::set_all(TempoMap::Entry const & params)
 }
 
 
-void MetronomeSimple::set_active(bool b)
+void MetronomeSimple::do_start()
 {
-    if (b && !_active) {
+    if (!active()) {
         _beat = 0;
         _next = 0;
         _frame = 0;
         _current_tempo = _tempo;
-    } else if (!b) {
-        _current_tempo = 0.0f;
     }
+}
 
-    _active = b;
+
+void MetronomeSimple::do_stop()
+{
+    _current_tempo = 0.0f;
 }
 
 

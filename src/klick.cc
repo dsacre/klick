@@ -139,21 +139,6 @@ void Klick::load_tempomap()
 }
 
 
-void Klick::set_tempomap_filename(std::string const & filename)
-{
-    _options->filename = filename;
-    load_tempomap();
-
-    set_metronome(METRONOME_TYPE_MAP);
-}
-
-
-std::string const & Klick::tempomap_filename() const
-{
-    return _options->filename;
-}
-
-
 void Klick::load_samples()
 {
     std::string emphasis, normal;
@@ -293,6 +278,47 @@ void Klick::set_metronome(MetronomeType type)
             }
         }
     }
+}
+
+
+void Klick::set_tempomap_filename(std::string const & filename)
+{
+    _options->filename = filename;
+    load_tempomap();
+
+    set_metronome(METRONOME_TYPE_MAP);
+}
+
+
+void Klick::set_tempomap_preroll(int bars)
+{
+    _options->preroll = bars;
+    set_metronome(METRONOME_TYPE_MAP);
+}
+
+
+void Klick::set_tempomap_multiplier(float mult)
+{
+    _options->tempo_multiplier = mult;
+    set_metronome(METRONOME_TYPE_MAP);
+}
+
+
+std::string const & Klick::tempomap_filename() const
+{
+    return _options->filename;
+}
+
+
+int Klick::tempomap_preroll() const
+{
+    return _options->preroll;
+}
+
+
+float Klick::tempomap_multiplier() const
+{
+    return _options->tempo_multiplier;
 }
 
 

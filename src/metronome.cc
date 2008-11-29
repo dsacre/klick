@@ -27,6 +27,18 @@ Metronome::~Metronome()
 }
 
 
+void Metronome::set_active(bool b)
+{
+    _active = b;
+
+    if (b) {
+        do_start();
+    } else {
+        do_stop();
+    }
+}
+
+
 void Metronome::set_sound(AudioChunkConstPtr emphasis, AudioChunkConstPtr normal)
 {
     _click_emphasis = emphasis;

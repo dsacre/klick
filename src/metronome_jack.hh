@@ -30,11 +30,11 @@ class MetronomeJack
     }
 
   protected:
-    static nframes_t const MIN_FRAMES_DIFF = 64;
-
     virtual void process_callback(sample_t *, nframes_t);
 
   private:
+    static nframes_t const MIN_FRAMES_DIFF = 64;
+
     nframes_t _last_click_frame;
 };
 

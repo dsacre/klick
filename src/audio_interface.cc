@@ -116,6 +116,27 @@ void AudioInterface::autoconnect()
 }
 
 
+std::vector<std::string> AudioInterface::available_ports()
+{
+    std::vector<std::string> v;
+
+    char const **ports = jack_get_ports(_client, NULL, NULL, JackPortIsInput);
+
+    if (ports) {
+        char const **p = ports;
+        while (*p) {
+            if (std::string(jack_port_type(jack_port_by_name(_client, *p))) == JACK_DEFAULT_AUDIO_TYPE) {
+                v.push_back(*p);
+            }
+            ++p;
+        }
+        free(ports);
+    }
+
+    return v;
+}
+
+
 bool AudioInterface::transport_rolling() const
 {
     return (jack_transport_query(_client, NULL) == JackTransportRolling);

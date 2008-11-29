@@ -37,13 +37,17 @@ class MetronomeMap
     );
     virtual ~MetronomeMap();
 
+    virtual void do_start();
+    virtual void do_stop();
+
     bool running() const;
 
   protected:
-    static double const TICKS_PER_BEAT = 1920.0;
-
     virtual void process_callback(sample_t *, nframes_t);
     virtual void timebase_callback(jack_position_t *);
+
+  private:
+    static double const TICKS_PER_BEAT = 1920.0;
 
     // transport position
     nframes_t _current;

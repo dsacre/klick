@@ -68,6 +68,7 @@ class OSCHandler
     void on_config_set_volume(Message const &);
     void on_config_connect(Message const &);
     void on_config_autoconnect(Message const &);
+    void on_config_get_available_ports(Message const &);
     void on_config_query(Message const &);
 
     void on_metro_set_type(Message const &);
@@ -84,6 +85,8 @@ class OSCHandler
     void on_simple_query(Message const &);
 
     void on_map_load_file(Message const &);
+    void on_map_set_preroll(Message const &);
+    void on_map_set_tempo_multiplier(Message const &);
     void on_map_query(Message const &);
 
     void on_jack_query(Message const &);

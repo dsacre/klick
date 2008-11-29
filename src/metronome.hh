@@ -35,9 +35,12 @@ class Metronome
 
     void set_sound(AudioChunkConstPtr emphasis, AudioChunkConstPtr normal);
 
+    void set_active(bool b);
     void start() { set_active(true); }
     void stop() { set_active(false); }
-    virtual void set_active(bool b) { _active = b; }
+
+    virtual void do_start() { }
+    virtual void do_stop() { }
 
     bool active() const { return _active; }
 
@@ -53,6 +56,8 @@ class Metronome
 
     AudioChunkConstPtr _click_emphasis;
     AudioChunkConstPtr _click_normal;
+
+  private:
 
     bool _active;
 };

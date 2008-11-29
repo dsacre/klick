@@ -51,6 +51,8 @@ OSCHandler::OSCHandler(std::string const & port,
     add_method("/klick/config/set_volume", "f", &OSCHandler::on_config_set_volume);
     add_method("/klick/config/connect", NULL, &OSCHandler::on_config_connect);
     add_method("/klick/config/autoconnect", "", &OSCHandler::on_config_autoconnect);
+    add_method("/klick/config/get_available_ports", "", &OSCHandler::on_config_get_available_ports);
+    add_method("/klick/config/get_available_ports", "s", &OSCHandler::on_config_get_available_ports);
     add_method("/klick/config/query", "", &OSCHandler::on_config_query);
     add_method("/klick/config/query", "s", &OSCHandler::on_config_query);
 
@@ -71,6 +73,8 @@ OSCHandler::OSCHandler(std::string const & port,
     add_method<MetronomeSimple>("/klick/simple/query", "s", &OSCHandler::on_simple_query);
 
     add_method<MetronomeMap>("/klick/map/load_file", "s", &OSCHandler::on_map_load_file);
+    add_method<MetronomeMap>("/klick/map/set_preroll", "i", &OSCHandler::on_map_set_preroll);
+    add_method<MetronomeMap>("/klick/map/set_tempo_multiplier", "f", &OSCHandler::on_map_set_tempo_multiplier);
     add_method<MetronomeMap>("/klick/map/query", "", &OSCHandler::on_map_query);
     add_method<MetronomeMap>("/klick/map/query", "s", &OSCHandler::on_map_query);
 
@@ -252,6 +256,14 @@ void OSCHandler::on_config_autoconnect(Message const & /*msg*/)
 }
 
 
+void OSCHandler::on_config_get_available_ports(Message const & msg)
+{
+    std::vector<std::string> v = _audio.available_ports();
+    OSCInterface::ArgumentVector av(v.begin(), v.end());
+    _osc->send(optional_address(msg), "/klick/config/available_ports", av);
+}
+
+
 void OSCHandler::on_config_query(Message const & msg)
 {
     OSCInterface::Address addr(optional_address(msg));
@@ -281,7 +293,10 @@ void OSCHandler::on_metro_set_type(Message const & msg)
     }
     else {
         std::cerr << msg.path << ": invalid metronome type '" << type << "'" << std::endl;
+        return;
     }
+
+    _osc->send(_clients, "/klick/metro/type", type);
 }
 
 
@@ -367,6 +382,7 @@ void OSCHandler::on_simple_set_pattern(Message const & msg)
         metro_simple()->set_pattern(p);
     } catch (TempoMap::ParseError const & e) {
         std::cerr << msg.path << ": " << e.what() << std::endl;
+        return;
     }
     _osc->send(_clients, "/klick/simple/pattern", TempoMap::pattern_to_string(metro_simple()->pattern()));
 }
@@ -392,9 +408,24 @@ void OSCHandler::on_map_load_file(Message const & msg)
         _klick.set_tempomap_filename(boost::get<std::string>(msg.args[0]));
     } catch (std::runtime_error const & e) {
         std::cerr << msg.path << ": " << e.what() << std::endl;
+        return;
     }
 
     _osc->send(_clients, "/klick/map/file", _klick.tempomap_filename());
+}
+
+
+void OSCHandler::on_map_set_preroll(Message const & msg)
+{
+    _klick.set_tempomap_preroll(boost::get<int>(msg.args[0]));
+    _osc->send(_clients, "/klick/map/preroll", _klick.tempomap_preroll());
+}
+
+
+void OSCHandler::on_map_set_tempo_multiplier(Message const & msg)
+{
+    _klick.set_tempomap_multiplier(boost::get<float>(msg.args[0]));
+    _osc->send(_clients, "/klick/map/tempo_multiplier", _klick.tempomap_multiplier());
 }
 
 
@@ -413,5 +444,5 @@ void OSCHandler::on_jack_query(Message const & /*msg*/)
 
 void OSCHandler::fallback(Message const & msg)
 {
-    std::cerr << "unknown message: " << msg.path << std::endl;
+    std::cerr << "unknown message: " << msg.path << " ," << msg.types << std::endl;
 }

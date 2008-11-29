@@ -70,8 +70,11 @@ class AudioInterface
     void set_volume(float v) { _volume = v; }
     float volume() const { return _volume; }
 
+    // JACK connections
     void connect(std::string const & port);
     void autoconnect();
+
+    std::vector<std::string> available_ports();
 
     // JACK transport
     bool transport_rolling() const;
@@ -83,9 +86,7 @@ class AudioInterface
     bool is_shutdown() const { return _shutdown; }
 
     // start playing audio chunk at offset into the current period
-    void play(AudioChunkConstPtr chunk,
-              nframes_t offset,
-              float volume = 1.0);
+    void play(AudioChunkConstPtr chunk, nframes_t offset, float volume = 1.0);
 
   private:
     static int process_callback_(nframes_t, void *);

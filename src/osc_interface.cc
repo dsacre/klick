@@ -125,7 +125,7 @@ class AddArgumentVisitor
 };
 
 
-void OSCInterface::send(Address const & target, std::string const & path, std::vector<ArgumentVariant> const & args)
+void OSCInterface::send(Address const & target, std::string const & path, ArgumentVector const & args)
 {
     lo_message msg = lo_message_new();
 

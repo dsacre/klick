@@ -50,14 +50,18 @@ class Klick
 
     void set_metronome(MetronomeType type);
 
-    void set_tempomap_filename(std::string const & filename);
-    std::string const & tempomap_filename() const;
-
     void set_sound(int n);
     void set_sound_custom(std::string const &, std::string const &);
     int sound() const;
     std::string const & sound_custom_emphasis() const;
     std::string const & sound_custom_normal() const;
+
+    void set_tempomap_filename(std::string const & filename);
+    void set_tempomap_preroll(int bars);
+    void set_tempomap_multiplier(float mult);
+    std::string const & tempomap_filename() const;
+    int tempomap_preroll() const;
+    float tempomap_multiplier() const;
 
 
   private:

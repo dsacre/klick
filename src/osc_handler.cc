@@ -51,6 +51,7 @@ OSCHandler::OSCHandler(std::string const & port,
     add_method("/klick/config/set_volume", "f", &OSCHandler::on_config_set_volume);
     add_method("/klick/config/connect", NULL, &OSCHandler::on_config_connect);
     add_method("/klick/config/autoconnect", "", &OSCHandler::on_config_autoconnect);
+    add_method("/klick/config/disconnect_all", "", &OSCHandler::on_config_disconnect_all);
     add_method("/klick/config/get_available_ports", "", &OSCHandler::on_config_get_available_ports);
     add_method("/klick/config/get_available_ports", "s", &OSCHandler::on_config_get_available_ports);
     add_method("/klick/config/query", "", &OSCHandler::on_config_query);
@@ -253,6 +254,12 @@ void OSCHandler::on_config_connect(Message const & msg)
 void OSCHandler::on_config_autoconnect(Message const & /*msg*/)
 {
     _audio.autoconnect();
+}
+
+
+void OSCHandler::on_config_disconnect_all(Message const &)
+{
+    _audio.disconnect_all();
 }
 
 

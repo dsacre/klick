@@ -68,6 +68,7 @@ class OSCHandler
     void on_config_set_volume(Message const &);
     void on_config_connect(Message const &);
     void on_config_autoconnect(Message const &);
+    void on_config_disconnect_all(Message const &);
     void on_config_get_available_ports(Message const &);
     void on_config_query(Message const &);
 

@@ -105,14 +105,20 @@ void AudioInterface::connect(std::string const & port)
 void AudioInterface::autoconnect()
 {
     // find first two hardware outs
-    char const **hw_ports = jack_get_ports(_client, NULL, NULL, JackPortIsPhysical | JackPortIsInput);
+    char const **hw_ports = jack_get_ports(_client, NULL, JACK_DEFAULT_AUDIO_TYPE, JackPortIsPhysical | JackPortIsInput);
 
     if (hw_ports) {
         for (int n = 0; n < 2 && hw_ports[n] != NULL; ++n) {
             jack_connect(_client, jack_port_name(_output_port), hw_ports[n]);
         }
-        free(hw_ports);
+        std::free(hw_ports);
     }
+}
+
+
+void AudioInterface::disconnect_all()
+{
+    jack_port_disconnect(_client, _output_port);
 }
 
 
@@ -120,17 +126,14 @@ std::vector<std::string> AudioInterface::available_ports()
 {
     std::vector<std::string> v;
 
-    char const **ports = jack_get_ports(_client, NULL, NULL, JackPortIsInput);
+    char const **ports = jack_get_ports(_client, NULL, JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput);
 
     if (ports) {
         char const **p = ports;
         while (*p) {
-            if (std::string(jack_port_type(jack_port_by_name(_client, *p))) == JACK_DEFAULT_AUDIO_TYPE) {
-                v.push_back(*p);
-            }
-            ++p;
+            v.push_back(*p++);
         }
-        free(ports);
+        std::free(ports);
     }
 
     return v;
@@ -215,7 +218,8 @@ void AudioInterface::play(AudioChunkConstPtr chunk, nframes_t offset, float volu
 
 void AudioInterface::process_mix(sample_t *buffer, nframes_t nframes)
 {
-    for (ChunkArray::iterator i = _chunks.begin(); i != _chunks.end(); ++i) {
+    for (ChunkArray::iterator i = _chunks.begin(); i != _chunks.end(); ++i)
+    {
         if (i->chunk) {
             process_mix_samples(buffer + i->offset,
                                 i->chunk->samples() + i->pos,
@@ -233,7 +237,7 @@ void AudioInterface::process_mix(sample_t *buffer, nframes_t nframes)
 }
 
 
-void AudioInterface::process_mix_samples(sample_t *dest, sample_t const * src, nframes_t length, float volume)
+inline void AudioInterface::process_mix_samples(sample_t *dest, sample_t const * src, nframes_t length, float volume)
 {
     for (sample_t *end = dest + length; dest < end; dest++, src++) {
         *dest += *src * volume;

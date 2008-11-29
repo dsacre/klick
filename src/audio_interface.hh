@@ -73,7 +73,7 @@ class AudioInterface
     // JACK connections
     void connect(std::string const & port);
     void autoconnect();
-
+    void disconnect_all();
     std::vector<std::string> available_ports();
 
     // JACK transport

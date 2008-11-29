@@ -29,13 +29,13 @@ Metronome::~Metronome()
 
 void Metronome::set_active(bool b)
 {
-    _active = b;
-
     if (b) {
         do_start();
     } else {
         do_stop();
     }
+
+    _active = b;
 }
 
 

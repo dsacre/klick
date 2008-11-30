@@ -22,12 +22,12 @@
 
 
 AudioInterface::AudioInterface(std::string const & name)
-  : _process_obj(),
-    _timebase_obj(),
-    _process_mix(false),
-    _shutdown(false),
-    _volume(1.0f),
-    _next_chunk(0)
+  : _process_obj()
+  , _timebase_obj()
+  , _process_mix(false)
+  , _shutdown(false)
+  , _volume(1.0f)
+  , _next_chunk(0)
 {
     if ((_client = jack_client_open(name.c_str(), JackNullOption, NULL)) == 0) {
         throw AudioError("can't connect to jack server");

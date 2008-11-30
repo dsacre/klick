@@ -266,8 +266,7 @@ void OSCHandler::on_config_disconnect_all(Message const &)
 void OSCHandler::on_config_get_available_ports(Message const & msg)
 {
     std::vector<std::string> v = _audio.available_ports();
-    OSCInterface::ArgumentVector av(v.begin(), v.end());
-    _osc->send(optional_address(msg), "/klick/config/available_ports", av);
+    _osc->send(optional_address(msg), "/klick/config/available_ports", OSCInterface::ArgumentVector(v.begin(), v.end()));
 }
 
 

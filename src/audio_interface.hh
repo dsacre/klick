@@ -31,6 +31,7 @@ class AudioInterface
     static int const MAX_PLAYING_CHUNKS = 4;
 
   public:
+
     struct AudioError : public std::runtime_error {
         AudioError(std::string const & w)
           : std::runtime_error(w) { }
@@ -89,6 +90,7 @@ class AudioInterface
     void play(AudioChunkConstPtr chunk, nframes_t offset, float volume = 1.0);
 
   private:
+
     static int process_callback_(nframes_t, void *);
     static void timebase_callback_(jack_transport_state_t, nframes_t, jack_position_t *, int, void *);
     static void shutdown_callback_(void *);
@@ -118,5 +120,6 @@ class AudioInterface
     ChunkArray _chunks;
     int _next_chunk;
 };
+
 
 #endif // _AUDIO_INTERFACE_HH

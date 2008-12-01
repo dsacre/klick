@@ -115,7 +115,7 @@ void OSCHandler::update()
 
 void OSCHandler::add_method(char const *path, char const *types, MessageHandler func)
 {
-    _osc->add_method(path, types, boost::bind(func, this, _1));
+    _osc->add_method(path, types, boost::bind(&OSCHandler::generic_callback, this, func, _1));
 }
 
 
@@ -126,13 +126,29 @@ void OSCHandler::add_method(char const *path, char const *types, MessageHandler 
 }
 
 
+void OSCHandler::generic_callback(MessageHandler func, Message const & msg)
+{
+    try {
+        (this->*func)(msg);
+    }
+    catch (OSCInterface::OSCError const & e) {
+        std::cerr << e.what() << std::endl;
+    }
+}
+
+
 template <typename M>
 void OSCHandler::type_specific_callback(MessageHandler func, Message const & msg)
 {
-    if (boost::dynamic_pointer_cast<M>(_klick.metronome())) {
-        (this->*func)(msg);
-    } else {
-        std::cerr << "function " << msg.path << " not available for current metronome type" << std::endl;
+    try {
+        if (boost::dynamic_pointer_cast<M>(_klick.metronome())) {
+            (this->*func)(msg);
+        } else {
+            std::cerr << "function " << msg.path << " not available for current metronome type" << std::endl;
+        }
+    }
+    catch (OSCInterface::OSCError const & e) {
+        std::cerr << e.what() << std::endl;
     }
 }
 
@@ -439,6 +455,8 @@ void OSCHandler::on_map_query(Message const & msg)
 {
     OSCInterface::Address addr(optional_address(msg));
     _osc->send(addr, "/klick/map/file", _klick.tempomap_filename());
+    _osc->send(addr, "/klick/map/preroll", _klick.tempomap_preroll());
+    _osc->send(addr, "/klick/map/tempo_multiplier", _klick.tempomap_multiplier());
 }
 
 

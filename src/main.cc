@@ -38,11 +38,11 @@ std::string data_file(std::string const & path)
 
 static void signal_handler(int sig)
 {
-    app->signal_quit();
-
     if (sig != SIGINT) {
         ret = EXIT_FAILURE;
     }
+
+    app->signal_quit();
 }
 
 

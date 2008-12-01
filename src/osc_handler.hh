@@ -40,10 +40,10 @@ class OSCHandler
     typedef void (OSCHandler::*MessageHandler)(Message const &);
 
     void add_method(char const *path, char const *types, MessageHandler func);
-
     template <typename M>
     void add_method(char const *path, char const *types, MessageHandler func);
 
+    void generic_callback(MessageHandler func, Message const & msg);
     template <typename M>
     void type_specific_callback(MessageHandler func, Message const & msg);
 

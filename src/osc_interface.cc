@@ -18,6 +18,7 @@
 #include <lo/lo.h>
 
 #include "util/logstream.hh"
+#include "util/string.hh"
 #include "util/debug.hh"
 
 
@@ -31,7 +32,7 @@ OSCInterface::OSCInterface(std::string const & port)
     _thread = lo_server_thread_new(!port.empty() ? port.c_str() : NULL, error_handler::func);
 
     if (!_thread) {
-        throw std::runtime_error("can't create OSC server thread");
+        throw OSCError("can't create OSC server thread");
     }
 
     char *tmp = lo_server_thread_get_url(_thread);
@@ -53,15 +54,13 @@ int OSCInterface::callback_(char const *path, char const *types, lo_arg **argv, 
 {
     Callback & cb = *static_cast<Callback *>(data);
 
-    Message m;
-
-    m.path = path;
-    m.types = types;
-    char *tmp = lo_address_get_url(lo_message_get_source(msg));
-    m.src = Address(tmp);
-    std::free(tmp);
-
     das::logv << "got message: " << path << " ," << types;
+
+    char *tmp = lo_address_get_url(lo_message_get_source(msg));
+
+    Message m(path, types, Address(tmp));
+
+    std::free(tmp);
 
     for (int i = 0; i < argc; ++i) {
         das::logv << " ";
@@ -142,10 +141,17 @@ void OSCInterface::send(Address const & target, std::string const & path, Argume
 
 OSCInterface::Address::Address(std::string const & url)
 {
-    _addr = lo_address_new_from_url(url.c_str());
+    std::istringstream ss(url);
+    unsigned int i;
+
+    if (ss >> i && ss.eof()) {
+        _addr = lo_address_new(NULL, url.c_str());
+    } else {
+        _addr = lo_address_new_from_url(url.c_str());
+    }
 
     if (!_addr) {
-        throw std::runtime_error("invalid OSC port/url");
+        throw OSCError(das::make_string() << "invalid OSC port/url: " << url);
     }
 }
 
@@ -158,9 +164,7 @@ OSCInterface::Address::Address(Address const & a)
 
 OSCInterface::Address::~Address()
 {
-    if (_addr) {
-        lo_address_free(_addr);
-    }
+    lo_address_free(_addr);
 }
 
 
@@ -169,10 +173,9 @@ OSCInterface::Address & OSCInterface::Address::operator=(Address const & a)
     if (this == &a) {
         return *this;
     }
-    if (_addr) {
-        lo_address_free(_addr);
-    }
+    lo_address_free(_addr);
     _addr = lo_address_new_from_url(a.url().c_str());
+
     return *this;
 }
 

@@ -15,6 +15,7 @@
 #include <string>
 #include <vector>
 #include <list>
+#include <stdexcept>
 
 #include <boost/function.hpp>
 #include <boost/variant.hpp>
@@ -33,9 +34,15 @@ class OSCInterface
 {
   public:
 
-    class Address {
+    struct OSCError : public std::runtime_error
+    {
+        OSCError(std::string const & w)
+          : std::runtime_error(w) { }
+    };
+
+    class Address
+    {
       public:
-        Address() : _addr(NULL) { }
         Address(Address const &);
         Address(std::string const & url);
         ~Address();
@@ -54,7 +61,14 @@ class OSCInterface
     typedef boost::variant<int, float, double, std::string> ArgumentVariant;
     typedef std::vector<ArgumentVariant> ArgumentVector;
 
-    struct Message {
+    struct Message
+    {
+        Message(std::string const & path_, std::string const & types_, Address const & src_)
+          : path(path_)
+          , types(types_)
+          , src(src_)
+        { }
+
         std::string path;
         std::string types;
         ArgumentVector args;

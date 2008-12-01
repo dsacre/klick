@@ -16,9 +16,10 @@
 #include <iostream>
 #include <fstream>
 #include <csignal>
+#include <boost/shared_ptr.hpp>
 
 
-static Klick *app = NULL;
+static boost::shared_ptr<Klick> app;
 
 static int ret = EXIT_SUCCESS;
 
@@ -48,7 +49,7 @@ static void signal_handler(int sig)
 int main(int argc, char *argv[])
 {
     try {
-        app = new Klick(argc, argv);
+        app.reset(new Klick(argc, argv));
 
         // exit cleanly when terminated
         signal(SIGINT,  signal_handler);
@@ -57,16 +58,13 @@ int main(int argc, char *argv[])
 
         app->run();
 
-        delete app;
         return ret;
     }
     catch (Exit const & e) {
-        delete app;
         return e.status();
     }
     catch (std::exception const & e) {
         std::cerr << e.what() << std::endl;
-        delete app;
         return EXIT_FAILURE;
     }
 }

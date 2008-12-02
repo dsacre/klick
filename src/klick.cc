@@ -78,21 +78,19 @@ Klick::Klick(int argc, char *argv[])
         load_tempomap();
     }
 
-
     load_samples();
 
 
     // create metronome object
-    if (_options->use_osc) {
-        set_metronome(METRONOME_TYPE_SIMPLE);
-    } else if (_options->interactive) {
+    if (_options->interactive) {
         set_metronome(METRONOME_TYPE_SIMPLE);
     } else if (_options->follow_transport) {
         set_metronome(METRONOME_TYPE_JACK);
+    } else if (_options->use_osc) {
+        set_metronome(METRONOME_TYPE_SIMPLE);
     } else {
         set_metronome(METRONOME_TYPE_MAP);
     }
-
 
 #ifdef ENABLE_OSC
     if (_options->use_osc) {

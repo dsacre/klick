@@ -56,6 +56,9 @@ void Options::print_usage(std::ostream & out)
     out << "Usage:\n"
         << "  klick [ options ] [meter] tempo[-tempo2/accel] [pattern]\n"
         << "  klick [ options ] -f filename\n"
+#ifdef ENABLE_TERMINAL
+        << "  klick [ options ] -i\n"
+#endif
         << "  klick [ options ] -j\n"
         << "\n"
         << "Options:\n"

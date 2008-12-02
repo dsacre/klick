@@ -3,12 +3,11 @@ klick - an advanced metronome for jack
 Copyright (C) 2007-2008  Dominic Sacré  <dominic.sacre@gmx.de>
 
 
-
 Requirements:
 =============
 
 * JACK Audio Connection Kit [http://jackaudio.org/]
-* Boost [http://www.boost.org/] (headers only)
+* Boost [http://www.boost.org/] >= 1.34.1 (headers only)
 * libsamplerate [http://www.mega-nerd.com/SRC/]
 * libsndfile [http://www.mega-nerd.com/libsndfile/]
 * SCons [http://www.scons.org/]
@@ -18,238 +17,13 @@ Installation:
 =============
 
 In the klick source directory, run:
-
 scons
 
 and then, as root:
-
 scons install
 
-to install to /usr rather than /usr/local:
 
-scons PREFIX=/usr install
+Documentation:
+==============
 
-
-Usage:
-======
-
-klick has three basic modes of operation:
-
-
-klick [ options ] [meter] tempo[-tempo2/accel] [pattern]
-klick [ options ] -f filename
-klick [ options ] -j
-
-
-The first form will play a simple metronome with the given meter and
-tempo. To play a 3/4 beat at 120 bpm:
-
-klick 3/4 120
-
-You can also specify a "target" tempo and acceleration rate, to use klick
-as a speed trainer. To play a 4/4 beat starting at 80 bpm, gradually
-increasing the tempo by 1 bpm every 10 measures until reaching 120 bpm:
-
-klick 80-120/10
-
-Once the final tempo is reached, klick will continue playing at a
-constant tempo.
-
-With the -f parameter, a tempo map can be loaded from a file. This allows
-for more complex setups including meter and tempo changes etc. See below
-for a description of the tempo map file format.
-
-Additionally, it's possible to get all tempo information from JACK. Just
-run a sequencer as JACK transport master, and klick -j will play a simple
-metronome pattern in sync with JACK transport.
-
-
-Command Line Options:
-=====================
-
--f filename       load tempomap from file
--j                no tempomap, just follow jack transport
--n name           set jack client name
--p port,..        jack port(s) to connect to
--P                automatically connect to hardware ports
--o port           OSC port to listen on
--i                interactive mode
--s number         use built-in sounds:
-                    0: square wave (default)
-                    1: sine wave
-                    2: noise
-                    3: acoustic bell/click
--S file[,file]    load sounds from file(s)
--e                no emphasized beats
--E                emphasized beats only
--v mult[,mult]    adjust playback volume (default: 1.0)
--w mult[,mult]    adjust playback pitch (default: 1.0)
--t                enable jack transport
--T                become transport master (implies -t)
--d seconds        delay before starting playback
--c bars           pre-roll. use -c 0 for 2 beats
--l label          start playback at the given label
--x multiplier     multiply tempo by the given factor
--h                show this help
-
-
-Interactive Mode:
-=================
-
-The following keyboard commands are available in interactive mode:
-
-Arrow up/down: increase/reduce tempo by 10 bpm
-Arrow right/left: increase/reduce tempo by 1 bpm
-0-9: set beats per bar (0/1: all beats are even)
-q/w/e/r: set beat type (whole, half, quarter, eighth note)
-+/=, -: increase/reduce volume
-Space: start/stop metronome
-Escape: exit klick
-
-
-Tempo Map File Format:
-======================
-
-A tempo map consists of an arbitrary number of lines which will be played
-sequentially. Each line must have the following format:
-
-
-[label:] bars [meter] tempo [pattern] [volume]
-
-
-Everything written in brackets is optional, and can be omitted if the
-default is to be used. You can use comments starting with '#', empty
-lines are ignored.
-
-label   An optional name that can be used to refer to this line, and start
-        playback at this position.
-
-bars    The number of bars for this tempo map entry.
-
-meter   The meter, written as beats/denominator. This is optional, the
-        default is 4/4.
-
-tempo   The tempo in beats per minute, with a "beat" always referring to
-        quarter notes, no matter what the meter actually is (this is
-        different from Ardour/JACK, but similar to most other audio
-        software).
-
-        tempo:              Sets the tempo for the duration of the whole
-                            tempo map entry.
-
-        tempo1-tempo2:      Specifies the tempo for the start and the end of
-                            this entry, with a gradual tempo change in
-                            between.
-
-        tempo1,tempo2,...:  Sets a different tempo for each beat. The number
-                            of tempo values must be the same as the total
-                            number of beats for this entry (bars * beats).
-
-pattern This can be used to alter the pattern of accented/normal beats.
-        Use 'X' (upper case) for accented beats, 'x' (lower case) for
-        normal beats, and '.' for silence. So for example, given a 6/8
-        measure, and you only want the 1st and 4th beat to be played, you
-        could use the pattern 'X..x..'; the default is 'Xxxxxx'.
-
-volume  Allows you to set a different volume for each part, default is 1.0.
-
-
-Example Tempo Map:
-==================
-
-intro:    8 120           # play 8 measures at 120 bpm (4/4)
-verse1:   12 120 X.x.     # 12 measures at 120 bpm, playing only the 1st and 3rd beat
-          4 120-140 X.x.  # gradually increase tempo to 140 bpm
-chorus1:  16 140
-bridge:   8 3/4 140 0.5   # change to 3/4 time, reduce volume
-          8 3/4 140       # normal volume again
-verse2:   12 120          # back to 4/4 (implied)
-chorus2:  16 140          # jump to 140 bpm
-outro:    6 140
-          2 140-80        # ritardando over the last 2 bars
-
-
-OSC Commands:
-=============
-
-klick understands the following OSC messages:
-
-/klick/ping
-/klick/ping ,s <return_address>
-responds: /klick/pong
-
-/klick/register_client
-/klick/register_client ,s <address>
-registers a client to receive notifications when any parameter changes
-
-/klick/unregister_client
-/klick/unregister_client ,s <address>
-unregisters a client
-
-/klick/query
-/klick/query ,s <return_address>
-reports current state (same as /klick/*/query)
-
-/klick/quit
-terminates klick
-
-/klick/config/set_sound ,i <number>
-sets the sound to one of the built-in ones
-
-/klick/config/set_sound ,ss <filename> <filename>
-loads the sound from two audio files
-
-/klick/config/set_volume ,f <volume>
-sets the output volume
-
-/klick/config/autoconnect
-connects klick's output port to the first two hardware ports
-
-/klick/config/query
-/klick/config/query ,s <return_address>
-reports current state:
-    /klick/config/sound ,i
-    /klick/config/sound ,ss
-    /klick/config/volume ,f
-
-/klick/metro/start
-starts the metronome
-
-/klick/metro/stop
-stops the metronome
-
-/klick/metro/query
-/klick/metro/query ,s <return_address>
-reports current state:
-    /klick/metro/active ,i
-
-/klick/simple/set_tempo ,f <tempo>
-sets the metronome's tempo
-
-/klick/simple/set_tempo_increment ,f <increment>
-sets the tempo increment per bar
-
-/klick/simple/set_tempo_limit ,f <limit>
-sets the maximum tempo
-
-/klick/simple/set_meter ,ii <beats> <denom>
-sets the metronome's meter
-
-/klick/simple/set_pattern ,s <pattern>
-sets the beat pattern
-
-/klick/simple/tap
-tap tempo
-
-/klick/simple/query
-/klick/simple/query ,s <return_address>
-reports current state:
-    /klick/simple/tempo ,f
-    /klick/simple/tempo_increment ,f
-    /klick/simple/tempo_limit ,f
-    /klick/simple/current_tempo ,f
-    /klick/simple/meter ,ii
-    /klick/simple/pattern ,s
-
-
-
+See doc/manual.html for the klick user manual.

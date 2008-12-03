@@ -48,6 +48,8 @@ OSCHandler::OSCHandler(std::string const & port,
 
     add_method("/klick/config/set_sound", "i", &OSCHandler::on_config_set_sound);
     add_method("/klick/config/set_sound", "ss", &OSCHandler::on_config_set_sound_custom);
+    add_method("/klick/config/set_sound_volume", "ff", &OSCHandler::on_config_set_sound_volume);
+    add_method("/klick/config/set_sound_pitch", "ff", &OSCHandler::on_config_set_sound_pitch);
     add_method("/klick/config/set_volume", "f", &OSCHandler::on_config_set_volume);
     add_method("/klick/config/connect", NULL, &OSCHandler::on_config_connect);
     add_method("/klick/config/autoconnect", "", &OSCHandler::on_config_autoconnect);
@@ -239,7 +241,21 @@ void OSCHandler::on_config_set_sound(Message const & msg)
 void OSCHandler::on_config_set_sound_custom(Message const & msg)
 {
     _klick.set_sound_custom(boost::get<std::string>(msg.args[0]), boost::get<std::string>(msg.args[1]));
-    _osc->send(_clients, "/klick/config/sound", _klick.sound_custom_emphasis(), _klick.sound_custom_normal());
+    _osc->send(_clients, "/klick/config/sound", _klick.sound_custom().get<0>(), _klick.sound_custom().get<1>());
+}
+
+
+void OSCHandler::on_config_set_sound_volume(Message const & msg)
+{
+    _klick.set_sound_volume(boost::get<float>(msg.args[0]), boost::get<float>(msg.args[1]));
+    _osc->send(_clients, "/klick/config/sound_volume", _klick.sound_volume().get<0>(), _klick.sound_volume().get<1>());
+}
+
+
+void OSCHandler::on_config_set_sound_pitch(Message const & msg)
+{
+    _klick.set_sound_pitch(boost::get<float>(msg.args[0]), boost::get<float>(msg.args[1]));
+    _osc->send(_clients, "/klick/config/sound_pitch", _klick.sound_pitch().get<0>(), _klick.sound_pitch().get<1>());
 }
 
 
@@ -254,6 +270,7 @@ void OSCHandler::on_config_connect(Message const & msg)
 {
     if (msg.types.find_first_not_of("s") != std::string::npos) {
         std::cerr << msg.path << ": invalid argument type" << std::endl;
+        return;
     }
 
     for (OSCInterface::ArgumentVector::const_iterator i = msg.args.begin(); i != msg.args.end(); ++i) {
@@ -293,8 +310,10 @@ void OSCHandler::on_config_query(Message const & msg)
     if (_klick.sound() != -1) {
         _osc->send(addr, "/klick/config/sound", _klick.sound());
     } else {
-        _osc->send(addr, "/klick/config/sound", _klick.sound_custom_emphasis(), _klick.sound_custom_normal());
+        _osc->send(addr, "/klick/config/sound", _klick.sound_custom().get<0>(), _klick.sound_custom().get<1>());
     }
+    _osc->send(addr, "/klick/config/sound_volume", _klick.sound_volume().get<0>(), _klick.sound_volume().get<1>());
+    _osc->send(addr, "/klick/config/sound_pitch", _klick.sound_pitch().get<0>(), _klick.sound_pitch().get<1>());
     _osc->send(addr, "/klick/config/volume", _audio.volume());
 }
 

@@ -111,6 +111,7 @@
 -h                show this help
 </pre>
 
+
 <h2><a name="interactive"></a>Interactive Mode</h2>
 
 <p>
@@ -129,12 +130,12 @@ The following keyboard commands are available in interactive mode:
 
 <h2><a name="tempomap"></a>Tempo Map File Format</h2>
 
-<p>A tempo map consists of an arbitrary number of lines which will be played sequentially.
+<p>A tempo map is a plain text file, consisting of an arbitrary number of lines which will be played sequentially.
 Each line must have the following format:</p>
 <pre>
 [label:] bars [meter] tempo [pattern] [volume]
 </pre>
-<p>Everything written in brackets is optional, and can be omitted if the default is to be used.
+<p>Everything in brackets is optional, and can be omitted to use the default.
 '<kbd>#</kbd>' indicates the start of a comment, empty lines are ignored.</p>
 
 <table>
@@ -154,8 +155,7 @@ Each line must have the following format:</p>
   <tr>
     <td><kbd>tempo</kbd></td>
     <td>The tempo in beats per minute, with a "beat" always referring to quarter notes,
-    no matter what the meter actually is (this is different from Ardour/JACK,
-    but similar to most other audio software).<br>
+    no matter what the meter actually is.
     <table style="border: none">
       <tr>
         <td style="border: none"><kbd>tempo</kbd></td>
@@ -247,8 +247,16 @@ klick understands the following OSC messages:
     <td>loads the sound from two audio files</td>
   </tr>
   <tr>
+    <td>/klick/config/set_sound_volume ,ff &lt;emphasis&gt; &lt;normal&gt;</td>
+    <td>changes the volume individually for both samples</td>
+  </tr>
+  <tr>
+    <td>/klick/config/set_sound_pitch ,ff &lt;emphasis&gt; &lt;normal&gt;</td>
+    <td>changes the pitch individually for both samples</td>
+  </tr>
+  <tr>
     <td>/klick/config/set_volume ,f &lt;volume&gt;</td>
-    <td>sets the output volume</td>
+    <td>sets the overall output volume</td>
   </tr>
   <tr>
     <td>/klick/config/autoconnect</td>

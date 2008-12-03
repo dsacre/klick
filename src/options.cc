@@ -33,8 +33,8 @@ Options::Options()
     emphasis(EMPHASIS_NORMAL),
     volume_emphasis(1.0),
     volume_normal(1.0),
-    frequency_emphasis(1.0),
-    frequency_normal(1.0),
+    pitch_emphasis(1.0),
+    pitch_normal(1.0),
     transport_enabled(false),
     transport_master(false),
     delay(0.0f),
@@ -204,12 +204,12 @@ void Options::parse(int argc, char *argv[])
                 char_sep sep(",");
                 tokenizer tok(str, sep);
                 tokenizer::iterator i = tok.begin();
-                frequency_emphasis = das::lexical_cast<float>(*i, InvalidArgument(c, "frequency"));
+                pitch_emphasis = das::lexical_cast<float>(*i, InvalidArgument(c, "pitch"));
                 i++;
                 if (i == tok.end()) {
-                    frequency_normal = frequency_emphasis;
+                    pitch_normal = pitch_emphasis;
                 } else {
-                    frequency_normal = das::lexical_cast<float>(*i, InvalidArgument(c, "frequency"));
+                    pitch_normal = das::lexical_cast<float>(*i, InvalidArgument(c, "pitch"));
                 }
               } break;
 

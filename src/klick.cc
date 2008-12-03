@@ -11,7 +11,6 @@
 
 #include "klick.hh"
 #include "main.hh"
-#include "options.hh"
 #include "audio_interface.hh"
 #include "audio_chunk.hh"
 
@@ -187,15 +186,15 @@ void Klick::load_samples()
     if (_options->volume_emphasis != 1.0f) {
         _click_emphasis->adjust_volume(_options->volume_emphasis);
     }
-    if (_options->frequency_emphasis != 1.0f) {
-        _click_emphasis->adjust_frequency(_options->frequency_emphasis);
+    if (_options->pitch_emphasis != 1.0f) {
+        _click_emphasis->adjust_frequency(_options->pitch_emphasis);
     }
 
     if (_options->volume_normal != 1.0f) {
         _click_normal->adjust_volume(_options->volume_normal);
     }
-    if (_options->frequency_normal != 1.0f) {
-        _click_normal->adjust_frequency(_options->frequency_normal);
+    if (_options->pitch_normal != 1.0f) {
+        _click_normal->adjust_frequency(_options->pitch_normal);
     }
 }
 
@@ -220,21 +219,23 @@ void Klick::set_sound_custom(std::string const & emphasis, std::string const & n
 }
 
 
-int Klick::sound() const
+void Klick::set_sound_volume(float emphasis, float normal)
 {
-    return _options->click_sample;
+    _options->volume_emphasis = emphasis;
+    _options->volume_normal = normal;
+
+    load_samples();
+    _metro->set_sound(_click_emphasis, _click_normal);
 }
 
 
-std::string const & Klick::sound_custom_emphasis() const
+void Klick::set_sound_pitch(float emphasis, float normal)
 {
-    return _options->click_filename_emphasis;
-}
+    _options->pitch_emphasis = emphasis;
+    _options->pitch_normal = normal;
 
-
-std::string const & Klick::sound_custom_normal() const
-{
-    return _options->click_filename_normal;
+    load_samples();
+    _metro->set_sound(_click_emphasis, _click_normal);
 }
 
 
@@ -299,24 +300,6 @@ void Klick::set_tempomap_multiplier(float mult)
 {
     _options->tempo_multiplier = mult;
     set_metronome(METRONOME_TYPE_MAP);
-}
-
-
-std::string const & Klick::tempomap_filename() const
-{
-    return _options->filename;
-}
-
-
-int Klick::tempomap_preroll() const
-{
-    return _options->preroll;
-}
-
-
-float Klick::tempomap_multiplier() const
-{
-    return _options->tempo_multiplier;
 }
 
 

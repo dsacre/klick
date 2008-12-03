@@ -16,11 +16,12 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/scoped_ptr.hpp>
 #include <boost/noncopyable.hpp>
+#include <boost/tuple/tuple.hpp>
 
 #include "audio.hh"
+#include "options.hh"
 
 
-class Options;
 class AudioInterface;
 class TempoMap;
 class Metronome;
@@ -52,16 +53,29 @@ class Klick
 
     void set_sound(int n);
     void set_sound_custom(std::string const &, std::string const &);
-    int sound() const;
-    std::string const & sound_custom_emphasis() const;
-    std::string const & sound_custom_normal() const;
+    void set_sound_volume(float, float);
+    void set_sound_pitch(float, float);
+
+    int sound() const {
+        return _options->click_sample;
+    }
+    boost::tuple<std::string, std::string> sound_custom() const {
+        return boost::make_tuple(_options->click_filename_emphasis, _options->click_filename_normal);
+    }
+    boost::tuple<float, float> sound_volume() const {
+        return boost::make_tuple(_options->volume_emphasis, _options->volume_normal);
+    }
+    boost::tuple<float, float> sound_pitch() const {
+        return boost::make_tuple(_options->pitch_emphasis, _options->pitch_normal);
+    }
 
     void set_tempomap_filename(std::string const & filename);
     void set_tempomap_preroll(int bars);
     void set_tempomap_multiplier(float mult);
-    std::string const & tempomap_filename() const;
-    int tempomap_preroll() const;
-    float tempomap_multiplier() const;
+
+    std::string const & tempomap_filename() const { return _options->filename; }
+    int tempomap_preroll() const { return _options->preroll; }
+    float tempomap_multiplier() const { return _options->tempo_multiplier; }
 
 
   private:

@@ -65,6 +65,8 @@ class OSCHandler
 
     void on_config_set_sound(Message const &);
     void on_config_set_sound_custom(Message const &);
+    void on_config_set_sound_volume(Message const &);
+    void on_config_set_sound_pitch(Message const &);
     void on_config_set_volume(Message const &);
     void on_config_connect(Message const &);
     void on_config_autoconnect(Message const &);

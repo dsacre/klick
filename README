@@ -7,7 +7,7 @@ Requirements:
 =============
 
 * JACK Audio Connection Kit [http://jackaudio.org/]
-* Boost [http://www.boost.org/] >= 1.34.1 (headers only)
+* Boost [http://www.boost.org/] (headers only)
 * libsamplerate [http://www.mega-nerd.com/SRC/]
 * libsndfile [http://www.mega-nerd.com/libsndfile/]
 * SCons [http://www.scons.org/]

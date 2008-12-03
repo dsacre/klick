@@ -1,3 +1,9 @@
+2008-12-03: Version 0.10.0
+
+ * Several new OSC methods, most notably for managing JACK connections.
+ * Various minor fixes, some code cleanup.
+ * Included a proper user manual in the tarball.
+
 2008-10-23: Version 0.9.1
 
  * Fixed a bug that restricted the tempo to tempo_limit even when

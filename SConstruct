@@ -25,7 +25,6 @@ Help(opts.GenerateHelpText(env))
 
 if env['DEBUG']:
     env.Append(CCFLAGS = ['-g', '-W', '-Wall'])
-#    env.Append(CCFLAGS = '-Werror')
 else:
     env.Append(CCFLAGS = ['-O2', '-W', '-Wall'])
     env.Prepend(CPPDEFINES = 'NDEBUG')

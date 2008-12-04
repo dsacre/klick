@@ -13,7 +13,6 @@
 #define _AUDIO_INTERFACE_HH
 
 #include "audio.hh"
-#include "audio_chunk.hh"
 
 #include <string>
 #include <vector>

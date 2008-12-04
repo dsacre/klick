@@ -10,6 +10,7 @@
  */
 
 #include "audio_interface.hh"
+#include "audio_chunk.hh"
 
 #include <jack/jack.h>
 #include <jack/transport.h>

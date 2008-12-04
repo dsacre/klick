@@ -178,7 +178,7 @@ void Klick::load_samples()
 
     das::logv << "loading samples:\n"
               << "  emphasis: " << emphasis << "\n"
-              << "  normal: " << normal << std::endl;
+              << "  normal:   " << normal << std::endl;
 
     _click_emphasis.reset(new AudioChunk(emphasis, _audio->samplerate()), _gc->disposer);
     _click_normal.reset(new AudioChunk(normal, _audio->samplerate()), _gc->disposer);

@@ -11,8 +11,6 @@
 
 #include "position.hh"
 #include "options.hh"
-#include "audio_interface.hh"
-#include "tempomap.hh"
 
 #include <algorithm>
 #include <iterator>

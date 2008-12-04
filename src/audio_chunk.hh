@@ -14,6 +14,8 @@
 
 #include "audio.hh"
 
+#include <boost/shared_array.hpp>
+
 #include "util/disposable.hh"
 
 
@@ -35,15 +37,17 @@ class AudioChunk
     // resample to the given samplerate
     void resample(nframes_t samplerate);
 
-    sample_t const * samples() const { return _samples; }
+    sample_t const * samples() const { return _samples.get(); }
     nframes_t length() const { return _length; }
     nframes_t samplerate() const { return _samplerate; }
 
-  protected:
-    static void resample(sample_t const * samples_in, nframes_t length_in, nframes_t samplerate_in,
-                         sample_t *& samples_out, nframes_t & length_out, nframes_t samplerate_out);
+  private:
+    typedef boost::shared_array<sample_t> SamplePtr;
 
-    sample_t *_samples;
+    static void resample(SamplePtr samples_in, nframes_t length_in, nframes_t samplerate_in,
+                         SamplePtr & samples_out, nframes_t & length_out, nframes_t samplerate_out);
+
+    SamplePtr _samples;
     nframes_t _length;
     nframes_t _samplerate;
 };

@@ -29,7 +29,13 @@ class AudioChunk
     // loads sample from file, converting to the given samplerate if samplerate is non-zero
     AudioChunk(std::string const & filename, nframes_t samplerate = 0);
 
-    ~AudioChunk();
+    // create empty audio
+    AudioChunk(nframes_t samplerate = 0)
+      : _samples()
+      , _length(0)
+      , _samplerate(samplerate)
+    {
+    }
 
     void adjust_volume(float volume);
     void adjust_frequency(float factor);

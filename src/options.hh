@@ -39,15 +39,17 @@ class Options
     std::string cmdline;
 
     static int const CLICK_SAMPLE_FROM_FILE = -1;
+    static int const CLICK_SAMPLE_SILENT = -2;
     int click_sample;
     std::string click_filename_emphasis;
     std::string click_filename_normal;
 
-    enum {
-        EMPHASIS_NORMAL,
-        EMPHASIS_NONE,
-        EMPHASIS_ALL
-    } emphasis;
+    enum EmphasisMode {
+        EMPHASIS_MODE_NORMAL,
+        EMPHASIS_MODE_NONE,
+        EMPHASIS_MODE_ALL
+    };
+    EmphasisMode emphasis_mode;
 
     float volume_emphasis, volume_normal;
     float pitch_emphasis, pitch_normal;

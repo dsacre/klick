@@ -82,7 +82,9 @@ class OSCInterface
     virtual ~OSCInterface();
 
     void add_method(char const *path, char const *types, Callback const & cb);
+
     void start();
+    void stop();
 
 
     // basic send function

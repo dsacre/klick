@@ -94,7 +94,7 @@ OSCHandler::OSCHandler(std::string const & port,
 
 OSCHandler::~OSCHandler()
 {
-    _osc.reset();
+    _osc->stop();
 }
 
 
@@ -240,8 +240,22 @@ void OSCHandler::on_config_set_sound(Message const & msg)
 
 void OSCHandler::on_config_set_sound_custom(Message const & msg)
 {
-    _klick.set_sound_custom(boost::get<std::string>(msg.args[0]), boost::get<std::string>(msg.args[1]));
-    _osc->send(_clients, "/klick/config/sound", _klick.sound_custom().get<0>(), _klick.sound_custom().get<1>());
+    std::string emphasis = boost::get<std::string>(msg.args[0]);
+    std::string normal = boost::get<std::string>(msg.args[1]);
+
+    _klick.set_sound_custom(emphasis, normal);
+
+    std::string res_emphasis, res_normal;
+    boost::tie(res_emphasis, res_normal) = _klick.sound_custom();
+
+    _osc->send(_clients, "/klick/config/sound", res_emphasis, res_normal);
+
+    if (res_emphasis != emphasis) {
+        _osc->send(_clients, "/klick/config/sound_loading_failed", emphasis);
+    }
+    if (res_normal != normal) {
+        _osc->send(_clients, "/klick/config/sound_loading_failed", normal);
+    }
 }
 
 

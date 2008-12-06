@@ -45,8 +45,26 @@ OSCInterface::OSCInterface(std::string const & port)
 
 OSCInterface::~OSCInterface()
 {
-    lo_server_thread_stop(_thread);
     lo_server_thread_free(_thread);
+}
+
+
+void OSCInterface::start()
+{
+    lo_server_thread_start(_thread);
+}
+
+
+void OSCInterface::stop()
+{
+    lo_server_thread_stop(_thread);
+}
+
+
+void OSCInterface::add_method(char const *path, char const *types, Callback const & cb)
+{
+    _callbacks.push_back(cb);
+    lo_server_thread_add_method(_thread, path, types, &callback_, static_cast<void*>(&_callbacks.back()));
 }
 
 
@@ -62,7 +80,8 @@ int OSCInterface::callback_(char const *path, char const *types, lo_arg **argv, 
 
     std::free(tmp);
 
-    for (int i = 0; i < argc; ++i) {
+    for (int i = 0; i < argc; ++i)
+    {
         das::logv << " ";
         switch (types[i]) {
           case 'i':
@@ -79,11 +98,12 @@ int OSCInterface::callback_(char const *path, char const *types, lo_arg **argv, 
             break;
           case 's':
             m.args.push_back(std::string(&argv[i]->s));
-            das::logv << &argv[i]->s;
+            das::logv << "'" << &argv[i]->s << "'";
             break;
           default:
-            FAIL();
-            return 0;
+            m.args.push_back(0);
+            das::logv << "<unknown>";
+            break;
         }
     }
 
@@ -92,19 +112,6 @@ int OSCInterface::callback_(char const *path, char const *types, lo_arg **argv, 
     cb(m);
 
     return 0;
-}
-
-
-void OSCInterface::add_method(char const *path, char const *types, Callback const & cb)
-{
-    _callbacks.push_back(cb);
-    lo_server_thread_add_method(_thread, path, types, &callback_, static_cast<void*>(&_callbacks.back()));
-}
-
-
-void OSCInterface::start()
-{
-    lo_server_thread_start(_thread);
 }
 
 

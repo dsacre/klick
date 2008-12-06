@@ -83,9 +83,13 @@ class Klick
     void load_tempomap();
     void load_samples();
 
-    boost::scoped_ptr<Options> _options;
+    boost::tuple<std::string, std::string> sample_filenames(int n, Options::EmphasisMode emphasis_mode);
+    AudioChunkPtr load_sample(std::string const & filename, float volume, float pitch);
 
+
+    boost::scoped_ptr<Options> _options;
     boost::scoped_ptr<das::garbage_collector> _gc;
+
     boost::shared_ptr<AudioInterface> _audio;
 
     AudioChunkPtr _click_emphasis;

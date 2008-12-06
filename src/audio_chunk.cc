@@ -56,11 +56,6 @@ AudioChunk::AudioChunk(std::string const & filename, nframes_t samplerate)
 }
 
 
-AudioChunk::~AudioChunk()
-{
-}
-
-
 void AudioChunk::resample(SamplePtr samples_in, nframes_t length_in, nframes_t samplerate_in,
                           SamplePtr & samples_out, nframes_t & length_out, nframes_t samplerate_out)
 {
@@ -97,7 +92,7 @@ void AudioChunk::adjust_volume(float volume)
 
 void AudioChunk::adjust_frequency(float factor)
 {
-    if (factor == 1.0f) return;
+    if (factor == 1.0f || !_length) return;
 
     SamplePtr s;
     nframes_t l;

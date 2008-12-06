@@ -136,11 +136,11 @@ void Klick::load_tempomap()
 }
 
 
-void Klick::load_samples()
+boost::tuple<std::string, std::string> Klick::sample_filenames(int n, Options::EmphasisMode emphasis_mode)
 {
     std::string emphasis, normal;
 
-    switch (_options->click_sample) {
+    switch (n) {
       case 0:
         emphasis = data_file("samples/square_emphasis.wav");
         normal   = data_file("samples/square_normal.wav");
@@ -161,46 +161,70 @@ void Klick::load_samples()
         emphasis = _options->click_filename_emphasis;
         normal   = _options->click_filename_normal;
         break;
+      case Options::CLICK_SAMPLE_SILENT:
+        emphasis = "";
+        normal   = "";
+        break;
       default:
         FAIL();
     }
 
-    switch (_options->emphasis) {
-      case Options::EMPHASIS_NONE:
+    switch (emphasis_mode) {
+      case Options::EMPHASIS_MODE_NONE:
         emphasis = normal;
         break;
-      case Options::EMPHASIS_ALL:
+      case Options::EMPHASIS_MODE_ALL:
         normal = emphasis;
         break;
       default:
         break;
     }
 
+    return boost::make_tuple(emphasis, normal);
+}
+
+
+AudioChunkPtr Klick::load_sample(std::string const & filename, float volume, float pitch)
+{
+    AudioChunkPtr p;
+
+    if (!filename.empty()) {
+        p.reset(new AudioChunk(filename, _audio->samplerate()), _gc->disposer);
+    } else {
+        p.reset(new AudioChunk(_audio->samplerate()), _gc->disposer);
+    }
+
+    if (volume != 1.0f) {
+        p->adjust_volume(volume);
+    }
+
+    if (pitch != 1.0f) {
+        p->adjust_frequency(pitch);
+    }
+
+    return p;
+}
+
+
+void Klick::load_samples()
+{
+    std::string emphasis, normal;
+    boost::tie(emphasis, normal) = sample_filenames(_options->click_sample, _options->emphasis_mode);
+
     das::logv << "loading samples:\n"
               << "  emphasis: " << emphasis << "\n"
               << "  normal:   " << normal << std::endl;
 
-    _click_emphasis.reset(new AudioChunk(emphasis, _audio->samplerate()), _gc->disposer);
-    _click_normal.reset(new AudioChunk(normal, _audio->samplerate()), _gc->disposer);
-
-    if (_options->volume_emphasis != 1.0f) {
-        _click_emphasis->adjust_volume(_options->volume_emphasis);
-    }
-    if (_options->pitch_emphasis != 1.0f) {
-        _click_emphasis->adjust_frequency(_options->pitch_emphasis);
-    }
-
-    if (_options->volume_normal != 1.0f) {
-        _click_normal->adjust_volume(_options->volume_normal);
-    }
-    if (_options->pitch_normal != 1.0f) {
-        _click_normal->adjust_frequency(_options->pitch_normal);
-    }
+    _click_emphasis = load_sample(emphasis, _options->volume_emphasis, _options->pitch_emphasis);
+    _click_normal = load_sample(normal, _options->volume_normal, _options->pitch_normal);
 }
 
 
 void Klick::set_sound(int n)
 {
+    if ((n < 0 || n > 3) && !(n == Options::CLICK_SAMPLE_SILENT)) return;
+    if (n == _options->click_sample) return;
+
     _options->click_sample = n;
 
     load_samples();
@@ -214,13 +238,38 @@ void Klick::set_sound_custom(std::string const & emphasis, std::string const & n
     _options->click_filename_emphasis = emphasis;
     _options->click_filename_normal = normal;
 
-    load_samples();
+    das::logv << "loading samples:\n"
+              << "  emphasis: " << emphasis << "\n"
+              << "  normal:   " << normal << std::endl;
+
+    try {
+        _click_emphasis = load_sample(emphasis, _options->volume_emphasis, _options->pitch_emphasis);
+    }
+    catch (std::runtime_error const & e) {
+        std::cerr << e.what() << std::endl;
+        _click_emphasis.reset(new AudioChunk(_audio->samplerate()), _gc->disposer);
+        _options->click_filename_emphasis = "";
+    }
+
+    try {
+        _click_normal = load_sample(normal, _options->volume_normal, _options->pitch_normal);
+    }
+    catch (std::runtime_error const & e) {
+        std::cerr << e.what() << std::endl;
+        _click_normal.reset(new AudioChunk(_audio->samplerate()), _gc->disposer);
+        _options->click_filename_normal = "";
+    }
+
     _metro->set_sound(_click_emphasis, _click_normal);
 }
 
 
 void Klick::set_sound_volume(float emphasis, float normal)
 {
+    if (emphasis == _options->volume_emphasis && normal == _options->volume_normal) {
+        return;
+    }
+
     _options->volume_emphasis = emphasis;
     _options->volume_normal = normal;
 
@@ -231,6 +280,10 @@ void Klick::set_sound_volume(float emphasis, float normal)
 
 void Klick::set_sound_pitch(float emphasis, float normal)
 {
+    if (emphasis == _options->pitch_emphasis && normal == _options->pitch_normal) {
+        return;
+    }
+
     _options->pitch_emphasis = emphasis;
     _options->pitch_normal = normal;
 
@@ -307,7 +360,7 @@ void Klick::run()
 {
     if (!_options->transport_enabled && _options->delay) {
         das::logv << "waiting for " << _options->delay << " seconds..." << std::endl;
-        ::usleep((unsigned long)(_options->delay * 1000000));
+        ::usleep(static_cast<unsigned long>(_options->delay * 1000000));
     }
 
     if (!_osc) {

@@ -30,7 +30,7 @@ Options::Options()
     interactive(false),
     follow_transport(false),
     click_sample(0),
-    emphasis(EMPHASIS_NORMAL),
+    emphasis_mode(EMPHASIS_MODE_NORMAL),
     volume_emphasis(1.0),
     volume_normal(1.0),
     pitch_emphasis(1.0),
@@ -178,11 +178,11 @@ void Options::parse(int argc, char *argv[])
               } break;
 
             case 'e':
-                emphasis = EMPHASIS_NONE;
+                emphasis_mode = EMPHASIS_MODE_NONE;
                 break;
 
             case 'E':
-                emphasis = EMPHASIS_ALL;
+                emphasis_mode = EMPHASIS_MODE_ALL;
                 break;
 
             case 'v':

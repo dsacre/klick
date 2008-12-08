@@ -66,7 +66,7 @@ void AudioChunk::resample(SamplePtr samples_in, nframes_t length_in, nframes_t s
     src_data.data_in = samples_in.get();
 
     src_data.src_ratio = static_cast<float>(samplerate_out) / static_cast<float>(samplerate_in);
-    src_data.output_frames = static_cast<long>(length_in * src_data.src_ratio);
+    src_data.output_frames = std::max(static_cast<long>(length_in * src_data.src_ratio), 1L);
 
     samples_out.reset(new sample_t[src_data.output_frames]);
     src_data.data_out = samples_out.get();

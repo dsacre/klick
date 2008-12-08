@@ -224,10 +224,12 @@ void Options::parse(int argc, char *argv[])
 
             case 'd':
                 delay = das::lexical_cast<float>(::optarg, InvalidArgument(c, "delay"));
+                if (delay < 0.0f) throw InvalidArgument(c, "delay");
                 break;
 
             case 'c':
                 preroll = das::lexical_cast<int>(::optarg, InvalidArgument(c, "pre-roll"));
+                if (preroll < 0) throw InvalidArgument(c, "pre-roll");
                 break;
 
             case 'l':
@@ -236,6 +238,7 @@ void Options::parse(int argc, char *argv[])
 
             case 'x':
                 tempo_multiplier = das::lexical_cast<float>(::optarg, InvalidArgument(c, "tempo multiplier"));
+                if (tempo_multiplier <= 0) throw InvalidArgument(c, "tempo multiplier");
                 break;
 
             case 'L':

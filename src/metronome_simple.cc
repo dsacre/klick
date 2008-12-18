@@ -20,11 +20,12 @@
 #include "util/debug.hh"
 
 
-MetronomeSimple::MetronomeSimple(AudioInterface & audio)
+MetronomeSimple::MetronomeSimple(AudioInterface & audio, TempoMap::Entry const * params)
   : Metronome(audio)
   , _tempo(120.0)
   , _tempo_increment(0.0)
-  , _tempo_limit(120.0)
+  , _tempo_start(0.0)
+  , _tempo_limit(0.0)
   , _current_tempo(0.0)
   , _beats(4)
   , _denom(4)
@@ -33,23 +34,9 @@ MetronomeSimple::MetronomeSimple(AudioInterface & audio)
   , _beat(0)
   , _tapped(false)
 {
-}
-
-
-MetronomeSimple::MetronomeSimple(AudioInterface & audio, TempoMap::Entry const & params)
-  : Metronome(audio)
-  , _tempo(0.0)
-  , _tempo_increment(0.0)
-  , _tempo_limit(120.0)
-  , _current_tempo(0.0)
-  , _beats(0)
-  , _denom(0)
-  , _frame(0)
-  , _next(0)
-  , _beat(0)
-  , _tapped(false)
-{
-    set_all(params);
+    if (params) {
+        set_all(*params);
+    }
 }
 
 
@@ -70,6 +57,12 @@ void MetronomeSimple::set_tempo(float tempo)
 void MetronomeSimple::set_tempo_increment(float tempo_increment)
 {
     _tempo_increment = tempo_increment;
+}
+
+
+void MetronomeSimple::set_tempo_start(float tempo_start)
+{
+    _tempo_start = tempo_start;
 }
 
 
@@ -107,10 +100,13 @@ void MetronomeSimple::set_all(TempoMap::Entry const & params)
 
 void MetronomeSimple::do_start()
 {
-    if (!active()) {
-        _beat = 0;
-        _next = 0;
-        _frame = 0;
+    _beat = 0;
+    _next = 0;
+    _frame = 0;
+
+    if (_tempo_increment && _tempo_start) {
+        _current_tempo = _tempo_start;
+    } else {
         _current_tempo = _tempo;
     }
 }
@@ -135,6 +131,7 @@ void MetronomeSimple::tap(double now)
         _taps.pop_front();
     }
 
+    // forget taps which happened too long ago
     _taps.erase(
         std::remove_if(_taps.begin(), _taps.end(), boost::lambda::_1 < now - MAX_TAP_AGE),
         _taps.end()
@@ -186,7 +183,11 @@ void MetronomeSimple::process_callback(sample_t * /*buffer*/, nframes_t nframes)
         // speed trainer
         if (_frame && _tempo_increment) {
             _current_tempo += _tempo_increment / std::max(_beats, 1);
-            _current_tempo = std::min(_tempo_limit, _current_tempo);
+            if (_tempo_limit) {
+                _current_tempo = std::min(_current_tempo, _tempo_limit);
+            } else if (_tempo_start) {
+                _current_tempo = std::min(_current_tempo, _tempo);
+            }
         }
 
         nframes_t offset = _next - _frame;

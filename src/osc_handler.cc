@@ -67,6 +67,7 @@ OSCHandler::OSCHandler(std::string const & port,
 
     add_method<MetronomeSimple>("/klick/simple/set_tempo", "f", &OSCHandler::on_simple_set_tempo);
     add_method<MetronomeSimple>("/klick/simple/set_tempo_increment", "f", &OSCHandler::on_simple_set_tempo_increment);
+    add_method<MetronomeSimple>("/klick/simple/set_tempo_start", "f", &OSCHandler::on_simple_set_tempo_start);
     add_method<MetronomeSimple>("/klick/simple/set_tempo_limit", "f", &OSCHandler::on_simple_set_tempo_limit);
     add_method<MetronomeSimple>("/klick/simple/set_meter", "ii", &OSCHandler::on_simple_set_meter);
     add_method<MetronomeSimple>("/klick/simple/tap", "", &OSCHandler::on_simple_tap);
@@ -143,7 +144,7 @@ template <typename M>
 void OSCHandler::type_specific_callback(MessageHandler func, Message const & msg)
 {
     try {
-        if (boost::dynamic_pointer_cast<M>(_klick.metronome())) {
+        if (boost::dynamic_pointer_cast<M>(metro())) {
             (this->*func)(msg);
         } else {
             std::cerr << msg.path << ": " << "function not available for current metronome type" << std::endl;
@@ -402,6 +403,13 @@ void OSCHandler::on_simple_set_tempo_increment(Message const & msg)
 {
     metro_simple()->set_tempo_increment(boost::get<float>(msg.args[0]));
     _osc->send(_clients, "/klick/simple/tempo_increment", metro_simple()->tempo_increment());
+}
+
+
+void OSCHandler::on_simple_set_tempo_start(Message const & msg)
+{
+    metro_simple()->set_tempo_start(boost::get<float>(msg.args[0]));
+    _osc->send(_clients, "/klick/simple/tempo_start", metro_simple()->tempo_start());
 }
 
 

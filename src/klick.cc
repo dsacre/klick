@@ -298,7 +298,7 @@ void Klick::set_metronome(MetronomeType type)
 
     switch (type) {
       case METRONOME_TYPE_SIMPLE:
-        m = new MetronomeSimple(*_audio, (*_map)[0]);
+        m = new MetronomeSimple(*_audio, &(*_map)[0]);
         break;
       case METRONOME_TYPE_JACK:
         m = new MetronomeJack(*_audio);

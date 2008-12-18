@@ -25,14 +25,14 @@ class MetronomeSimple
 {
   public:
 
-    MetronomeSimple(AudioInterface & audio);
-    MetronomeSimple(AudioInterface & audio, TempoMap::Entry const & params);
+    MetronomeSimple(AudioInterface & audio, TempoMap::Entry const * params = NULL);
     virtual ~MetronomeSimple();
 
     virtual bool running() const { return true; }
 
     void set_tempo(float);
     void set_tempo_increment(float);
+    void set_tempo_start(float);
     void set_tempo_limit(float);
     void set_meter(int, int);
     void set_pattern(TempoMap::Pattern const &);
@@ -44,6 +44,7 @@ class MetronomeSimple
 
     float tempo() const { return _tempo; }
     float tempo_increment() const { return _tempo_increment; }
+    float tempo_start() const { return _tempo_start; }
     float tempo_limit() const { return _tempo_limit; }
     float current_tempo() const { return _current_tempo; }
     int beats() const { return _beats; }
@@ -64,7 +65,7 @@ class MetronomeSimple
     static float const TAP_DIFF = 0.2;
 
     float _tempo;
-    float _tempo_increment, _tempo_limit;
+    float _tempo_increment, _tempo_start, _tempo_limit;
     float _current_tempo;
     int _beats, _denom;
     TempoMap::Pattern _pattern;

@@ -81,6 +81,7 @@ class OSCHandler
 
     void on_simple_set_tempo(Message const &);
     void on_simple_set_tempo_increment(Message const &);
+    void on_simple_set_tempo_start(Message const &);
     void on_simple_set_tempo_limit(Message const &);
     void on_simple_set_meter(Message const &);
     void on_simple_tap(Message const &);

@@ -184,26 +184,30 @@ void MetronomeSimple::process_callback(sample_t * /*buffer*/, nframes_t nframes)
         if (_frame && _tempo_increment) {
             _current_tempo += _tempo_increment / std::max(_beats, 1);
             if (_tempo_limit) {
-                _current_tempo = std::min(_current_tempo, _tempo_limit);
+                _current_tempo = _tempo_increment > 0.0f ? std::min(_current_tempo, _tempo_limit)
+                                                         : std::max(_current_tempo, _tempo_limit);
             } else if (_tempo_start) {
-                _current_tempo = std::min(_current_tempo, _tempo);
+                _current_tempo = _tempo_increment > 0.0f ? std::min(_current_tempo, _tempo)
+                                                         : std::max(_current_tempo, _tempo);
             }
         }
 
+        // offset in current period
         nframes_t offset = _next - _frame;
 
         if (_pattern.size()) {
+            // play click, user-defined pattern
             ASSERT((int)_pattern.size() == std::max(1, _beats));
             if (_pattern[_beat] != TempoMap::BEAT_SILENT) {
                 bool emphasis = (_pattern[_beat] == TempoMap::BEAT_EMPHASIS);
                 play_click(emphasis, offset);
             }
         } else {
+            // play click, default pattern
             play_click(_beat == 0 && _beats > 0, offset);
         }
 
         _prev = _next;
-
         _next += (nframes_t)(_audio.samplerate() * 240.0 / (_current_tempo * _denom));
 
         if (++_beat >= _beats) {

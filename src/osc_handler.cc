@@ -458,6 +458,7 @@ void OSCHandler::on_simple_query(Message const & msg)
 
     _osc->send(addr, "/klick/simple/tempo", m->tempo());
     _osc->send(addr, "/klick/simple/tempo_increment", m->tempo_increment());
+    _osc->send(addr, "/klick/simple/tempo_start", m->tempo_start());
     _osc->send(addr, "/klick/simple/tempo_limit", m->tempo_limit());
     _osc->send(addr, "/klick/simple/current_tempo", m->current_tempo());
     _osc->send(addr, "/klick/simple/meter", m->beats(), m->denom());

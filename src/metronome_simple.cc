@@ -180,18 +180,6 @@ void MetronomeSimple::process_callback(sample_t * /*buffer*/, nframes_t nframes)
 
     if (_frame + nframes > _next)
     {
-        // speed trainer
-        if (_frame && _tempo_increment) {
-            _current_tempo += _tempo_increment / std::max(_beats, 1);
-            if (_tempo_limit) {
-                _current_tempo = _tempo_increment > 0.0f ? std::min(_current_tempo, _tempo_limit)
-                                                         : std::max(_current_tempo, _tempo_limit);
-            } else if (_tempo_start) {
-                _current_tempo = _tempo_increment > 0.0f ? std::min(_current_tempo, _tempo)
-                                                         : std::max(_current_tempo, _tempo);
-            }
-        }
-
         // offset in current period
         nframes_t offset = _next - _frame;
 
@@ -205,6 +193,18 @@ void MetronomeSimple::process_callback(sample_t * /*buffer*/, nframes_t nframes)
         } else {
             // play click, default pattern
             play_click(_beat == 0 && _beats > 0, offset);
+        }
+
+        // speed trainer
+        if (_frame && _tempo_increment) {
+            _current_tempo += _tempo_increment / std::max(_beats, 1);
+            if (_tempo_limit) {
+                _current_tempo = _tempo_increment > 0.0f ? std::min(_current_tempo, _tempo_limit)
+                                                         : std::max(_current_tempo, _tempo_limit);
+            } else if (_tempo_start) {
+                _current_tempo = _tempo_increment > 0.0f ? std::min(_current_tempo, _tempo)
+                                                         : std::max(_current_tempo, _tempo);
+            }
         }
 
         _prev = _next;

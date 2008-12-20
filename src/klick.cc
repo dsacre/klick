@@ -199,7 +199,7 @@ AudioChunkPtr Klick::load_sample(std::string const & filename, float volume, flo
     }
 
     if (pitch != 1.0f) {
-        p->adjust_frequency(pitch);
+        p->adjust_pitch(pitch);
     }
 
     return p;

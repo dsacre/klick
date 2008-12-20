@@ -27,10 +27,10 @@ class AudioChunk
 {
   public:
     // loads sample from file, converting to the given samplerate if samplerate is non-zero
-    AudioChunk(std::string const & filename, nframes_t samplerate = 0);
+    AudioChunk(std::string const & filename, nframes_t samplerate);
 
     // create empty audio
-    AudioChunk(nframes_t samplerate = 0)
+    AudioChunk(nframes_t samplerate)
       : _samples()
       , _length(0)
       , _samplerate(samplerate)
@@ -38,10 +38,7 @@ class AudioChunk
     }
 
     void adjust_volume(float volume);
-    void adjust_frequency(float factor);
-
-    // resample to the given samplerate
-    void resample(nframes_t samplerate);
+    void adjust_pitch(float factor);
 
     sample_t const * samples() const { return _samples.get(); }
     nframes_t length() const { return _length; }
@@ -50,8 +47,11 @@ class AudioChunk
   private:
     typedef boost::shared_array<sample_t> SamplePtr;
 
-    static void resample(SamplePtr samples_in, nframes_t length_in, nframes_t samplerate_in,
-                         SamplePtr & samples_out, nframes_t & length_out, nframes_t samplerate_out);
+    void resample(nframes_t samplerate);
+
+#ifdef ENABLE_RUBBERBAND
+    void pitch_shift(float factor);
+#endif
 
     SamplePtr _samples;
     nframes_t _length;

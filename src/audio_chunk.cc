@@ -15,9 +15,14 @@
 #include <cstdlib>
 #include <cstring>
 #include <stdexcept>
+#include <algorithm>
 
 #include <samplerate.h>
 #include <sndfile.h>
+
+#ifdef ENABLE_RUBBERBAND
+    #include <rubberband/RubberBandStretcher.h>
+#endif
 
 #include "util/string.hh"
 #include "util/debug.hh"
@@ -32,51 +37,27 @@ AudioChunk::AudioChunk(std::string const & filename, nframes_t samplerate)
         throw std::runtime_error(das::make_string() << "failed to open audio file '" << filename << "'");
     }
 
-    SamplePtr buf(new sample_t[sfinfo.frames * sfinfo.channels]);
-    sf_readf_float(f, buf.get(), sfinfo.frames);
+    _samples.reset(new sample_t[sfinfo.frames * sfinfo.channels]);
+    _length = sfinfo.frames;
+    _samplerate = sfinfo.samplerate;
 
+    sf_readf_float(f, _samples.get(), sfinfo.frames);
+
+    // convert stereo to mono
     if (sfinfo.channels == 2) {
-        // convert stereo to mono
-        SamplePtr mono_buf(new sample_t[sfinfo.frames]);
+        SamplePtr mono_samples(new sample_t[sfinfo.frames]);
         for (int i = 0; i < sfinfo.frames; i++) {
-            mono_buf[i] = (buf[i*2] + buf[i*2 + 1]) / 2;
+            mono_samples[i] = (_samples[i*2] + _samples[i*2 + 1]) / 2;
         }
-        buf = mono_buf;
+        _samples = mono_samples;
     }
 
     // convert samplerate
-    if (samplerate) {
-        _samplerate = samplerate;
-    } else {
-        _samplerate = sfinfo.samplerate;
+    if (_samplerate != samplerate) {
+        resample(samplerate);
     }
-    resample(buf, sfinfo.frames, sfinfo.samplerate, _samples, _length, _samplerate);
 
     sf_close(f);
-}
-
-
-void AudioChunk::resample(SamplePtr samples_in, nframes_t length_in, nframes_t samplerate_in,
-                          SamplePtr & samples_out, nframes_t & length_out, nframes_t samplerate_out)
-{
-    SRC_DATA src_data;
-    int error;
-
-    src_data.input_frames = length_in;
-    src_data.data_in = samples_in.get();
-
-    src_data.src_ratio = static_cast<float>(samplerate_out) / static_cast<float>(samplerate_in);
-    src_data.output_frames = std::max(static_cast<long>(length_in * src_data.src_ratio), 1L);
-
-    samples_out.reset(new sample_t[src_data.output_frames]);
-    src_data.data_out = samples_out.get();
-    src_data.data_out[src_data.output_frames-1] = 0.0f;
-
-    if ((error = src_simple(&src_data, SRC_SINC_BEST_QUALITY, 1)) != 0) {
-        throw std::runtime_error(das::make_string() << "error converting samplerate: " << src_strerror(error));
-    }
-
-    length_out = src_data.output_frames;
 }
 
 
@@ -90,25 +71,81 @@ void AudioChunk::adjust_volume(float volume)
 }
 
 
-void AudioChunk::adjust_frequency(float factor)
+void AudioChunk::adjust_pitch(float factor)
 {
     if (factor == 1.0f || !_length) return;
 
-    SamplePtr s;
-    nframes_t l;
-
-    resample(_samples, _length, (nframes_t)(_samplerate * factor), s, l, _samplerate);
-
-    _samples = s;
-    _length = l;
+#ifdef ENABLE_RUBBERBAND
+    pitch_shift(factor);
+#else
+    nframes_t s = _samplerate;
+    resample(static_cast<nframes_t>(_samplerate / factor));
+    _samplerate = s;
+#endif
 }
 
 
 void AudioChunk::resample(nframes_t samplerate)
 {
-    if (samplerate == _samplerate) return;
+    SRC_DATA src_data;
+    int error;
 
-    adjust_frequency(static_cast<float>(_samplerate) / static_cast<float>(samplerate));
+    src_data.input_frames = _length;
+    src_data.data_in = _samples.get();
+
+    src_data.src_ratio = static_cast<float>(samplerate) / static_cast<float>(_samplerate);
+    src_data.output_frames = std::max(static_cast<long>(_length * src_data.src_ratio), 1L);
+
+    SamplePtr samples_new(new sample_t[src_data.output_frames]());
+    src_data.data_out = samples_new.get();
+
+    if ((error = src_simple(&src_data, SRC_SINC_BEST_QUALITY, 1)) != 0) {
+        throw std::runtime_error(das::make_string() << "error converting samplerate: " << src_strerror(error));
+    }
+
+    _samples = samples_new;
+    _length = src_data.output_frames;
     _samplerate = samplerate;
 }
 
+
+#ifdef ENABLE_RUBBERBAND
+
+void AudioChunk::pitch_shift(float factor)
+{
+    nframes_t const BLOCK_SIZE = 1024;
+
+    RubberBand::RubberBandStretcher rb(_samplerate, 1, RubberBand::RubberBandStretcher::PercussiveOptions);
+    rb.setPitchScale(factor);
+    rb.setExpectedInputDuration(_length);
+
+    SamplePtr samples_new(new sample_t[_length]());
+    sample_t *buf;
+    nframes_t k = 0;
+
+    // study all samples
+    buf = _samples.get();
+    rb.study(&buf, _length, true);
+
+    for (nframes_t i = 0; i < _length; i += BLOCK_SIZE)
+    {
+        // process one block of samples
+        buf = _samples.get() + i;
+        nframes_t s = std::min(BLOCK_SIZE, _length - i);
+        rb.process(&buf, s, i + BLOCK_SIZE >= _length);
+
+        // retrieve available samples
+        buf = samples_new.get() + k;
+        s = std::min(static_cast<nframes_t>(rb.available()), _length - k);
+        if (s > 0) {
+            k += rb.retrieve(&buf, s);
+        }
+    }
+
+    ASSERT(rb.available() == -1);
+
+    _length = k;
+    _samples = samples_new;
+}
+
+#endif

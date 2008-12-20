@@ -14,10 +14,11 @@ env = Environment(
 # build options
 opts = Options('scache.conf')
 opts.AddOptions(
-    BoolOption('DEBUG', 'debug mode', False),
     PathOption('PREFIX', 'install prefix', '/usr/local'),
-    BoolOption('OSC', 'OSC support', 1),
-    BoolOption('TERMINAL', 'terminal control support', 1)
+    BoolOption('DEBUG', 'debug mode', False),
+    BoolOption('OSC', 'OSC support', True),
+    BoolOption('TERMINAL', 'terminal control support', True),
+    BoolOption('RUBBERBAND', 'use Rubber Band for pitch shifting', False),
 )
 opts.Update(env)
 opts.Save('scache.conf', env)
@@ -56,10 +57,9 @@ sources = [
     'src/util/util.cc'
 ]
 
+# build options
 if env['OSC']:
-    env.ParseConfig(
-        'pkg-config --cflags --libs liblo'
-    )
+    env.ParseConfig('pkg-config --cflags --libs liblo')
     env.Append(CPPDEFINES = ['ENABLE_OSC'])
     sources += [
         'src/osc_interface.cc',
@@ -71,6 +71,10 @@ if env['TERMINAL']:
     sources += [
         'src/terminal_handler.cc',
     ]
+
+if env['RUBBERBAND']:
+    env.ParseConfig('pkg-config --cflags --libs rubberband')
+    env.Append(CPPDEFINES = ['ENABLE_RUBBERBAND'])
 
 env.Program('klick', sources)
 

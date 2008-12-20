@@ -38,8 +38,8 @@ class Options
     std::string filename;
     std::string cmdline;
 
-    static int const CLICK_SAMPLE_FROM_FILE = -1;
-    static int const CLICK_SAMPLE_SILENT = -2;
+    static int const CLICK_SAMPLE_FROM_FILE = -2;
+    static int const CLICK_SAMPLE_SILENT = -1;
     int click_sample;
     std::string click_filename_emphasis;
     std::string click_filename_normal;

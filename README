@@ -10,7 +10,13 @@ Requirements:
 * Boost [http://www.boost.org/] (headers only)
 * libsamplerate [http://www.mega-nerd.com/SRC/]
 * libsndfile [http://www.mega-nerd.com/libsndfile/]
-* SCons [http://www.scons.org/]
+
+
+Optional:
+=========
+
+* liblo [http://liblo.sourceforge.net/]
+* Rubber Band [http://www.breakfastquay.com/rubberband/]
 
 
 Installation:

@@ -45,15 +45,16 @@ Options::Options()
 }
 
 
-void Options::print_version(std::ostream & out)
+void Options::print_version()
 {
-    out << "klick " VERSION << std::endl;
+    std::cout << "klick " VERSION << std::endl;
 }
 
 
-void Options::print_usage(std::ostream & out)
+void Options::print_usage()
 {
-    out << "Usage:\n"
+    std::cout
+        << "Usage:\n"
         << "  klick [ options ] [meter] tempo[-tempo2/accel] [pattern]\n"
         << "  klick [ options ] -f filename\n"
 #ifdef ENABLE_TERMINAL
@@ -257,7 +258,6 @@ void Options::parse(int argc, char *argv[])
                 break;
 
             default:
-                print_usage(std::cerr);
                 throw Exit(EXIT_FAILURE);
                 break;
         }

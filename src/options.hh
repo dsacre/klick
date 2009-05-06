@@ -13,7 +13,6 @@
 #define _OPTIONS_HH
 
 #include <string>
-#include <iostream>
 #include <vector>
 #include <stdexcept>
 
@@ -81,8 +80,8 @@ class Options
         }
     };
 
-    void print_version(std::ostream & = std::cout);
-    void print_usage(std::ostream & = std::cout);
+    void print_version();
+    void print_usage();
 };
 
 

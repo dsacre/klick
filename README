@@ -3,6 +3,13 @@ klick - an advanced metronome for jack
 Copyright (C) 2007-2009  Dominic Sacré  <dominic.sacre@gmx.de>
 
 
+Some of the audio samples used by klick have been borrowed (under
+the terms of the GPL) from:
+* Ardour [http://ardour.org/], sounds by Nick Mainsbridge
+* GTick [http://www.antcom.de/gtick/], sounds by Roland Stigge
+* Freepats [http://freepats.zenvoid.org/]
+
+
 Requirements:
 =============
 

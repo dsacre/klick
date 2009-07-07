@@ -22,8 +22,7 @@
  * plays a click track using a predefined tempomap
  */
 class MetronomeMap
-  : public Metronome,
-    public AudioInterface::TimebaseCallback
+  : public Metronome
 {
   public:
     MetronomeMap(
@@ -42,9 +41,12 @@ class MetronomeMap
 
     bool running() const;
 
+    nframes_t current_frame() const;
+    nframes_t total_frames() const;
+
   protected:
     virtual void process_callback(sample_t *, nframes_t);
-    virtual void timebase_callback(jack_position_t *);
+    virtual void timebase_callback(position_t *);
 
   private:
     static double const TICKS_PER_BEAT = 1920.0;

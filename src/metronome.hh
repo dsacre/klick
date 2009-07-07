@@ -24,14 +24,16 @@
  * abstract metronome base class
  */
 class Metronome
-  : public AudioInterface::ProcessCallback,
-    public das::disposable,
-    boost::noncopyable
+  : public das::disposable
+  , boost::noncopyable
 {
   public:
 
     Metronome(AudioInterface & audio);
-    virtual ~Metronome();
+    virtual ~Metronome() { }
+
+    void register_process_callback();
+    void register_timebase_callback();
 
     void set_sound(AudioChunkConstPtr emphasis, AudioChunkConstPtr normal);
 
@@ -49,6 +51,7 @@ class Metronome
   protected:
 
     virtual void process_callback(sample_t *, nframes_t) = 0;
+    virtual void timebase_callback(position_t *) { }
 
     void play_click(bool emphasis, nframes_t offset, float volume = 1.0f);
 

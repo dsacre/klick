@@ -10,7 +10,9 @@
  */
 
 #include "metronome.hh"
-#include "audio_interface.hh"
+#include "audio_interface_jack.hh"
+
+#include <boost/bind.hpp>
 
 #include "util/debug.hh"
 
@@ -22,8 +24,18 @@ Metronome::Metronome(AudioInterface & audio)
 }
 
 
-Metronome::~Metronome()
+void Metronome::register_process_callback()
 {
+    _audio.set_process_callback(boost::bind(&Metronome::process_callback, this, _1, _2));
+}
+
+
+void Metronome::register_timebase_callback()
+{
+    AudioInterfaceTransport *a = dynamic_cast<AudioInterfaceTransport*>(&_audio);
+    if (a) {
+        a->set_timebase_callback(boost::bind(&Metronome::timebase_callback, this, _1));
+    }
 }
 
 
@@ -55,3 +67,21 @@ void Metronome::play_click(bool emphasis, nframes_t offset, float volume)
 
     _audio.play(click, offset, volume);
 }
+
+
+/*
+MetronomeTransport::MetronomeTransport(AudioInterfaceTransport & audio)
+  : Metronome(audio)
+  , _audio_transport(audio)
+{
+}
+
+
+void MetronomeTransport::register_timebase_callback()
+{
+    AudioInterfaceTransport *a = dynamic_cast<AudioInterfaceTransport*>(&_audio);
+    if (a) {
+        a->set_timebase_callback(boost::bind(&MetronomeTransport::timebase_callback, this, _1));
+    }
+}
+*/

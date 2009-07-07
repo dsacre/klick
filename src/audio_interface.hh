@@ -15,97 +15,51 @@
 #include "audio.hh"
 
 #include <string>
-#include <vector>
-#include <boost/array.hpp>
 #include <stdexcept>
+#include <boost/array.hpp>
 #include <boost/noncopyable.hpp>
-
-#include <jack/transport.h>
+#include <boost/function.hpp>
 
 
 class AudioInterface
   : boost::noncopyable
 {
-    // maximum number of audio chunks that can be played simultaneously
-    static int const MAX_PLAYING_CHUNKS = 4;
-
   public:
 
     struct AudioError : public std::runtime_error {
-        AudioError(std::string const & w)
-          : std::runtime_error(w) { }
+        AudioError(std::string const & w) : std::runtime_error(w) { }
     };
 
-    AudioInterface(std::string const & name);
-    ~AudioInterface();
+    AudioInterface();
+    virtual ~AudioInterface() { }
 
-    // abstract base class for process callbacks
-    class ProcessCallback {
-      protected:
-        ProcessCallback() { }
-        virtual ~ProcessCallback() { }
-        friend class AudioInterface;
-        virtual void process_callback(sample_t *, nframes_t) = 0;
-    };
+    typedef boost::function<void (sample_t *, nframes_t)> ProcessCallback;
 
-    // abstract base class for timebase callbacks
-    class TimebaseCallback {
-      protected:
-        TimebaseCallback() { }
-        virtual ~TimebaseCallback() { }
-        friend class AudioInterface;
-        virtual void timebase_callback(jack_position_t *) = 0;
-    };
+    virtual void set_process_callback(ProcessCallback cb);
 
-    void set_process_callback(boost::shared_ptr<ProcessCallback>, bool mix = false);
-    void set_timebase_callback(boost::shared_ptr<TimebaseCallback>);
-
-    // get client name
-    std::string client_name() const;
     // get sample rate
-    nframes_t samplerate() const;
-
-    pthread_t client_thread() const;
-
-    void set_volume(float v) { _volume = v; }
-    float volume() const { return _volume; }
-
-    // JACK connections
-    void connect(std::string const & port);
-    void autoconnect();
-    void disconnect_all();
-    std::vector<std::string> available_ports();
-
-    // JACK transport
-    bool transport_rolling() const;
-    jack_position_t position() const;
-    nframes_t frame() const { return position().frame; }
-    bool set_position(jack_position_t const &);
-    bool set_frame(nframes_t);
-
-    bool is_shutdown() const { return _shutdown; }
+    virtual nframes_t samplerate() const = 0;
+    // check if backend is still running
+    virtual bool is_shutdown() const = 0;
 
     // start playing audio chunk at offset into the current period
     void play(AudioChunkConstPtr chunk, nframes_t offset, float volume = 1.0);
 
-  private:
+    void set_volume(float v) { _volume = v; }
+    float volume() const { return _volume; }
 
-    static int process_callback_(nframes_t, void *);
-    static void timebase_callback_(jack_transport_state_t, nframes_t, jack_position_t *, int, void *);
-    static void shutdown_callback_(void *);
+  protected:
+
+    ProcessCallback _process_cb;
 
     void process_mix(sample_t *, nframes_t);
+
+  private:
+
     void process_mix_samples(sample_t *dest, sample_t const * src, nframes_t length, float volume = 1.0);
 
-    boost::shared_ptr<ProcessCallback> _process_obj;
-    boost::shared_ptr<TimebaseCallback> _timebase_obj;
-    bool _process_mix;
-    volatile bool _shutdown;
-
-    jack_client_t *_client;
-    jack_port_t *_output_port;
-
-    float _volume;
+    // maximum number of audio chunks that can be played simultaneously
+    static int const MAX_PLAYING_CHUNKS = 4;
 
     struct PlayingChunk {
         AudioChunkConstPtr chunk;
@@ -118,6 +72,30 @@ class AudioInterface
 
     ChunkArray _chunks;
     int _next_chunk;
+    float _volume;
+};
+
+
+
+class AudioInterfaceTransport
+  : public AudioInterface
+{
+  public:
+
+    typedef boost::function<void (position_t *)> TimebaseCallback;
+
+    virtual void set_timebase_callback(TimebaseCallback cb) = 0;
+
+
+    virtual bool transport_rolling() const = 0;
+    virtual position_t position() const = 0;
+    virtual nframes_t frame() const = 0;
+    virtual bool set_position(position_t const &) = 0;
+    virtual bool set_frame(nframes_t) = 0;
+
+  protected:
+
+    TimebaseCallback _timebase_cb;
 };
 
 

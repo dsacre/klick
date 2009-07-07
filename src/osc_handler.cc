@@ -15,7 +15,7 @@
 #include "metronome_simple.hh"
 #include "metronome_map.hh"
 #include "metronome_jack.hh"
-#include "audio_interface.hh"
+#include "audio_interface_jack.hh"
 #include "tempomap.hh"
 
 #include <iostream>
@@ -28,7 +28,7 @@
 OSCHandler::OSCHandler(std::string const & port,
                        std::string const & return_port,
                        Klick & klick,
-                       AudioInterface & audio)
+                       AudioInterfaceJack & audio)
   : _osc(new OSCInterface(port))
   , _klick(klick)
   , _audio(audio)
@@ -292,7 +292,7 @@ void OSCHandler::on_config_connect(Message const & msg)
         try {
             _audio.connect(boost::get<std::string>(*i));
         }
-        catch (AudioInterface::AudioError const & e) {
+        catch (AudioInterfaceJack::AudioError const & e) {
             std::cerr << msg.path << ": " << e.what() << std::endl;
         }
     }
@@ -339,13 +339,13 @@ void OSCHandler::on_metro_set_type(Message const & msg)
     std::string type = boost::get<std::string>(msg.args[0]);
 
     if (type == "simple") {
-        _klick.set_metronome(Klick::METRONOME_TYPE_SIMPLE);
+        _klick.set_metronome(Options::METRONOME_TYPE_SIMPLE);
     }
     else if (type == "map") {
-        _klick.set_metronome(Klick::METRONOME_TYPE_MAP);
+        _klick.set_metronome(Options::METRONOME_TYPE_MAP);
     }
     else if (type == "jack") {
-        _klick.set_metronome(Klick::METRONOME_TYPE_JACK);
+        _klick.set_metronome(Options::METRONOME_TYPE_JACK);
     }
     else {
         std::cerr << msg.path << ": invalid metronome type '" << type << "'" << std::endl;

@@ -65,6 +65,11 @@ class Position
         return (*_tempomap)[_entry];
     }
 
+    // total length of tempomap
+    float_frames_t total_frames() const {
+        return _start_frames.back();
+    }
+
   private:
     // reset, locate at start of tempomap
     void reset();

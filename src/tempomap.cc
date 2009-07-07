@@ -86,21 +86,24 @@ static int const
 
 // matches valid tempo parameters on the command line
 static char const regex_cmdline[] =
+    // bars
+    "^[[:blank:]]*("REGEX_INT"[[:blank:]]+)?" \
     // meter
-    "^[[:blank:]]*("REGEX_INT"/"REGEX_INT"[[:blank:]]+)?" \
+    "("REGEX_INT"/"REGEX_INT"[[:blank:]]+)?" \
     // tempo
     REGEX_FLOAT"(-"REGEX_FLOAT"/"REGEX_FLOAT")?" \
     // pattern
     "([[:blank:]]+"REGEX_PATTERN")?[[:blank:]]*$";
 
 static int const
-    RE_NMATCHES_CMD = 13,
-    IDX_BEATS_CMD   =  2,
-    IDX_DENOM_CMD   =  3,
-    IDX_TEMPO_CMD   =  4,
-    IDX_TEMPO2_CMD  =  7,
-    IDX_ACCEL_CMD   =  9,
-    IDX_PATTERN_CMD = 12;
+    RE_NMATCHES_CMD = 15,
+    IDX_BARS_CMD    =  2,
+    IDX_BEATS_CMD   =  4,
+    IDX_DENOM_CMD   =  5,
+    IDX_TEMPO_CMD   =  6,
+    IDX_TEMPO2_CMD  =  9,
+    IDX_ACCEL_CMD   = 11,
+    IDX_PATTERN_CMD = 14;
 
 
 
@@ -309,7 +312,7 @@ TempoMapPtr TempoMap::new_from_cmdline(std::string const & line)
         Entry e;
 
         e.label   = "";
-        e.bars    = -1;
+        e.bars    = is_specified(match[IDX_BARS_CMD]) ? extract_int(line, match[IDX_BARS_CMD]) : -1;
         e.beats   = is_specified(match[IDX_BEATS_CMD]) ? extract_int(line, match[IDX_BEATS_CMD]) : 4;
         e.denom   = is_specified(match[IDX_DENOM_CMD]) ? extract_int(line, match[IDX_DENOM_CMD]) : 4;
         e.tempo   = extract_float(line, match[IDX_TEMPO_CMD]);
@@ -319,22 +322,34 @@ TempoMapPtr TempoMap::new_from_cmdline(std::string const & line)
 
         check_entry(e);
 
-        if (is_specified(match[IDX_TEMPO2_CMD])) {
+        if (!is_specified(match[IDX_TEMPO2_CMD])) {
+            // no tempo change, just add this single entry
+            map->_entries.push_back(e);
+        } else {
             // tempo change...
             e.tempo2 = extract_float(line, match[IDX_TEMPO2_CMD]);
             float accel = extract_float(line, match[IDX_ACCEL_CMD]);
-            if (accel <= 0.0f) throw ParseError("accel must be greater than zero");
-            e.bars = (int)ceilf(accel * fabs(e.tempo2 - e.tempo));
-            map->_entries.push_back(e);
+            if (accel <= 0.0f) {
+                throw ParseError("accel must be greater than zero");
+            }
+            int bars_total = e.bars;
+            int bars_accel = (int)ceilf(accel * fabs(e.tempo2 - e.tempo));
 
-            // add a second entry, to be played once the "target" tempo is reached
-            e.bars = -1;
-            e.tempo = e.tempo2;
-            e.tempo2 = 0.0f;
-            map->_entries.push_back(e);
-        } else {
-            // no tempo change, just add this single entry
-            map->_entries.push_back(e);
+            if (bars_total == -1 || bars_total > bars_accel) {
+                e.bars = bars_accel;
+                map->_entries.push_back(e);
+
+                // add a second entry, to be played once the "target" tempo is reached
+                e.bars = bars_total == -1 ? -1 : bars_total - bars_accel;
+                e.tempo = e.tempo2;
+                e.tempo2 = 0.0f;
+                map->_entries.push_back(e);
+            } else {
+                // total number of bars is shorter than acceleration
+                e.bars = bars_total;
+                e.tempo2 = e.tempo + (e.tempo2 - e.tempo) * bars_total / bars_accel;
+                map->_entries.push_back(e);
+            }
         }
     }
     catch (ParseError const & e) {

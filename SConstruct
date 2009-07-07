@@ -2,7 +2,7 @@
 
 import os
 
-version = '0.11.0'
+version = '0.12.0'
 
 env = Environment(
     CPPDEFINES = [
@@ -40,6 +40,8 @@ env.Append(CPPDEFINES = ('DATA_DIR', '\\"%s\\"' % env['PREFIX_SHARE']))
 env.ParseConfig(
     'pkg-config --cflags --libs jack samplerate sndfile'
 )
+if os.system('pkg-config --atleast-version=1.0.18 sndfile') == 0:
+    env.Append(CPPDEFINES = ['HAVE_SNDFILE_OGG'])
 
 # source files
 sources = [
@@ -47,6 +49,8 @@ sources = [
     'src/klick.cc',
     'src/options.cc',
     'src/audio_interface.cc',
+    'src/audio_interface_jack.cc',
+    'src/audio_interface_sndfile.cc',
     'src/audio_chunk.cc',
     'src/tempomap.cc',
     'src/metronome.cc',

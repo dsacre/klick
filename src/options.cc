@@ -29,6 +29,7 @@ Options::Options()
     use_osc(false),
     interactive(false),
     follow_transport(false),
+    output_samplerate(48000),
     click_sample(0),
     emphasis_mode(EMPHASIS_MODE_NORMAL),
     volume_emphasis(1.0),
@@ -55,7 +56,7 @@ void Options::print_usage()
 {
     std::cout
         << "Usage:\n"
-        << "  klick [ options ] [meter] tempo[-tempo2/accel] [pattern]\n"
+        << "  klick [ options ] [bars] [meter] tempo[-tempo2/accel] [pattern]\n"
         << "  klick [ options ] -f filename\n"
 #ifdef ENABLE_TERMINAL
         << "  klick [ options ] -i\n"
@@ -74,6 +75,8 @@ void Options::print_usage()
 #ifdef ENABLE_TERMINAL
         << "  -i                interactive mode\n"
 #endif
+        << "  -W filename       export tempomap to audio file\n"
+        << "  -r samplerate     sample rate of export (default: 48000)\n"
         << "  -s number         use built-in sounds:\n"
         << "                      0: square wave (default)\n"
         << "                      1: sine wave\n"
@@ -101,7 +104,7 @@ void Options::print_usage()
 void Options::parse(int argc, char *argv[])
 {
     int c;
-    char optstring[] = "+f:jn:p:Po:R:is:S:eEv:w:tTd:c:l:x:LVh";
+    char optstring[] = "+f:jn:p:Po:R:iW:r:s:S:eEv:w:tTd:c:l:x:LVh";
 
     if (argc < 2) {
         // run with no arguments, print usage
@@ -155,6 +158,14 @@ void Options::parse(int argc, char *argv[])
                 interactive = true;
                 break;
 #endif
+
+            case 'W':
+                output_filename = ::optarg;
+                break;
+
+            case 'r':
+                output_samplerate = das::lexical_cast<nframes_t>(::optarg, InvalidArgument(c, "samplerate"));
+                break;
 
             case 's':
                 click_sample = das::lexical_cast<int>(::optarg, -1);
@@ -269,8 +280,12 @@ void Options::parse(int argc, char *argv[])
         if (n < argc - 1) cmdline += " ";
     }
 
-    if (!use_osc)
-    {
+    // catch some common command line errors...
+    if (!output_filename.empty() && filename.empty() && cmdline.empty()) {
+        throw CmdlineError("need a tempomap to export to audio file");
+    }
+
+    if (!use_osc) {
         if (follow_transport && (filename.length() || cmdline.length())) {
             throw CmdlineError("can't use tempo/tempomap together with -j option");
         }
@@ -287,4 +302,11 @@ void Options::parse(int argc, char *argv[])
     if (use_osc && interactive) {
         throw CmdlineError("can't enable OSC and terminal control at the same time, sorry");
     }
+
+    // determine metronome type
+    type = output_filename.length() ? METRONOME_TYPE_MAP :
+           interactive ? METRONOME_TYPE_SIMPLE :
+           use_osc ? METRONOME_TYPE_SIMPLE :
+           follow_transport ? METRONOME_TYPE_JACK :
+           METRONOME_TYPE_MAP;
 }

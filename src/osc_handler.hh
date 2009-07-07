@@ -19,7 +19,7 @@
 
 #include "klick.hh"
 #include "osc_interface.hh"
-#include "audio_interface.hh"
+#include "audio_interface_jack.hh"
 
 
 class OSCHandler
@@ -29,7 +29,7 @@ class OSCHandler
     OSCHandler(std::string const & port,
                std::string const & return_port,
                Klick & klick,
-               AudioInterface & audio);
+               AudioInterfaceJack & audio);
     ~OSCHandler();
 
     void start();
@@ -101,7 +101,7 @@ class OSCHandler
     boost::shared_ptr<OSCInterface> _osc;
 
     Klick & _klick;
-    AudioInterface & _audio;
+    AudioInterfaceJack & _audio;
 
     typedef std::list<OSCInterface::Address> ClientList;
     ClientList _clients;

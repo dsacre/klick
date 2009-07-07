@@ -12,6 +12,8 @@
 #ifndef _OPTIONS_HH
 #define _OPTIONS_HH
 
+#include "audio.hh"
+
 #include <string>
 #include <vector>
 #include <stdexcept>
@@ -36,6 +38,15 @@ class Options
     bool follow_transport;
     std::string filename;
     std::string cmdline;
+    std::string output_filename;
+    nframes_t output_samplerate;
+
+    enum MetronomeType {
+        METRONOME_TYPE_SIMPLE,
+        METRONOME_TYPE_MAP,
+        METRONOME_TYPE_JACK
+    };
+    MetronomeType type;
 
     static int const CLICK_SAMPLE_FROM_FILE = -2;
     static int const CLICK_SAMPLE_SILENT = -1;
@@ -56,8 +67,8 @@ class Options
     bool transport_master;
     float delay;
 
-    static int const PREROLL_NONE = -1,
-                     PREROLL_2_BEATS = 0;
+    static int const PREROLL_NONE = -1;
+    static int const PREROLL_2_BEATS = 0;
     int preroll;
     std::string start_label;
     float tempo_multiplier;

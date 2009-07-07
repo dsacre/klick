@@ -30,7 +30,9 @@
 
 AudioChunk::AudioChunk(std::string const & filename, nframes_t samplerate)
 {
-    SF_INFO sfinfo = { 0, 0, 0, 0, 0, 0 };
+    SF_INFO sfinfo;
+    std::memset(&sfinfo, 0, sizeof(sfinfo));
+
     SNDFILE *f;
 
     if ((f = sf_open(filename.c_str(), SFM_READ, &sfinfo)) == NULL) {

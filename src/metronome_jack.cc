@@ -10,7 +10,7 @@
  */
 
 #include "metronome_jack.hh"
-#include "audio_interface.hh"
+#include "audio_interface_jack.hh"
 #include "audio_chunk.hh"
 
 #include <jack/jack.h>
@@ -19,8 +19,9 @@
 #include "util/debug.hh"
 
 
-MetronomeJack::MetronomeJack(AudioInterface & audio)
+MetronomeJack::MetronomeJack(AudioInterfaceJack & audio)
   : Metronome(audio)
+  , _audio(audio)
   , _last_click_frame(0)
 {
 }

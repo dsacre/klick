@@ -14,6 +14,7 @@
 
 #include "audio.hh"
 #include "metronome.hh"
+#include "audio_interface_jack.hh"
 
 /*
  * plays a click track following jack transport; no tempomap!
@@ -22,7 +23,7 @@ class MetronomeJack
   : public Metronome
 {
   public:
-    MetronomeJack(AudioInterface & audio);
+    MetronomeJack(AudioInterfaceJack & audio);
     virtual ~MetronomeJack();
 
     virtual bool running() const {
@@ -34,6 +35,8 @@ class MetronomeJack
 
   private:
     static nframes_t const MIN_FRAMES_DIFF = 64;
+
+    AudioInterfaceJack & _audio;
 
     nframes_t _last_click_frame;
 };

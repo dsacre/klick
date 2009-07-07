@@ -43,13 +43,7 @@ class Klick
 
     boost::shared_ptr<Metronome> metronome() const { return _metro; }
 
-    enum MetronomeType {
-        METRONOME_TYPE_SIMPLE,
-        METRONOME_TYPE_MAP,
-        METRONOME_TYPE_JACK
-    };
-
-    void set_metronome(MetronomeType type);
+    void set_metronome(Options::MetronomeType type);
 
     void set_sound(int n);
     void set_sound_custom(std::string const &, std::string const &);
@@ -80,11 +74,17 @@ class Klick
 
   private:
 
+    void setup_jack();
+    void setup_sndfile();
     void load_tempomap();
     void load_samples();
+    void load_metronome();
 
     boost::tuple<std::string, std::string> sample_filenames(int n, Options::EmphasisMode emphasis_mode);
     AudioChunkPtr load_sample(std::string const & filename, float volume, float pitch);
+
+    void run_jack();
+    void run_sndfile();
 
 
     boost::scoped_ptr<Options> _options;

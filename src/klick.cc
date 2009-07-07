@@ -11,7 +11,8 @@
 
 #include "klick.hh"
 #include "main.hh"
-#include "audio_interface.hh"
+#include "audio_interface_jack.hh"
+#include "audio_interface_sndfile.hh"
 #include "audio_chunk.hh"
 
 #ifdef ENABLE_OSC
@@ -50,50 +51,24 @@ Klick::Klick(int argc, char *argv[])
         _options->client_name = "klick";
     }
 
-    // setup jack
-    _audio.reset(new AudioInterface(_options->client_name));
-
-    if (_options->connect_ports.size()) {
-        for (std::vector<std::string>::const_iterator i = _options->connect_ports.begin(); i != _options->connect_ports.end(); ++i) {
-            try {
-                _audio->connect(*i);
-                das::logv << "connected to " << i->c_str() << "" << std::endl;
-            }
-            catch (AudioInterface::AudioError const & e) {
-                std::cerr << e.what() << std::endl;
-            }
-        }
-    }
-    if (_options->auto_connect) {
-        _audio->autoconnect();
-    }
-
-    _gc->set_thread(_audio->client_thread());
-
-    das::logv << "jack client name: " << _audio->client_name() << std::endl;
-
-
     if (!_options->follow_transport) {
         load_tempomap();
     }
 
-    load_samples();
-
-
-    // create metronome object
-    if (_options->interactive) {
-        set_metronome(METRONOME_TYPE_SIMPLE);
-    } else if (_options->follow_transport) {
-        set_metronome(METRONOME_TYPE_JACK);
-    } else if (_options->use_osc) {
-        set_metronome(METRONOME_TYPE_SIMPLE);
+    if (_options->output_filename.empty()) {
+        setup_jack();
     } else {
-        set_metronome(METRONOME_TYPE_MAP);
+        setup_sndfile();
     }
+
+    load_samples();
+    load_metronome();
 
 #ifdef ENABLE_OSC
     if (_options->use_osc) {
-        _osc.reset(new OSCHandler(_options->osc_port, _options->osc_return_port, *this, *_audio));
+        // yuck!
+        AudioInterfaceJack & a = dynamic_cast<AudioInterfaceJack &>(*_audio);
+        _osc.reset(new OSCHandler(_options->osc_port, _options->osc_return_port, *this, a));
     }
 #endif
 
@@ -107,6 +82,41 @@ Klick::Klick(int argc, char *argv[])
 
 Klick::~Klick()
 {
+}
+
+
+void Klick::setup_jack()
+{
+    boost::shared_ptr<AudioInterfaceJack> audio(new AudioInterfaceJack(_options->client_name));
+
+    das::logv << "jack client name: " << audio->client_name() << std::endl;
+
+    if (_options->connect_ports.size()) {
+        for (std::vector<std::string>::const_iterator i = _options->connect_ports.begin(); i != _options->connect_ports.end(); ++i) {
+            try {
+                audio->connect(*i);
+                das::logv << "connected to " << i->c_str() << std::endl;
+            }
+            catch (AudioInterface::AudioError const & e) {
+                std::cerr << e.what() << std::endl;
+            }
+        }
+    }
+    if (_options->auto_connect) {
+        audio->autoconnect();
+    }
+
+    _gc->set_thread(audio->client_thread());
+
+    _audio = audio;
+}
+
+
+void Klick::setup_sndfile()
+{
+    _audio.reset(new AudioInterfaceSndfile(_options->output_filename, _options->output_samplerate));
+
+    das::logv << "output filename: " << _options->output_filename << std::endl;
 }
 
 
@@ -132,6 +142,10 @@ void Klick::load_tempomap()
         } else {
             throw std::runtime_error(das::make_string() << "label '" << _options->start_label << "' not found in tempomap");
         }
+    }
+
+    if (!_options->output_filename.empty() && _map->entries().back().bars == -1) {
+        throw std::runtime_error("can't export tempomap of infinite length");
     }
 }
 
@@ -292,18 +306,26 @@ void Klick::set_sound_pitch(float emphasis, float normal)
 }
 
 
-void Klick::set_metronome(MetronomeType type)
+void Klick::set_metronome(Options::MetronomeType type)
+{
+    _options->type = type;
+    load_metronome();
+}
+
+
+void Klick::load_metronome()
 {
     Metronome * m = NULL;
 
-    switch (type) {
-      case METRONOME_TYPE_SIMPLE:
+    switch (_options->type) {
+      case Options::METRONOME_TYPE_SIMPLE:
         m = new MetronomeSimple(*_audio, &(*_map)[0]);
         break;
-      case METRONOME_TYPE_JACK:
-        m = new MetronomeJack(*_audio);
+      case Options::METRONOME_TYPE_JACK:
+        // let's hope this cast is safe...
+        m = new MetronomeJack(dynamic_cast<AudioInterfaceJack &>(*_audio));
         break;
-      case METRONOME_TYPE_MAP:
+      case Options::METRONOME_TYPE_MAP:
         m = new MetronomeMap(*_audio,
                              _map,
                              _options->tempo_multiplier,
@@ -317,14 +339,12 @@ void Klick::set_metronome(MetronomeType type)
     _metro.reset(m, _gc->disposer);
 
     _metro->set_sound(_click_emphasis, _click_normal);
-
-    _audio->set_process_callback(_metro, true);
+    _metro->register_process_callback();
 
     if (_options->transport_master) {
-        if (boost::shared_ptr<AudioInterface::TimebaseCallback> cb =
-            boost::dynamic_pointer_cast<AudioInterface::TimebaseCallback>(_metro)) {
+        if (boost::shared_ptr<MetronomeMap> m = boost::dynamic_pointer_cast<MetronomeMap>(_metro)) {
             try {
-                _audio->set_timebase_callback(cb);
+                m->register_timebase_callback();
             } catch (AudioInterface::AudioError const & e) {
                 std::cerr << e.what() << std::endl;
             }
@@ -338,25 +358,35 @@ void Klick::set_tempomap_filename(std::string const & filename)
     _options->filename = filename;
     load_tempomap();
 
-    set_metronome(METRONOME_TYPE_MAP);
+    load_metronome();
 }
 
 
 void Klick::set_tempomap_preroll(int bars)
 {
     _options->preroll = bars;
-    set_metronome(METRONOME_TYPE_MAP);
+    load_metronome();
 }
 
 
 void Klick::set_tempomap_multiplier(float mult)
 {
     _options->tempo_multiplier = mult;
-    set_metronome(METRONOME_TYPE_MAP);
+    load_metronome();
 }
 
 
 void Klick::run()
+{
+    if (_options->output_filename.empty()) {
+        run_jack();
+    } else {
+        run_sndfile();
+    }
+}
+
+
+void Klick::run_jack()
 {
     if (!_options->transport_enabled && _options->delay) {
         das::logv << "waiting for " << _options->delay << " seconds..." << std::endl;
@@ -400,6 +430,22 @@ void Klick::run()
         } else if (_audio->is_shutdown()) {
             throw std::runtime_error("shut down by the jack server");
         }
+    }
+}
+
+
+void Klick::run_sndfile()
+{
+    AudioInterfaceSndfile *a = dynamic_cast<AudioInterfaceSndfile*>(&*_audio);
+    ASSERT(a);
+    MetronomeMap *m = dynamic_cast<MetronomeMap*>(&*_metro);
+    ASSERT(m);
+
+    static const std::size_t BUFFER_SIZE = 1024;
+
+    m->start();
+    while (m->current_frame() < m->total_frames() && !_quit) {
+        a->process(std::min(BUFFER_SIZE, m->total_frames() - m->current_frame()));
     }
 }
 

@@ -13,10 +13,12 @@
 #define _AUDIO_HH
 
 #include <jack/types.h>
+#include <jack/transport.h>
 #include <boost/shared_ptr.hpp>
 
 typedef jack_default_audio_sample_t sample_t;
 typedef jack_nframes_t nframes_t;
+typedef jack_position_t position_t;
 
 typedef boost::shared_ptr<class AudioChunk> AudioChunkPtr;
 typedef boost::shared_ptr<class AudioChunk const> AudioChunkConstPtr;

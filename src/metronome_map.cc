@@ -11,7 +11,7 @@
 
 #include "metronome_map.hh"
 #include "options.hh"
-#include "audio_interface.hh"
+#include "audio_interface_jack.hh"
 #include "audio_chunk.hh"
 #include "tempomap.hh"
 
@@ -75,16 +75,30 @@ bool MetronomeMap::running() const
 }
 
 
+nframes_t MetronomeMap::current_frame() const
+{
+    return _current;
+}
+
+
+nframes_t MetronomeMap::total_frames() const
+{
+    return static_cast<nframes_t>(_pos.total_frames());
+}
+
+
 void MetronomeMap::process_callback(sample_t * /*buffer*/, nframes_t nframes)
 {
     if (!active()) {
         return;
     }
 
-    if (_transport_enabled) {
-        if (!_audio.transport_rolling()) return;
+    AudioInterfaceJack *a = dynamic_cast<AudioInterfaceJack *>(&_audio);
 
-        nframes_t p = _audio.frame();
+    if (_transport_enabled && a) {
+        if (!a->transport_rolling()) return;
+
+        nframes_t p = a->frame();
 
         if (p != _current) {
             // position changed since last period, need to relocate
@@ -96,7 +110,7 @@ void MetronomeMap::process_callback(sample_t * /*buffer*/, nframes_t nframes)
         if (_pos.end()) return;
     }
 
-    // does a new tick start in this period?
+    // check if a new tick starts in this period
     if (_current + nframes > _pos.next_frame()) {
         // move position to next tick.
         // loop just in case two beats are less than one period apart (which we don't really handle)
@@ -116,7 +130,7 @@ void MetronomeMap::process_callback(sample_t * /*buffer*/, nframes_t nframes)
 }
 
 
-void MetronomeMap::timebase_callback(jack_position_t *p)
+void MetronomeMap::timebase_callback(position_t *p)
 {
     if (p->frame != _current) {
         // current position doesn't match jack transport frame.

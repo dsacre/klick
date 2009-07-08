@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
     catch (Exit const & e) {
         return e.status();
     }
-    catch (std::exception const & e) {
+    catch (std::runtime_error const & e) {
         std::cerr << e.what() << std::endl;
         return EXIT_FAILURE;
     }

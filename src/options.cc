@@ -106,7 +106,7 @@ void Options::parse(int argc, char *argv[])
     int c;
     char optstring[] = "+f:jn:p:Po:R:iW:r:s:S:eEv:w:tTd:c:l:x:LVh";
 
-    if (argc < 2) {
+    if (argc < 2 || (argc == 2 && std::string(argv[1]) == "--help")) {
         // run with no arguments, print usage
         print_version();
         std::cout << std::endl;
@@ -301,6 +301,10 @@ void Options::parse(int argc, char *argv[])
 
     if (use_osc && interactive) {
         throw CmdlineError("can't enable OSC and terminal control at the same time, sorry");
+    }
+
+    if (use_osc && !output_filename.empty()) {
+        throw CmdlineError("can't use OSC when exporting to audio file");
     }
 
     // determine metronome type

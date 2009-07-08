@@ -6,7 +6,7 @@
   <title>klick - User Manual</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <style type="text/css">
-    body { max-width: 60em; font-size: 90%; }
+    body { max-width: 60em; font-size: 90%; font-family: sans-serif; }
     h1 { font-size: 130%; color: #333; background: #eee; padding: 4px 0.7em; }
     h2 { font-size: 110%; color: #fff; background: #667; padding: 4px 0.7em; margin-top: 2.2em; }
     h3 { font-size: 100%; color: #333; background: #dddde5; padding: 4px 0.7em; margin-top: 2.2em; }
@@ -38,13 +38,14 @@
       <li><a href="#tempomapexample">Example Tempo Map</a></li>
     </ul>
   </li>
+  <li><a href="#export">Click Track Export</a></li>
   <li><a href="#osc">OSC Commands</a></li>
 </ul>
 
 <h2><a name="basics"></a>Basics</h2>
 
 
-<h4><kbd>klick [ options ] [meter] tempo[-tempo2/accel] [pattern]</kbd></h4>
+<h4><kbd>klick [options] [bars] [meter] tempo[-tempo2/accel] [pattern]</kbd></h4>
 <p>
   Plays a simple metronome with the given meter and tempo.
   To play a 3/4 beat at 120 bpm:
@@ -61,19 +62,19 @@
 </p>
 
 
-<h4><kbd>klick [ options ] -f filename</kbd></h4>
+<h4><kbd>klick [options] -f filename</kbd></h4>
 <p>
   Loads a tempo map from a file. This allows for more complex setups including meter and tempo changes etc.<br>
-  See <a href="#tempomap">Tempo Map File Format</a> for a description of the tempo map file format.
+  See <a href="#tempomap">Tempo Map File Format</a>.
 </p>
 
-<h4><kbd>klick [ options ] -i</kbd></h4>
+<h4><kbd>klick [options] -i</kbd></h4>
 <p>
   Runs klick in interactive mode, allowing you to change tempo and meter while klick is running.<br>
   The keyboard commands available in this mode are described in <a href="#interactive">Interactive Mode</a>.
 </p>
 
-<h4><kbd>klick [ options ] -j</kbd></h4>
+<h4><kbd>klick [options] -j</kbd></h4>
 
 <p>
   In this mode, klick gets all tempo information from JACK.
@@ -85,13 +86,15 @@
 <h2><a name="commandline"></a>Command Line Options</h2>
 
 <pre>
--f filename       load tempomap from file
--j                no tempomap, just follow jack transport
+-f filename       load tempo map from file
+-j                no tempo map, just follow jack transport
 -n name           set jack client name
 -p port,..        jack port(s) to connect to
 -P                automatically connect to hardware ports
 -o port           OSC port to listen on
 -i                interactive mode
+-W filename       export click track to audio file
+-r samplerate     sample rate of export (default: 48000)
 -s number         use built-in sounds:
                     0: square wave (default)
                     1: sine wave
@@ -199,6 +202,17 @@ chorus2:  16 140          # jump to 140 bpm
 outro:    6 140
           2 140-80        # ritardando over the last 2 bars
 </pre>
+
+
+<h2><a name="export"></a>Click Track Export</h2>
+
+<p>
+By default, klick connects to JACK for audio output. To export a click track to an audio file instead, use the
+<kbd>-W</kbd> parameter to specify an output filename.
+The file type is determined by extension, supported formats are WAV, AIFF, FLAC, Ogg Vorbis (with libsndfile &gt;= 1.0.18).<br>
+The <kbd>-r</kbd> parameter can be used to set the sample rate of the exported audio, default is 48000 Hz.
+</p>
+
 
 <h2><a name="osc"></a>OSC Commands</h2>
 

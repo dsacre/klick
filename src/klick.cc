@@ -123,16 +123,16 @@ void Klick::setup_sndfile()
 void Klick::load_tempomap()
 {
     if (_options->filename.length()) {
-        das::logv << "loading tempomap from file" << std::endl;
+        das::logv << "loading tempo map from file" << std::endl;
         _map = TempoMap::new_from_file(_options->filename);
     } else if (!_options->cmdline.empty()) {
-        das::logv << "loading tempomap from command line" << std::endl;
+        das::logv << "loading tempo map from command line" << std::endl;
         _map = TempoMap::new_from_cmdline(_options->cmdline);
     } else {
         _map = TempoMap::new_simple(-1, 120, 4, 4);
     }
 
-    das::logv << "tempomap:" << std::endl
+    das::logv << "tempo map:" << std::endl
               << das::indent(_map->dump(), 2);
 
     // make sure the start label exists
@@ -140,12 +140,12 @@ void Klick::load_tempomap()
         if (_map->entry(_options->start_label)) {
             das::logv << "starting at label: " << _options->start_label << std::endl;
         } else {
-            throw std::runtime_error(das::make_string() << "label '" << _options->start_label << "' not found in tempomap");
+            throw std::runtime_error(das::make_string() << "label '" << _options->start_label << "' not found in tempo map");
         }
     }
 
     if (!_options->output_filename.empty() && _map->entries().back().bars == -1) {
-        throw std::runtime_error("can't export tempomap of infinite length");
+        throw std::runtime_error("can't export tempo map of infinite length");
     }
 }
 
@@ -425,7 +425,7 @@ void Klick::run_jack()
             das::logv << "terminating" << std::endl;
             break;
         } else if (!_metro->running() && !_osc) {
-            das::logv << "end of tempomap reached" << std::endl;
+            das::logv << "end of tempo map reached" << std::endl;
             break;
         } else if (_audio->is_shutdown()) {
             throw std::runtime_error("shut down by the jack server");

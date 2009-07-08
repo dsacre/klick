@@ -234,7 +234,7 @@ TempoMapPtr TempoMap::new_from_file(std::string const & filename)
     std::ifstream file(filename.c_str());
 
     if (!file.is_open()) {
-        throw std::runtime_error(das::make_string() << "can't open tempomap file: '" << filename << "'");
+        throw std::runtime_error(das::make_string() << "can't open tempo map file: '" << filename << "'");
     }
 
     ::regex_t re_blank, re;
@@ -260,7 +260,7 @@ TempoMapPtr TempoMap::new_from_file(std::string const & filename)
         try {
             // check if this line matches the regex
             if (::regexec(&re, line.c_str(), RE_NMATCHES, match, 0) != 0) {
-                throw ParseError("malformed tempomap entry");
+                throw ParseError("malformed tempo map entry");
             }
 
             Entry e;
@@ -306,7 +306,7 @@ TempoMapPtr TempoMap::new_from_cmdline(std::string const & line)
 
     try {
         if (::regexec(&re, line.c_str(), RE_NMATCHES_CMD, match, 0) != 0) {
-            throw ParseError("malformed tempomap string");
+            throw ParseError("malformed tempo map string");
         }
 
         Entry e;

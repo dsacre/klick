@@ -56,16 +56,16 @@ void Options::print_usage()
 {
     std::cout
         << "Usage:\n"
-        << "  klick [ options ] [bars] [meter] tempo[-tempo2/accel] [pattern]\n"
-        << "  klick [ options ] -f filename\n"
+        << "  klick [options] [bars] [meter] tempo[-tempo2/accel] [pattern]\n"
+        << "  klick [options] -f filename\n"
 #ifdef ENABLE_TERMINAL
-        << "  klick [ options ] -i\n"
+        << "  klick [options] -i\n"
 #endif
-        << "  klick [ options ] -j\n"
+        << "  klick [options] -j\n"
         << "\n"
         << "Options:\n"
-        << "  -f filename       load tempomap from file\n"
-        << "  -j                no tempomap, just follow jack transport\n"
+        << "  -f filename       load tempo map from file\n"
+        << "  -j                no tempo map, just follow jack transport\n"
         << "  -n name           set jack client name\n"
         << "  -p port,..        jack port(s) to connect to\n"
         << "  -P                automatically connect to hardware ports\n"
@@ -75,7 +75,7 @@ void Options::print_usage()
 #ifdef ENABLE_TERMINAL
         << "  -i                interactive mode\n"
 #endif
-        << "  -W filename       export tempomap to audio file\n"
+        << "  -W filename       export click track to audio file\n"
         << "  -r samplerate     sample rate of export (default: 48000)\n"
         << "  -s number         use built-in sounds:\n"
         << "                      0: square wave (default)\n"
@@ -95,7 +95,7 @@ void Options::print_usage()
         << "  -x multiplier     multiply tempo by the given factor\n"
         << "  -h                show this help\n"
         << "\n"
-        << "Tempomap file format:\n"
+        << "Tempo Map File Format:\n"
         << "  [label:] bars [meter] tempo [pattern] [volume]\n"
         << "  ..." << std::endl;
 }
@@ -282,16 +282,16 @@ void Options::parse(int argc, char *argv[])
 
     // catch some common command line errors...
     if (!output_filename.empty() && filename.empty() && cmdline.empty()) {
-        throw CmdlineError("need a tempomap to export to audio file");
+        throw CmdlineError("need a tempo map to export to audio file");
     }
 
     if (!use_osc) {
         if (follow_transport && (filename.length() || cmdline.length())) {
-            throw CmdlineError("can't use tempo/tempomap together with -j option");
+            throw CmdlineError("can't use explicit tempo or tempo map together with -j option");
         }
 
         if (filename.length() && cmdline.length()) {
-            throw CmdlineError("can't use tempomap from file and command line at the same time");
+            throw CmdlineError("can't use tempo map from file and command line at the same time");
         }
 
         if (!follow_transport && !interactive && filename.empty() && cmdline.empty()) {

@@ -15,6 +15,7 @@ env = Environment(
 opts = Options('scache.conf')
 opts.AddOptions(
     PathOption('PREFIX', 'install prefix', '/usr/local'),
+    PathOption('DESTDIR', 'intermediate install prefix', '/'),
     BoolOption('DEBUG', 'debug mode', False),
     BoolOption('OSC', 'OSC support', True),
     BoolOption('TERMINAL', 'terminal control support', True),
@@ -33,6 +34,9 @@ else:
 # install paths
 env['PREFIX_BIN'] = os.path.join(env['PREFIX'], 'bin')
 env['PREFIX_SHARE'] = os.path.join(env['PREFIX'], 'share/klick')
+env['DESTDIR_BIN'] = '%s/%s' % (env['DESTDIR'], env['PREFIX_BIN'])
+env['DESTDIR_SHARE'] = '%s/%s' % (env['DESTDIR'], env['PREFIX_SHARE'])
+
 
 env.Append(CPPDEFINES = ('DATA_DIR', '\\"%s\\"' % env['PREFIX_SHARE']))
 
@@ -94,6 +98,6 @@ samples = [
 ]
 
 # installation
-env.Alias('install', [env['PREFIX_BIN'], env['PREFIX_SHARE']])
-env.Install(env['PREFIX_BIN'], 'klick')
-env.Install(os.path.join(env['PREFIX_SHARE'], 'samples'), samples)
+env.Alias('install', [env['DESTDIR_BIN'], env['DESTDIR_SHARE']])
+env.Install(env['DESTDIR_BIN'], 'klick')
+env.Install(os.path.join(env['DESTDIR_SHARE'], 'samples'), samples)

@@ -15,7 +15,7 @@ env = Environment(
 opts = Options('scache.conf')
 opts.AddOptions(
     PathOption('PREFIX', 'install prefix', '/usr/local'),
-    PathOption('DESTDIR', 'intermediate install prefix', '/'),
+    PathOption('DESTDIR', 'intermediate install prefix', '', PathOption.PathAccept),
     BoolOption('DEBUG', 'debug mode', False),
     BoolOption('OSC', 'OSC support', True),
     BoolOption('TERMINAL', 'terminal control support', True),
@@ -32,13 +32,10 @@ else:
     env.Prepend(CPPDEFINES = 'NDEBUG')
 
 # install paths
-env['PREFIX_BIN'] = os.path.join(env['PREFIX'], 'bin')
-env['PREFIX_SHARE'] = os.path.join(env['PREFIX'], 'share/klick')
-env['DESTDIR_BIN'] = '%s/%s' % (env['DESTDIR'], env['PREFIX_BIN'])
-env['DESTDIR_SHARE'] = '%s/%s' % (env['DESTDIR'], env['PREFIX_SHARE'])
+prefix_bin = os.path.join(env['PREFIX'], 'bin')
+prefix_share = os.path.join(env['PREFIX'], 'share/klick')
 
-
-env.Append(CPPDEFINES = ('DATA_DIR', '\\"%s\\"' % env['PREFIX_SHARE']))
+env.Append(CPPDEFINES = ('DATA_DIR', '\\"%s\\"' % prefix_share))
 
 # required libraries
 env.ParseConfig(
@@ -65,6 +62,18 @@ sources = [
     'src/util/util.cc'
 ]
 
+# audio samples
+samples = [
+    'samples/square_emphasis.wav',
+    'samples/square_normal.wav',
+    'samples/sine_emphasis.wav',
+    'samples/sine_normal.wav',
+    'samples/noise_emphasis.wav',
+    'samples/noise_normal.wav',
+    'samples/click_emphasis.wav',
+    'samples/click_normal.wav',
+]
+
 # build options
 if env['OSC']:
     env.ParseConfig('pkg-config --cflags --libs liblo')
@@ -85,19 +94,10 @@ if env['RUBBERBAND']:
     env.Append(CPPDEFINES = ['ENABLE_RUBBERBAND'])
 
 env.Program('klick', sources)
-
-samples = [
-    'samples/square_emphasis.wav',
-    'samples/square_normal.wav',
-    'samples/sine_emphasis.wav',
-    'samples/sine_normal.wav',
-    'samples/noise_emphasis.wav',
-    'samples/noise_normal.wav',
-    'samples/click_emphasis.wav',
-    'samples/click_normal.wav',
-]
+Default('klick')
 
 # installation
-env.Alias('install', [env['DESTDIR_BIN'], env['DESTDIR_SHARE']])
-env.Install(env['DESTDIR_BIN'], 'klick')
-env.Install(os.path.join(env['DESTDIR_SHARE'], 'samples'), samples)
+env.Alias('install', [
+    env.Install(env['DESTDIR'] + prefix_bin, 'klick'),
+    env.Install(env['DESTDIR'] + os.path.join(prefix_share, 'samples'), samples)
+])

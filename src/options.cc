@@ -303,8 +303,8 @@ void Options::parse(int argc, char *argv[])
         throw CmdlineError("can't enable OSC and terminal control at the same time, sorry");
     }
 
-    if (use_osc && !output_filename.empty()) {
-        throw CmdlineError("can't use OSC when exporting to audio file");
+    if ((use_osc || interactive) && !output_filename.empty()) {
+        throw CmdlineError("can't export to audio file when using OSC or interactive mode");
     }
 
     // determine metronome type

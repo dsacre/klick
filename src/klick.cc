@@ -441,7 +441,7 @@ void Klick::run_sndfile()
     MetronomeMap *m = dynamic_cast<MetronomeMap*>(&*_metro);
     ASSERT(m);
 
-    static const nframes_t BUFFER_SIZE = 1024;
+    static nframes_t const BUFFER_SIZE = 1024;
 
     m->start();
     while (m->current_frame() < m->total_frames() && !_quit) {

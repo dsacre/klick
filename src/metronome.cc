@@ -67,21 +67,3 @@ void Metronome::play_click(bool emphasis, nframes_t offset, float volume)
 
     _audio.play(click, offset, volume);
 }
-
-
-/*
-MetronomeTransport::MetronomeTransport(AudioInterfaceTransport & audio)
-  : Metronome(audio)
-  , _audio_transport(audio)
-{
-}
-
-
-void MetronomeTransport::register_timebase_callback()
-{
-    AudioInterfaceTransport *a = dynamic_cast<AudioInterfaceTransport*>(&_audio);
-    if (a) {
-        a->set_timebase_callback(boost::bind(&MetronomeTransport::timebase_callback, this, _1));
-    }
-}
-*/

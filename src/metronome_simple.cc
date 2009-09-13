@@ -120,12 +120,12 @@ void MetronomeSimple::do_stop()
 
 void MetronomeSimple::tap(double now)
 {
-    _taps.push_back(now);
-
     if (_taps.size() && now < _taps.back()) {
         // distortion in space-time continuum
-        return;
+        _taps.clear();
     }
+
+    _taps.push_back(now);
 
     if ((int)_taps.size() > MAX_TAPS) {
         _taps.pop_front();

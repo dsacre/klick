@@ -44,7 +44,6 @@ class MetronomeMap
     nframes_t current_frame() const;
     nframes_t total_frames() const;
 
-  protected:
     virtual void process_callback(sample_t *, nframes_t);
     virtual void timebase_callback(position_t *);
 

@@ -12,8 +12,6 @@
 #include "metronome.hh"
 #include "audio_interface_jack.hh"
 
-#include <boost/bind.hpp>
-
 #include "util/debug.hh"
 
 
@@ -22,22 +20,6 @@ Metronome::Metronome(AudioInterface & audio)
   , _active(false)
 {
 }
-
-
-void Metronome::register_process_callback()
-{
-    _audio.set_process_callback(boost::bind(&Metronome::process_callback, this, _1, _2));
-}
-
-
-void Metronome::register_timebase_callback()
-{
-    AudioInterfaceTransport *a = dynamic_cast<AudioInterfaceTransport*>(&_audio);
-    if (a) {
-        a->set_timebase_callback(boost::bind(&Metronome::timebase_callback, this, _1));
-    }
-}
-
 
 void Metronome::set_active(bool b)
 {

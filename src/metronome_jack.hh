@@ -30,7 +30,6 @@ class MetronomeJack
         return true;
     }
 
-  protected:
     virtual void process_callback(sample_t *, nframes_t);
 
   private:

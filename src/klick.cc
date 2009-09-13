@@ -30,6 +30,7 @@
 #include <string>
 #include <iostream>
 #include <stdexcept>
+#include <boost/bind.hpp>
 #include <unistd.h>
 
 #include "util/debug.hh"
@@ -339,12 +340,15 @@ void Klick::load_metronome()
     _metro.reset(m, _gc->disposer);
 
     _metro->set_sound(_click_emphasis, _click_normal);
-    _metro->register_process_callback();
+    _audio->set_process_callback(boost::bind(&Metronome::process_callback, _metro, _1, _2));
 
     if (_options->transport_master) {
-        if (boost::shared_ptr<MetronomeMap> m = boost::dynamic_pointer_cast<MetronomeMap>(_metro)) {
+        boost::shared_ptr<MetronomeMap> m = boost::dynamic_pointer_cast<MetronomeMap>(_metro);
+        boost::shared_ptr<AudioInterfaceTransport> a = boost::dynamic_pointer_cast<AudioInterfaceTransport>(_audio);
+
+        if (m && a) {
             try {
-                m->register_timebase_callback();
+                a->set_timebase_callback(boost::bind(&Metronome::timebase_callback, m, _1));
             } catch (AudioInterface::AudioError const & e) {
                 std::cerr << e.what() << std::endl;
             }

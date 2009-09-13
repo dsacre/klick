@@ -32,26 +32,23 @@ class Metronome
     Metronome(AudioInterface & audio);
     virtual ~Metronome() { }
 
-    void register_process_callback();
-    void register_timebase_callback();
-
     void set_sound(AudioChunkConstPtr emphasis, AudioChunkConstPtr normal);
 
     void set_active(bool b);
     void start() { set_active(true); }
     void stop() { set_active(false); }
 
+    bool active() const { return _active; }
+
     virtual void do_start() { }
     virtual void do_stop() { }
 
-    bool active() const { return _active; }
+    virtual void process_callback(sample_t *, nframes_t) = 0;
+    virtual void timebase_callback(position_t *) { }
 
     virtual bool running() const = 0;
 
   protected:
-
-    virtual void process_callback(sample_t *, nframes_t) = 0;
-    virtual void timebase_callback(position_t *) { }
 
     void play_click(bool emphasis, nframes_t offset, float volume = 1.0f);
 

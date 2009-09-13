@@ -54,8 +54,6 @@ class MetronomeSimple
     virtual void do_start();
     virtual void do_stop();
 
-  protected:
-
     virtual void process_callback(sample_t *, nframes_t);
 
   private:

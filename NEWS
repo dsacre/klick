@@ -1,3 +1,8 @@
+2009-09-13: klick 0.12.2
+
+  * Fixed a segfault (introduced in 0.12.0) that sometimes occured when
+    terminating klick.
+
 2009-07-10: klick 0.12.1
 
   * Fixed a build error on amd64.
@@ -10,7 +15,8 @@
 2009-01-14: klick 0.11.0
 
   * Many OSC related fixes and improvements.
-  * Optionally use Rubber Band for pitch shifting (build with RUBBERBAND=True).
+  * Optionally use Rubber Band for pitch shifting (build with
+    RUBBERBAND=True).
 
 2008-12-03: klick 0.10.0
 
@@ -38,20 +44,20 @@
   * New default sound (square wave).
   * Allow volume and pitch of emphasized and normal beats to be adjusted
     individually.
-  * Provide samples as regular wave files, rather than compiling them into the
-    executable.
+  * Provide samples as regular wave files, rather than compiling them into
+    the executable.
   * Some source code restructuring.
 
 2008-04-08: klick 0.6.3
 
-  * Fixed a bug that caused klick to play at a slightly wrong tempo when using
-    silent beats (with the pattern feature).
+  * Fixed a bug that caused klick to play at a slightly wrong tempo when
+    using silent beats (with the pattern feature).
   * Made klick compile cleanly with -W -Wall.
 
 2008-03-19: klick 0.6.2
 
-  * Fixed a bug when using -E or -e and either -v or -w parameters at the same
-    time.
+  * Fixed a bug when using -E or -e and either -v or -w parameters at the
+    same time.
   * Fixed (and actually documented) tempo-per-beat feature.
   * Use jack_client_open() instead of deprecated jack_client_new(), default
     client name is now simply "klick".
@@ -65,8 +71,9 @@
 
   * Fixed a segfault when changing the position via JACK transport.
   * Vastly more efficient seeking in the tempo map.
-  * Fixed erroneous behaviour of JACK transport BBT slave mode (-j), and be a
-    little more tolerant of faulty BBT information from the timebase master.
+  * Fixed erroneous behaviour of JACK transport BBT slave mode (-j), and
+    be a little more tolerant of faulty BBT information from the timebase
+    master.
   * Try to send more sensible BBT information in timebase master mode.
 
 2007-12-02: klick 0.5
@@ -81,7 +88,8 @@
   * JACK transport master support.
   * JACK transport slave support (running without tempomap).
   * Added ability to change the pitch of the click sounds.
-  * Volume and tempo multipliers are now given as floats rather than percentage.
+  * Volume and tempo multipliers are now given as floats rather than
+    percentage.
   * Hopefully more bugs fixed than newly introduced.
 
 2007-03-26: klick 0.2

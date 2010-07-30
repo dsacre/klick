@@ -48,7 +48,7 @@ class MetronomeMap
     virtual void timebase_callback(position_t *);
 
   private:
-    static double const TICKS_PER_BEAT = 1920.0;
+    static int const TICKS_PER_BEAT = 1920;
 
     // transport position
     nframes_t _current;

@@ -22,7 +22,6 @@
 /*
  * keeps track of the position in the tempomap
  */
-
 class Position
 {
   public:
@@ -59,6 +58,7 @@ class Position
     int bar() const { return _bar; }
     int beat() const { return _beat; }
     int bar_total() const { return _bar_total; }
+    int beat_total() const { return _beat_total; }
 
     // current tempomap entry
     TempoMap::Entry const & map_entry() const {
@@ -80,14 +80,17 @@ class Position
     float_frames_t _frame;      // frame position of current tick
     int _entry, _bar, _beat;    // current position in tempomap
     int _bar_total;             // current bar number (including previous entries)
+    int _beat_total;            // current beat number (including previous entries)
     bool _init, _end;
 
     TempoMapConstPtr _tempomap;
     float_frames_t _samplerate;
     float _multiplier;
 
+    // start of each entry, measured in frames, bars, and beats from the start of the tempomap
     std::vector<float_frames_t> _start_frames;
     std::vector<int> _start_bars;
+    std::vector<int> _start_beats;
 };
 
 

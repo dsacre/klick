@@ -27,26 +27,31 @@ Position::Position(TempoMapConstPtr tempomap, float_frames_t samplerate, float m
     _samplerate(samplerate),
     _multiplier(multiplier)
 {
-    float_frames_t f = 0.0;
-    int b = 0;
+    float_frames_t frame = 0.0;
+    int bar = 0;
+    int beat = 0;
 
     // calculate first frame of each tempomap entry
     for (TempoMap::Entries::const_iterator i = tempomap->entries().begin(); i != tempomap->entries().end(); ++i) {
-        _start_frames.push_back(f);
-        _start_bars.push_back(b);
+        _start_frames.push_back(frame);
+        _start_bars.push_back(bar);
+        _start_beats.push_back(beat);
         if (i->bars != -1) {
-            f += frame_dist(*i, 0, i->bars * i->beats);
-            b += i->bars;
+            frame += frame_dist(*i, 0, i->bars * i->beats);
+            bar += i->bars;
+            beat += i->bars * i->beats;
         } else {
             // play entry ad infinitum
-            f = std::numeric_limits<float_frames_t>::max();
-            b = std::numeric_limits<int>::max();
+            frame = std::numeric_limits<float_frames_t>::max();
+            bar = std::numeric_limits<int>::max();
+            beat = std::numeric_limits<int>::max();
         }
     }
 
     // add end of tempomap
-    _start_frames.push_back(f);
-    _start_bars.push_back(b);
+    _start_frames.push_back(frame);
+    _start_bars.push_back(bar);
+    _start_beats.push_back(beat);
 
     reset();
 }
@@ -57,6 +62,7 @@ void Position::reset()
     _frame = 0.0;
     _entry = _bar = _beat = 0;
     _bar_total = 0;
+    _beat_total = 0;
     _init = true;
     _end = false;
 }
@@ -127,6 +133,7 @@ void Position::locate(nframes_t f)
 
         _frame = _start_frames[_entry] + frame_dist(e, 0, _bar * e.beats + _beat);
         _bar_total = _start_bars[_entry] + _bar;
+        _beat_total = _start_beats[_entry] + _bar * e.beats + _beat;
     }
     // gradual tempo change
     else if (e.tempo && e.tempo2) {
@@ -164,12 +171,14 @@ void Position::locate(nframes_t f)
 
         _frame = _start_frames[_entry] + frame_dist(e, 0, _bar * e.beats + _beat);
         _bar_total = _start_bars[_entry] + _bar;
+        _beat_total = _start_beats[_entry] + _bar * e.beats + _beat;
     }
     // tempo per beat
     else if (!e.tempo) {
         _bar = _beat = 0;
         _frame = _start_frames[_entry];
         _bar_total = _start_bars[_entry];
+        _beat_total = _start_beats[_entry];
 
         // terribly inefficient, but who uses tempo per beat anyway...?
         while (_frame + dist_to_next() <= f && !_end) {
@@ -207,6 +216,7 @@ void Position::advance()
         }
         _bar_total++;
     }
+    _beat_total++;
 }
 
 

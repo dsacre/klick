@@ -105,7 +105,7 @@ void AudioInterfaceJack::autoconnect()
         for (int n = 0; n < 2 && hw_ports[n] != NULL; ++n) {
             jack_connect(_client, jack_port_name(_output_port), hw_ports[n]);
         }
-        std::free(hw_ports);
+        jack_free(hw_ports);
     }
 }
 
@@ -127,7 +127,7 @@ std::vector<std::string> AudioInterfaceJack::available_ports()
         while (*p) {
             v.push_back(*p++);
         }
-        std::free(ports);
+        jack_free(ports);
     }
 
     return v;

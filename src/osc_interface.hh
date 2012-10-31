@@ -90,15 +90,9 @@ class OSCInterface
     // basic send function
     void send(Address const & target, std::string const & path, ArgumentVector const & args = ArgumentVector());
 
-    // address as string
-    void send(std::string const & target, std::string const & path, ArgumentVector const & args = ArgumentVector()) {
-        send(Address(target), path, args);
-    }
-
     // allow multiple recipients
-    template <typename T>
-    void send(T const & targets, std::string const & path, ArgumentVector const & args = ArgumentVector()) {
-        for (typename T::const_iterator i = targets.begin(); i != targets.end(); ++i) {
+    void send(std::list<Address> const & targets, std::string const & path, ArgumentVector const & args = ArgumentVector()) {
+        for (std::list<Address>::const_iterator i = targets.begin(); i != targets.end(); ++i) {
             send(*i, path, args);
         }
     }

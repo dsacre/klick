@@ -12,14 +12,14 @@ env = Environment(
 )
 
 # build options
-opts = Options('scache.conf')
-opts.AddOptions(
-    PathOption('PREFIX', 'install prefix', '/usr/local'),
-    PathOption('DESTDIR', 'intermediate install prefix', '', PathOption.PathAccept),
-    BoolOption('DEBUG', 'debug mode', False),
-    BoolOption('OSC', 'OSC support', True),
-    BoolOption('TERMINAL', 'terminal control support', True),
-    BoolOption('RUBBERBAND', 'use Rubber Band for pitch shifting', False),
+opts = Variables('scache.conf')
+opts.AddVariables(
+    PathVariable('PREFIX', 'install prefix', '/usr/local'),
+    PathVariable('DESTDIR', 'intermediate install prefix', '', PathVariable.PathAccept),
+    BoolVariable('DEBUG', 'debug mode', False),
+    BoolVariable('OSC', 'OSC support', True),
+    BoolVariable('TERMINAL', 'terminal control support', True),
+    BoolVariable('RUBBERBAND', 'use Rubber Band for pitch shifting', False),
 )
 opts.Update(env)
 opts.Save('scache.conf', env)

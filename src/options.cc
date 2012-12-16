@@ -29,6 +29,8 @@ Options::Options()
     use_osc(false),
     interactive(false),
     follow_transport(false),
+    preroll(PREROLL_NONE),
+    tempo_multiplier(1.0),
     output_samplerate(48000),
     click_sample(0),
     emphasis_mode(EMPHASIS_MODE_NORMAL),
@@ -39,8 +41,6 @@ Options::Options()
     transport_enabled(false),
     transport_master(false),
     delay(0.0f),
-    preroll(PREROLL_NONE),
-    tempo_multiplier(1.0),
     verbose(false)
 {
 }
@@ -275,7 +275,7 @@ void Options::parse(int argc, char *argv[])
     }
 
     // all remaining arguments make up the "tempomap"
-    for (int n = ::optind; n < argc; n++) {
+    for (int n = ::optind; n < argc; ++n) {
         cmdline += std::string(argv[n]);
         if (n < argc - 1) cmdline += " ";
     }

@@ -323,7 +323,7 @@ void Klick::load_metronome()
         m = new MetronomeSimple(*_audio, &(*_map)[0]);
         break;
       case Options::METRONOME_TYPE_JACK:
-        // let's hope this cast is safe...
+        ASSERT(boost::dynamic_pointer_cast<AudioInterfaceJack>(_audio));
         m = new MetronomeJack(dynamic_cast<AudioInterfaceJack &>(*_audio));
         break;
       case Options::METRONOME_TYPE_MAP:
@@ -337,6 +337,7 @@ void Klick::load_metronome()
         break;
     }
 
+    // store metronome in shared_ptr with custom deleter
     _metro.reset(m, _gc->disposer);
 
     _metro->set_sound(_click_emphasis, _click_normal);
@@ -346,6 +347,7 @@ void Klick::load_metronome()
         boost::shared_ptr<MetronomeMap> m = boost::dynamic_pointer_cast<MetronomeMap>(_metro);
         boost::shared_ptr<AudioInterfaceTransport> a = boost::dynamic_pointer_cast<AudioInterfaceTransport>(_audio);
 
+        // register timebase callback if supported by both the metronome and the audio backend
         if (m && a) {
             try {
                 a->set_timebase_callback(boost::bind(&Metronome::timebase_callback, m, _1));

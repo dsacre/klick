@@ -59,13 +59,16 @@ class MetronomeSimple
   private:
 
     static int const MAX_TAPS = 5;
-    static float const MAX_TAP_AGE = 3.0;
-    static float const TAP_DIFF = 0.2;
+    static float const MAX_TAP_AGE = 3.0f;
+    static float const TAP_DIFF = 0.2f;
 
     float _tempo;
-    float _tempo_increment, _tempo_start, _tempo_limit;
+    float _tempo_increment;
+    float _tempo_start;
+    float _tempo_limit;
     float _current_tempo;
-    int _beats, _denom;
+    int _beats;
+    int _denom;
     TempoMap::Pattern _pattern;
 
     nframes_t _frame;

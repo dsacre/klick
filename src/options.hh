@@ -28,18 +28,19 @@ class Options
 
     void parse(int argc, char *argv[]);
 
+    // jack options
     std::string client_name;
     std::vector<std::string> connect_ports;
     bool auto_connect;
+
+    // osc options
     bool use_osc;
     std::string osc_port;
     std::string osc_return_port;
+
+    // mode options
     bool interactive;
     bool follow_transport;
-    std::string filename;
-    std::string cmdline;
-    std::string output_filename;
-    nframes_t output_samplerate;
 
     enum MetronomeType {
         METRONOME_TYPE_SIMPLE,
@@ -48,6 +49,21 @@ class Options
     };
     MetronomeType type;
 
+    // tempomap
+    std::string filename;
+    std::string cmdline;
+
+    static int const PREROLL_NONE = -1;
+    static int const PREROLL_2_BEATS = 0;
+    int preroll;
+    std::string start_label;
+    float tempo_multiplier;
+
+    // export settings
+    std::string output_filename;
+    nframes_t output_samplerate;
+
+    // sound settings
     static int const CLICK_SAMPLE_FROM_FILE = -2;
     static int const CLICK_SAMPLE_SILENT = -1;
     int click_sample;
@@ -61,17 +77,16 @@ class Options
     };
     EmphasisMode emphasis_mode;
 
-    float volume_emphasis, volume_normal;
-    float pitch_emphasis, pitch_normal;
+    float volume_emphasis;
+    float volume_normal;
+    float pitch_emphasis;
+    float pitch_normal;
+
+    // jack transport options
     bool transport_enabled;
     bool transport_master;
-    float delay;
 
-    static int const PREROLL_NONE = -1;
-    static int const PREROLL_2_BEATS = 0;
-    int preroll;
-    std::string start_label;
-    float tempo_multiplier;
+    float delay;
     bool verbose;
 
   private:

@@ -51,7 +51,7 @@ class MetronomeMap
     static int const TICKS_PER_BEAT = 1920;
 
     // transport position
-    nframes_t _current;
+    nframes_t _frame;
 
     // position in tempomap
     Position _pos;

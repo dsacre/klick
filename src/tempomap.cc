@@ -116,7 +116,7 @@ TempoMap::Pattern TempoMap::parse_pattern(std::string const &s, int nbeats)
             throw ParseError("pattern length doesn't match number of beats");
         }
         pattern.resize(nbeats);
-        for (int n = 0; n < nbeats; n++) {
+        for (int n = 0; n < nbeats; ++n) {
             pattern[n] = (s[n] == 'X') ? BEAT_EMPHASIS :
                          (s[n] == 'x') ? BEAT_NORMAL : BEAT_SILENT;
         }

@@ -31,7 +31,7 @@ MetronomeMap::MetronomeMap(
     std::string const & start_label
 )
   : Metronome(audio)
-  , _current(0)
+  , _frame(0)
   , _pos(tempomap, audio.samplerate(), tempo_multiplier)
   , _transport_enabled(transport)
   , _transport_master(master)
@@ -59,7 +59,7 @@ MetronomeMap::~MetronomeMap()
 void MetronomeMap::do_start()
 {
     _pos.locate(0);
-    _current = 0;
+    _frame = 0;
 }
 
 
@@ -77,7 +77,7 @@ bool MetronomeMap::running() const
 
 nframes_t MetronomeMap::current_frame() const
 {
-    return _current;
+    return _frame;
 }
 
 
@@ -100,21 +100,20 @@ void MetronomeMap::process_callback(sample_t * /*buffer*/, nframes_t nframes)
 
         nframes_t p = a->frame();
 
-        if (p != _current) {
+        if (p != _frame) {
             // position changed since last period, need to relocate
-            _current = p;
+            _frame = p;
             _pos.locate(p);
         }
-    }
-    else {
+    } else {
         if (_pos.end()) return;
     }
 
     // check if a new tick starts in this period
-    if (_current + nframes > _pos.next_frame()) {
+    if (_frame + nframes > _pos.next_frame()) {
         // move position to next tick.
         // loop just in case two beats are less than one period apart (which we don't really handle)
-        do { _pos.advance(); } while (_pos.frame() < _current);
+        do { _pos.advance(); } while (_pos.frame() < _frame);
 
         Position::Tick tick = _pos.tick();
 
@@ -122,20 +121,20 @@ void MetronomeMap::process_callback(sample_t * /*buffer*/, nframes_t nframes)
 
         if (tick.type != TempoMap::BEAT_SILENT) {
             // start playing the click sample
-            play_click(tick.type == TempoMap::BEAT_EMPHASIS, tick.frame - _current, tick.volume);
+            play_click(tick.type == TempoMap::BEAT_EMPHASIS, tick.frame - _frame, tick.volume);
         }
     }
 
-    _current += nframes;
+    _frame += nframes;
 }
 
 
 void MetronomeMap::timebase_callback(position_t *p)
 {
-    if (p->frame != _current) {
+    if (p->frame != _frame) {
         // current position doesn't match jack transport frame.
         // assume we're wrong and jack is right ;)
-        _current = p->frame;
+        _frame = p->frame;
         _pos.locate(p->frame);
     }
 
@@ -156,7 +155,7 @@ void MetronomeMap::timebase_callback(position_t *p)
     // get the distance from current to next beat, and calculate current tick
     double d = _pos.dist_to_next();
     if (d) {
-        p->tick = (_current - _pos.frame()) * TICKS_PER_BEAT / d;
+        p->tick = (_frame - _pos.frame()) * TICKS_PER_BEAT / d;
     } else {
         p->tick = 0;
     }

@@ -107,9 +107,10 @@ void OSCHandler::start()
 
 void OSCHandler::update()
 {
-    if (metro_simple()) {
-        if (_current_tempo != metro_simple()->current_tempo()) {
-            _current_tempo = metro_simple()->current_tempo();
+    boost::shared_ptr<MetronomeSimple> m(metro_simple());
+    if (m) {
+        if (_current_tempo != m->current_tempo()) {
+            _current_tempo = m->current_tempo();
             _osc->send(_clients, "/klick/simple/current_tempo", _current_tempo);
         }
     }
@@ -358,15 +359,17 @@ void OSCHandler::on_metro_set_type(Message const & msg)
 
 void OSCHandler::on_metro_start(Message const & /*msg*/)
 {
-    metro()->start();
-    _osc->send(_clients, "/klick/metro/active", metro()->active());
+    boost::shared_ptr<Metronome> m(metro());
+    m->start();
+    _osc->send(_clients, "/klick/metro/active", m->active());
 }
 
 
 void OSCHandler::on_metro_stop(Message const & /*msg*/)
 {
-    metro()->stop();
-    _osc->send(_clients, "/klick/metro/active", metro()->active());
+    boost::shared_ptr<Metronome> m(metro());
+    m->stop();
+    _osc->send(_clients, "/klick/metro/active", m->active());
 }
 
 
@@ -394,60 +397,67 @@ void OSCHandler::on_metro_query(Message const & msg)
 
 void OSCHandler::on_simple_set_tempo(Message const & msg)
 {
-    metro_simple()->set_tempo(boost::get<float>(msg.args[0]));
-    _osc->send(_clients, "/klick/simple/tempo", metro_simple()->tempo());
+    boost::shared_ptr<MetronomeSimple> m(metro_simple());
+    m->set_tempo(boost::get<float>(msg.args[0]));
+    _osc->send(_clients, "/klick/simple/tempo", m->tempo());
 }
 
 
 void OSCHandler::on_simple_set_tempo_increment(Message const & msg)
 {
-    metro_simple()->set_tempo_increment(boost::get<float>(msg.args[0]));
-    _osc->send(_clients, "/klick/simple/tempo_increment", metro_simple()->tempo_increment());
+    boost::shared_ptr<MetronomeSimple> m(metro_simple());
+    m->set_tempo_increment(boost::get<float>(msg.args[0]));
+    _osc->send(_clients, "/klick/simple/tempo_increment", m->tempo_increment());
 }
 
 
 void OSCHandler::on_simple_set_tempo_start(Message const & msg)
 {
-    metro_simple()->set_tempo_start(boost::get<float>(msg.args[0]));
-    _osc->send(_clients, "/klick/simple/tempo_start", metro_simple()->tempo_start());
+    boost::shared_ptr<MetronomeSimple> m(metro_simple());
+    m->set_tempo_start(boost::get<float>(msg.args[0]));
+    _osc->send(_clients, "/klick/simple/tempo_start", m->tempo_start());
 }
 
 
 void OSCHandler::on_simple_set_tempo_limit(Message const & msg)
 {
-    metro_simple()->set_tempo_limit(boost::get<float>(msg.args[0]));
-    _osc->send(_clients, "/klick/simple/tempo_limit", metro_simple()->tempo_limit());
+    boost::shared_ptr<MetronomeSimple> m(metro_simple());
+    m->set_tempo_limit(boost::get<float>(msg.args[0]));
+    _osc->send(_clients, "/klick/simple/tempo_limit", m->tempo_limit());
 }
 
 
 void OSCHandler::on_simple_set_meter(Message const & msg)
 {
-    metro_simple()->set_meter(boost::get<int>(msg.args[0]), boost::get<int>(msg.args[1]));
-    _osc->send(_clients, "/klick/simple/meter", metro_simple()->beats(), metro_simple()->denom());
-}
-
-
-void OSCHandler::on_simple_tap(Message const & msg)
-{
-    if (!msg.args.empty()) {
-        metro_simple()->tap(boost::get<double>(msg.args[0]));
-    } else {
-        metro_simple()->tap();
-    }
-    _osc->send(_clients, "/klick/simple/tempo", metro_simple()->tempo());
+    boost::shared_ptr<MetronomeSimple> m(metro_simple());
+    m->set_meter(boost::get<int>(msg.args[0]), boost::get<int>(msg.args[1]));
+    _osc->send(_clients, "/klick/simple/meter", m->beats(), m->denom());
 }
 
 
 void OSCHandler::on_simple_set_pattern(Message const & msg)
 {
+    boost::shared_ptr<MetronomeSimple> m(metro_simple());
     try {
-        TempoMap::Pattern p = TempoMap::parse_pattern(boost::get<std::string>(msg.args[0]), std::max(1, metro_simple()->beats()));
-        metro_simple()->set_pattern(p);
+        TempoMap::Pattern p = TempoMap::parse_pattern(boost::get<std::string>(msg.args[0]), std::max(1, m->beats()));
+        m->set_pattern(p);
     } catch (TempoMap::ParseError const & e) {
         std::cerr << msg.path << ": " << e.what() << std::endl;
         return;
     }
-    _osc->send(_clients, "/klick/simple/pattern", TempoMap::pattern_to_string(metro_simple()->pattern()));
+    _osc->send(_clients, "/klick/simple/pattern", TempoMap::pattern_to_string(m->pattern()));
+}
+
+
+void OSCHandler::on_simple_tap(Message const & msg)
+{
+    boost::shared_ptr<MetronomeSimple> m(metro_simple());
+    if (!msg.args.empty()) {
+        m->tap(boost::get<double>(msg.args[0]));
+    } else {
+        m->tap();
+    }
+    _osc->send(_clients, "/klick/simple/tempo", m->tempo());
 }
 
 

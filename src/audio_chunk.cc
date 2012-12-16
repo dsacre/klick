@@ -48,7 +48,7 @@ AudioChunk::AudioChunk(std::string const & filename, nframes_t samplerate)
     // convert stereo to mono
     if (sfinfo.channels == 2) {
         SamplePtr mono_samples(new sample_t[sfinfo.frames]);
-        for (int i = 0; i < sfinfo.frames; i++) {
+        for (int i = 0; i < sfinfo.frames; ++i) {
             mono_samples[i] = (_samples[i*2] + _samples[i*2 + 1]) / 2;
         }
         _samples = mono_samples;
@@ -67,7 +67,7 @@ void AudioChunk::adjust_volume(float volume)
 {
     if (volume == 1.0f) return;
 
-    for (nframes_t i = 0; i < _length; i++) {
+    for (nframes_t i = 0; i < _length; ++i) {
         _samples[i] *= volume;
     }
 }

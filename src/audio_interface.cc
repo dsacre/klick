@@ -64,7 +64,7 @@ void AudioInterface::process_mix(sample_t *buffer, nframes_t nframes)
 
 void AudioInterface::process_mix_samples(sample_t *dest, sample_t const * src, nframes_t length, float volume)
 {
-    for (sample_t *end = dest + length; dest < end; dest++, src++) {
+    for (sample_t *end = dest + length; dest < end; ++dest, ++src) {
         *dest += *src * volume;
     }
 }

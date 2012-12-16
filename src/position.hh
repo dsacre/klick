@@ -77,11 +77,20 @@ class Position
     // calculate length of entry or beat(s)
     float_frames_t frame_dist(TempoMap::Entry const & e, int start, int end) const;
 
-    float_frames_t _frame;      // frame position of current tick
-    int _entry, _bar, _beat;    // current position in tempomap
-    int _bar_total;             // current bar number (including previous entries)
-    int _beat_total;            // current beat number (including previous entries)
-    bool _init, _end;
+    // frame position of current tick
+    float_frames_t _frame;
+
+    // current position in tempomap
+    int _entry;
+    int _bar;
+    int _beat;
+
+    // current bar/beat number (including previous entries)
+    int _bar_total;
+    int _beat_total;
+
+    bool _init;
+    bool _end;
 
     TempoMapConstPtr _tempomap;
     float_frames_t _samplerate;

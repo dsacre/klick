@@ -7,10 +7,11 @@
  * (at your option) any later version.
  */
 
-#ifndef _DAS_LOGSTREAM_HH
-#define _DAS_LOGSTREAM_HH
+#ifndef DAS_UTIL_LOGSTREAM_HH
+#define DAS_UTIL_LOGSTREAM_HH
 
 #include <sstream>
+
 
 namespace das {
 
@@ -44,9 +45,7 @@ class logstream
 };
 
 
-extern logstream logv;
-
-
 } // namespace das
 
-#endif // _DAS_LOGSTREAM_HH
+
+#endif // DAS_UTIL_LOGSTREAM_HH

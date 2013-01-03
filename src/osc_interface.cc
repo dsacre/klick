@@ -10,6 +10,7 @@
  */
 
 #include "osc_interface.hh"
+#include "main.hh"
 
 #include <iostream>
 #include <sstream>
@@ -39,7 +40,7 @@ OSCInterface::OSCInterface(std::string const & port)
     _url = tmp;
     std::free(tmp);
 
-    das::logv << "OSC server listening on: '" << _url << "'" << std::endl;
+    logv << "OSC server listening on: '" << _url << "'" << std::endl;
 }
 
 
@@ -72,7 +73,7 @@ int OSCInterface::callback_(char const *path, char const *types, lo_arg **argv, 
 {
     Callback & cb = *static_cast<Callback *>(data);
 
-    das::logv << "got message: " << path << " ," << types;
+    logv << "got message: " << path << " ," << types;
 
     char *tmp = lo_address_get_url(lo_message_get_source(msg));
 
@@ -82,32 +83,32 @@ int OSCInterface::callback_(char const *path, char const *types, lo_arg **argv, 
 
     for (int i = 0; i < argc; ++i)
     {
-        das::logv << " ";
+        logv << " ";
         switch (types[i]) {
           case 'i':
             m.args.push_back(argv[i]->i);
-            das::logv << argv[i]->i;
+            logv << argv[i]->i;
             break;
           case 'f':
             m.args.push_back(argv[i]->f);
-            das::logv << argv[i]->f;
+            logv << argv[i]->f;
             break;
           case 'd':
             m.args.push_back(argv[i]->d);
-            das::logv << argv[i]->d;
+            logv << argv[i]->d;
             break;
           case 's':
             m.args.push_back(std::string(&argv[i]->s));
-            das::logv << "'" << &argv[i]->s << "'";
+            logv << "'" << &argv[i]->s << "'";
             break;
           default:
             m.args.push_back(0);
-            das::logv << "<unknown>";
+            logv << "<unknown>";
             break;
         }
     }
 
-    das::logv << std::endl;
+    logv << std::endl;
 
     cb(m);
 

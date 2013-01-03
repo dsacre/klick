@@ -10,6 +10,7 @@
  */
 
 #include "osc_handler.hh"
+#include "main.hh"
 #include "klick.hh"
 #include "metronome.hh"
 #include "metronome_simple.hh"
@@ -189,7 +190,7 @@ void OSCHandler::on_register_client(Message const & msg)
     ClientList::iterator i = find(_clients.begin(), _clients.end(), addr);
     if (i == _clients.end()) {
         _clients.push_back(addr);
-        das::logv << "client " << addr.url() << " registered" << std::endl;
+        logv << "client " << addr.url() << " registered" << std::endl;
     }
 }
 
@@ -201,7 +202,7 @@ void OSCHandler::on_unregister_client(Message const & msg)
     ClientList::iterator i = find(_clients.begin(), _clients.end(), addr);
     if (i != _clients.end()) {
         _clients.erase(i);
-        das::logv << "client " << addr.url() << " unregistered" << std::endl;
+        logv << "client " << addr.url() << " unregistered" << std::endl;
     }
 }
 

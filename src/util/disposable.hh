@@ -7,8 +7,8 @@
  * (at your option) any later version.
  */
 
-#ifndef _DAS_DISPOSABLE_HH
-#define _DAS_DISPOSABLE_HH
+#ifndef DAS_UTIL_DISPOSABLE_HH
+#define DAS_UTIL_DISPOSABLE_HH
 
 
 namespace das {
@@ -26,4 +26,4 @@ class disposable
 } // namespace das
 
 
-#endif // _DAS_DISPOSABLE_HH
+#endif // DAS_UTIL_DISPOSABLE_HH

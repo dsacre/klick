@@ -46,7 +46,7 @@ Klick::Klick(int argc, char *argv[])
   , _quit(false)
 {
     _options->parse(argc, argv);
-    das::logv.enable(_options->verbose);
+    logv.enable(_options->verbose);
 
     // determine client name
     if (_options->client_name.empty()) {
@@ -91,13 +91,13 @@ void Klick::setup_jack()
 {
     boost::shared_ptr<AudioInterfaceJack> audio(new AudioInterfaceJack(_options->client_name));
 
-    das::logv << "jack client name: " << audio->client_name() << std::endl;
+    logv << "jack client name: " << audio->client_name() << std::endl;
 
     if (_options->connect_ports.size()) {
         for (std::vector<std::string>::const_iterator i = _options->connect_ports.begin(); i != _options->connect_ports.end(); ++i) {
             try {
                 audio->connect(*i);
-                das::logv << "connected to " << i->c_str() << std::endl;
+                logv << "connected to " << i->c_str() << std::endl;
             }
             catch (AudioInterface::AudioError const & e) {
                 std::cerr << e.what() << std::endl;
@@ -118,29 +118,29 @@ void Klick::setup_sndfile()
 {
     _audio.reset(new AudioInterfaceSndfile(_options->output_filename, _options->output_samplerate));
 
-    das::logv << "output filename: " << _options->output_filename << std::endl;
+    logv << "output filename: " << _options->output_filename << std::endl;
 }
 
 
 void Klick::load_tempomap()
 {
     if (_options->filename.length()) {
-        das::logv << "loading tempo map from file" << std::endl;
+        logv << "loading tempo map from file" << std::endl;
         _map = TempoMap::new_from_file(_options->filename);
     } else if (!_options->cmdline.empty()) {
-        das::logv << "loading tempo map from command line" << std::endl;
+        logv << "loading tempo map from command line" << std::endl;
         _map = TempoMap::new_from_cmdline(_options->cmdline);
     } else {
         _map = TempoMap::new_simple(-1, 120, 4, 4);
     }
 
-    das::logv << "tempo map:" << std::endl
+    logv << "tempo map:" << std::endl
               << das::indent(_map->dump(), 2);
 
     // make sure the start label exists
     if (_options->start_label.length()) {
         if (_map->entry(_options->start_label)) {
-            das::logv << "starting at label: " << _options->start_label << std::endl;
+            logv << "starting at label: " << _options->start_label << std::endl;
         } else {
             throw std::runtime_error(das::make_string() << "label '" << _options->start_label << "' not found in tempo map");
         }
@@ -227,9 +227,9 @@ void Klick::load_samples()
     std::string emphasis, normal;
     boost::tie(emphasis, normal) = sample_filenames(_options->click_sample, _options->emphasis_mode);
 
-    das::logv << "loading samples:\n"
-              << "  emphasis: " << emphasis << "\n"
-              << "  normal:   " << normal << std::endl;
+    logv << "loading samples:\n"
+         << "  emphasis: " << emphasis << "\n"
+         << "  normal:   " << normal << std::endl;
 
     _click_emphasis = load_sample(emphasis, _options->volume_emphasis, _options->pitch_emphasis);
     _click_normal = load_sample(normal, _options->volume_normal, _options->pitch_normal);
@@ -254,9 +254,9 @@ void Klick::set_sound_custom(std::string const & emphasis, std::string const & n
     _options->click_filename_emphasis = emphasis;
     _options->click_filename_normal = normal;
 
-    das::logv << "loading samples:\n"
-              << "  emphasis: " << emphasis << "\n"
-              << "  normal:   " << normal << std::endl;
+    logv << "loading samples:\n"
+         << "  emphasis: " << emphasis << "\n"
+         << "  normal:   " << normal << std::endl;
 
     try {
         _click_emphasis = load_sample(emphasis, _options->volume_emphasis, _options->pitch_emphasis);
@@ -396,7 +396,7 @@ void Klick::run()
 void Klick::run_jack()
 {
     if (!_options->transport_enabled && _options->delay) {
-        das::logv << "waiting for " << _options->delay << " seconds..." << std::endl;
+        logv << "waiting for " << _options->delay << " seconds..." << std::endl;
 
         ::uint64_t delay_nsec = static_cast< ::uint64_t>(_options->delay * 1000000000);
         ::timespec ts = { static_cast< ::time_t>(delay_nsec / 1000000000),
@@ -405,7 +405,7 @@ void Klick::run_jack()
     }
 
     if (!_osc) {
-        das::logv << "starting metronome..." << std::endl;
+        logv << "starting metronome..." << std::endl;
         _metro->start();
     }
 
@@ -435,10 +435,10 @@ void Klick::run_jack()
 #endif
 
         if (_quit) {
-            das::logv << "terminating" << std::endl;
+            logv << "terminating" << std::endl;
             break;
         } else if (!_metro->running() && !_osc) {
-            das::logv << "end of tempo map reached" << std::endl;
+            logv << "end of tempo map reached" << std::endl;
             break;
         } else if (_audio->is_shutdown()) {
             throw std::runtime_error("shut down by the jack server");

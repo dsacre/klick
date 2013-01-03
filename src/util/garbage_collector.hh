@@ -7,11 +7,11 @@
  * (at your option) any later version.
  */
 
-#ifndef _DAS_GARBAGE_COLLECTOR_HH
-#define _DAS_GARBAGE_COLLECTOR_HH
+#ifndef DAS_UTIL_GARBAGE_COLLECTOR_HH
+#define DAS_UTIL_GARBAGE_COLLECTOR_HH
 
 #include "disposable.hh"
-#include "ringbuffer.hh"
+#include "jack_ringbuffer.hh"
 #include "debug.hh"
 
 #include <boost/function.hpp>
@@ -76,7 +76,7 @@ class garbage_collector
     boost::function<void (disposable *)> disposer;
 
   private:
-    ringbuffer<disposable *> _rb;
+    jack_ringbuffer<disposable *> _rb;
     pthread_t _tid;
 };
 
@@ -84,4 +84,4 @@ class garbage_collector
 } // namespace das
 
 
-#endif // _DAS_GARBAGE_COLLECTOR_HH
+#endif // DAS_UTIL_GARBAGE_COLLECTOR_HH

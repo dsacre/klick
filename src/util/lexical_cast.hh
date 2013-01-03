@@ -7,13 +7,14 @@
  * (at your option) any later version.
  */
 
-#ifndef _DAS_LEXICAL_CAST_HH
-#define _DAS_LEXICAL_CAST_HH
+#ifndef DAS_UTIL_LEXICAL_CAST_HH
+#define DAS_UTIL_LEXICAL_CAST_HH
 
 #include <boost/lexical_cast.hpp>
 #include <boost/utility/enable_if.hpp>
 #include <boost/type_traits/is_base_of.hpp>
 #include <stdexcept>
+
 
 namespace das {
 
@@ -56,4 +57,4 @@ lexical_cast(S const & arg, E const & exc)
 } // namespace das
 
 
-#endif // _DAS_LEXICAL_CAST_HH
+#endif // DAS_UTIL_LEXICAL_CAST_HH

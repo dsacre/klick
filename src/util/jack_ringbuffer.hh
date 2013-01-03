@@ -7,8 +7,8 @@
  * (at your option) any later version.
  */
 
-#ifndef _DAS_RINGBUFFER_HH
-#define _DAS_RINGBUFFER_HH
+#ifndef DAS_UTIL_JACK_RINGBUFFER_HH
+#define DAS_UTIL_JACK_RINGBUFFER_HH
 
 
 #include <boost/noncopyable.hpp>
@@ -20,15 +20,15 @@ namespace das {
 
 
 template<typename T>
-class ringbuffer
+class jack_ringbuffer
   : boost::noncopyable
 {
   public:
-    ringbuffer(std::size_t size) {
+    jack_ringbuffer(std::size_t size) {
         _rb = jack_ringbuffer_create(size * sizeof(T));
     }
 
-    ~ringbuffer() {
+    ~jack_ringbuffer() {
         jack_ringbuffer_free(_rb);
     }
 
@@ -60,5 +60,5 @@ class ringbuffer
 } // namespace das
 
 
-#endif // _DAS_RINGBUFFER_HH
+#endif // DAS_UTIL_JACK_RINGBUFFER_HH
 

@@ -15,6 +15,8 @@
 #include <exception>
 #include <string>
 
+#include "util/logstream.hh"
+
 
 class Exit : public std::exception
 {
@@ -30,6 +32,9 @@ class Exit : public std::exception
 
 
 std::string data_file(std::string const & path);
+
+
+extern das::logstream logv;
 
 
 #endif // KLICK_MAIN_HH

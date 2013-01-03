@@ -59,7 +59,6 @@ sources = [
     'src/metronome_map.cc',
     'src/metronome_jack.cc',
     'src/position.cc',
-    'src/util/util.cc'
 ]
 
 # audio samples

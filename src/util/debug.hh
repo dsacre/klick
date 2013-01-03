@@ -7,8 +7,8 @@
  * (at your option) any later version.
  */
 
-#ifndef _DAS_DEBUG_HH
-#define _DAS_DEBUG_HH
+#ifndef DAS_UTIL_DEBUG_HH
+#define DAS_UTIL_DEBUG_HH
 
 
 #ifndef NDEBUG
@@ -18,9 +18,26 @@
     #define FAIL()    assert(false)
 #else
     #define ASSERT(f) ((void)0)
-    #define VERIFY(f) ((void)(f))
+    #define VERIFY(f) ((void)f)
     #define FAIL()    ((void)0)
 #endif
 
 
-#endif // _DAS_DEBUG_HH
+#if defined(ENABLE_DEBUG_FN) || defined(ENABLE_DEBUG_PRINT)
+    #include <iostream>
+#endif
+
+#ifdef ENABLE_DEBUG_FN
+    #define DEBUG_FN() std::cout << __PRETTY_FUNCTION__ << std::endl
+#else
+    #define DEBUG_FN() ((void)0)
+#endif
+
+#ifdef ENABLE_DEBUG_PRINT
+    #define DEBUG_PRINT(m)  std::cout << m << std::endl
+#else
+    #define DEBUG_PRINT(m)  ((void)0)
+#endif
+
+
+#endif // DAS_UTIL_DEBUG_HH

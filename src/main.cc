@@ -19,6 +19,9 @@
 #include <boost/shared_ptr.hpp>
 
 
+das::logstream logv(std::cout);
+
+
 static boost::shared_ptr<Klick> app;
 
 static int ret = EXIT_SUCCESS;

@@ -52,9 +52,9 @@ int main(int argc, char *argv[])
         app.reset(new Klick(argc, argv));
 
         // exit cleanly when terminated
-        signal(SIGINT,  signal_handler);
-        signal(SIGTERM, signal_handler);
-        signal(SIGHUP,  signal_handler);
+        std::signal(SIGINT,  signal_handler);
+        std::signal(SIGTERM, signal_handler);
+        std::signal(SIGHUP,  signal_handler);
 
         app->run();
 

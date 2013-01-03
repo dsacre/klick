@@ -13,6 +13,7 @@
 #define _KLICK_HH
 
 #include <string>
+#include <csignal>
 #include <boost/shared_ptr.hpp>
 #include <boost/scoped_ptr.hpp>
 #include <boost/noncopyable.hpp>
@@ -102,7 +103,7 @@ class Klick
 
     boost::shared_ptr<Metronome> _metro;
 
-    volatile bool _quit;
+    volatile std::sig_atomic_t _quit;
 };
 
 

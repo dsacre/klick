@@ -20,9 +20,9 @@ class Exit : public std::exception
 {
   public:
     Exit(int status) : _status(status) { }
-    virtual ~Exit() throw () { }
+    virtual ~Exit() throw() { }
 
-    int status() const throw() { return _status; }
+    int status() const { return _status; }
 
   protected:
     int _status;

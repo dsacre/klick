@@ -31,7 +31,8 @@
 #include <iostream>
 #include <stdexcept>
 #include <boost/bind.hpp>
-#include <unistd.h>
+#include <time.h>
+#include <stdint.h>
 
 #include "util/debug.hh"
 #include "util/string.hh"
@@ -396,7 +397,11 @@ void Klick::run_jack()
 {
     if (!_options->transport_enabled && _options->delay) {
         das::logv << "waiting for " << _options->delay << " seconds..." << std::endl;
-        ::usleep(static_cast<unsigned long>(_options->delay * 1000000));
+
+        ::uint64_t delay_nsec = static_cast< ::uint64_t>(_options->delay * 1000000000);
+        ::timespec ts = { static_cast< ::time_t>(delay_nsec / 1000000000),
+                          static_cast<long>(delay_nsec % 1000000000) };
+        ::nanosleep(&ts, NULL);
     }
 
     if (!_osc) {
@@ -412,7 +417,9 @@ void Klick::run_jack()
 
     for (;;)
     {
-        ::usleep(10000);
+        ::timespec ts = { 0, 10000000 };
+        ::nanosleep(&ts, NULL);
+
         _gc->collect();
 
 #ifdef ENABLE_TERMINAL

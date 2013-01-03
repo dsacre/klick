@@ -9,8 +9,8 @@
  * (at your option) any later version.
  */
 
-#ifndef _METRONOME_SIMPLE_HH
-#define _METRONOME_SIMPLE_HH
+#ifndef KLICK_METRONOME_SIMPLE_HH
+#define KLICK_METRONOME_SIMPLE_HH
 
 #include "audio.hh"
 #include "metronome.hh"
@@ -81,4 +81,4 @@ class MetronomeSimple
 };
 
 
-#endif // _METRONOME_SIMPLE_HH
+#endif // KLICK_METRONOME_SIMPLE_HH

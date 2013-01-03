@@ -9,8 +9,8 @@
  * (at your option) any later version.
  */
 
-#ifndef _KLICK_HH
-#define _KLICK_HH
+#ifndef KLICK_KLICK_HH
+#define KLICK_KLICK_HH
 
 #include <string>
 #include <csignal>
@@ -107,4 +107,4 @@ class Klick
 };
 
 
-#endif // _KLICK_HH
+#endif // KLICK_KLICK_HH

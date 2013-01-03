@@ -9,8 +9,8 @@
  * (at your option) any later version.
  */
 
-#ifndef _AUDIO_INTERFACE_JACK_HH
-#define _AUDIO_INTERFACE_JACK_HH
+#ifndef KLICK_AUDIO_INTERFACE_JACK_HH
+#define KLICK_AUDIO_INTERFACE_JACK_HH
 
 #include "audio_interface.hh"
 
@@ -64,4 +64,4 @@ class AudioInterfaceJack
 };
 
 
-#endif // _AUDIO_INTERFACE_JACK_HH
+#endif // KLICK_AUDIO_INTERFACE_JACK_HH

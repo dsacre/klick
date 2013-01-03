@@ -9,8 +9,8 @@
  * (at your option) any later version.
  */
 
-#ifndef _OSC_HANDLER_HH
-#define _OSC_HANDLER_HH
+#ifndef KLICK_OSC_HANDLER_HH
+#define KLICK_OSC_HANDLER_HH
 
 #include <string>
 #include <list>
@@ -111,4 +111,4 @@ class OSCHandler
 };
 
 
-#endif // _OSC_HANDLER_HH
+#endif // KLICK_OSC_HANDLER_HH

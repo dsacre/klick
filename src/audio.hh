@@ -9,8 +9,8 @@
  * (at your option) any later version.
  */
 
-#ifndef _AUDIO_HH
-#define _AUDIO_HH
+#ifndef KLICK_AUDIO_HH
+#define KLICK_AUDIO_HH
 
 #include <jack/types.h>
 #include <jack/transport.h>
@@ -24,4 +24,4 @@ typedef boost::shared_ptr<class AudioChunk> AudioChunkPtr;
 typedef boost::shared_ptr<class AudioChunk const> AudioChunkConstPtr;
 
 
-#endif // _AUDIO_HH
+#endif // KLICK_AUDIO_HH

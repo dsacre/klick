@@ -9,8 +9,8 @@
  * (at your option) any later version.
  */
 
-#ifndef _METRONOME_JACK_HH
-#define _METRONOME_JACK_HH
+#ifndef KLICK_METRONOME_JACK_HH
+#define KLICK_METRONOME_JACK_HH
 
 #include "audio.hh"
 #include "metronome.hh"
@@ -41,4 +41,4 @@ class MetronomeJack
 };
 
 
-#endif // _METRONOME_JACK_HH
+#endif // KLICK_METRONOME_JACK_HH

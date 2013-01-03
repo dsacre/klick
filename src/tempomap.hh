@@ -9,8 +9,8 @@
  * (at your option) any later version.
  */
 
-#ifndef _TEMPOMAP_HH
-#define _TEMPOMAP_HH
+#ifndef KLICK_TEMPOMAP_HH
+#define KLICK_TEMPOMAP_HH
 
 #include <string>
 #include <vector>
@@ -101,4 +101,4 @@ class TempoMap
 };
 
 
-#endif // _TEMPOMAP_HH
+#endif // KLICK_TEMPOMAP_HH

@@ -9,8 +9,8 @@
  * (at your option) any later version.
  */
 
-#ifndef _OPTIONS_HH
-#define _OPTIONS_HH
+#ifndef KLICK_OPTIONS_HH
+#define KLICK_OPTIONS_HH
 
 #include "audio.hh"
 
@@ -111,4 +111,4 @@ class Options
 };
 
 
-#endif // _OPTIONS_HH
+#endif // KLICK_OPTIONS_HH

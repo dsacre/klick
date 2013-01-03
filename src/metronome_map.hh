@@ -9,8 +9,8 @@
  * (at your option) any later version.
  */
 
-#ifndef _METRONOME_MAP_HH
-#define _METRONOME_MAP_HH
+#ifndef KLICK_METRONOME_MAP_HH
+#define KLICK_METRONOME_MAP_HH
 
 #include "metronome.hh"
 #include "tempomap.hh"
@@ -61,4 +61,4 @@ class MetronomeMap
 };
 
 
-#endif // _METRONOME_MAP_HH
+#endif // KLICK_METRONOME_MAP_HH

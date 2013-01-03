@@ -9,8 +9,8 @@
  * (at your option) any later version.
  */
 
-#ifndef _MAIN_HH
-#define _MAIN_HH
+#ifndef KLICK_MAIN_HH
+#define KLICK_MAIN_HH
 
 #include <exception>
 #include <string>
@@ -32,4 +32,4 @@ class Exit : public std::exception
 std::string data_file(std::string const & path);
 
 
-#endif // _MAIN_HH
+#endif // KLICK_MAIN_HH

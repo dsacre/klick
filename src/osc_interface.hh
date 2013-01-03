@@ -9,8 +9,8 @@
  * (at your option) any later version.
  */
 
-#ifndef _OSC_INTERFACE_HH
-#define _OSC_INTERFACE_HH
+#ifndef KLICK_OSC_INTERFACE_HH
+#define KLICK_OSC_INTERFACE_HH
 
 #include <string>
 #include <vector>
@@ -125,4 +125,4 @@ class OSCInterface
 };
 
 
-#endif // _OSC_INTERFACE_HH
+#endif // KLICK_OSC_INTERFACE_HH

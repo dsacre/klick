@@ -9,8 +9,8 @@
  * (at your option) any later version.
  */
 
-#ifndef _POSITION_HH
-#define _POSITION_HH
+#ifndef KLICK_POSITION_HH
+#define KLICK_POSITION_HH
 
 #include "audio.hh"
 #include "tempomap.hh"
@@ -103,4 +103,4 @@ class Position
 };
 
 
-#endif // _POSITION_HH
+#endif // KLICK_POSITION_HH

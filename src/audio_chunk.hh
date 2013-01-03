@@ -9,8 +9,8 @@
  * (at your option) any later version.
  */
 
-#ifndef _AUDIO_CHUNK_HH
-#define _AUDIO_CHUNK_HH
+#ifndef KLICK_AUDIO_CHUNK_HH
+#define KLICK_AUDIO_CHUNK_HH
 
 #include "audio.hh"
 
@@ -59,4 +59,4 @@ class AudioChunk
 };
 
 
-#endif // _AUDIO_CHUNK_HH
+#endif // KLICK_AUDIO_CHUNK_HH

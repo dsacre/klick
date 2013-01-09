@@ -67,7 +67,7 @@ void Options::print_usage()
         << " OR klick [options] --accompany-transport\n"
         << "\n"
         << "All Options:\n"
-        << "  -f, --tempo-map=FILENAME      load tempo map from file\n"
+        << "  -f, --tempo-map=FILENAME      load tempo map from file (- for stdin)\n"
         << "  -j, --accompany-transport     follow jack transport BBT info (no tempo map)\n"
         << "  -n, --client-name=NAME        set jack client name (default: klick)\n"
         << "  -p, --connect=PORT...         jack port(s) to connect to\n"

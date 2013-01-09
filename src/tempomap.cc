@@ -13,12 +13,14 @@
 
 #include <sstream>
 #include <fstream>
+#include <iostream>
 #include <iomanip>
 #include <cmath>
 #include <cstdlib>
-#include <boost/tokenizer.hpp>
 #include <functional>
 #include <algorithm>
+#include <boost/tokenizer.hpp>
+#include <boost/make_shared.hpp>
 
 #include "util/string.hh"
 #include "util/regex.hh"
@@ -217,19 +219,29 @@ TempoMapPtr TempoMap::join(TempoMapConstPtr const m1, TempoMapConstPtr const m2)
  */
 TempoMapPtr TempoMap::new_from_file(std::string const & filename)
 {
-    TempoMapPtr map(new TempoMap());
+    std::istream *input;
+    boost::shared_ptr<std::ifstream> file;
 
-    std::ifstream file(filename.c_str());
-
-    if (!file.is_open()) {
-        throw std::runtime_error(das::make_string() << "can't open tempo map file: '" << filename << "'");
+    if (filename == "-") {
+        input = &std::cin;
     }
+    else {
+        file = boost::make_shared<std::ifstream>(filename.c_str());
+
+        if (!file->is_open()) {
+            throw std::runtime_error(das::make_string() << "can't open tempo map file: '" << filename << "'");
+        }
+
+        input = file.get();
+    }
+
+    TempoMapPtr map(new TempoMap());
 
     std::string line;
     int lineno = 0;
 
-    while (!file.eof()) {
-        std::getline(file, line);
+    while (!input->eof()) {
+        std::getline(*input, line);
         lineno++;
 
         // discard blank lines right away

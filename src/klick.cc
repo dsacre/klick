@@ -125,7 +125,7 @@ void Klick::setup_sndfile()
 void Klick::load_tempomap()
 {
     if (_options->filename.length()) {
-        logv << "loading tempo map from file" << std::endl;
+        logv << "loading tempo map from file '" << _options->filename << "'" << std::endl;
         _map = TempoMap::new_from_file(_options->filename);
     } else if (!_options->cmdline.empty()) {
         logv << "loading tempo map from command line" << std::endl;

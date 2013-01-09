@@ -16,95 +16,83 @@
 #include <iomanip>
 #include <cmath>
 #include <cstdlib>
-#include <regex.h>
 #include <boost/tokenizer.hpp>
 #include <functional>
 #include <algorithm>
 
 #include "util/string.hh"
+#include "util/regex.hh"
 #include "util/lexical_cast.hh"
 
 typedef boost::char_separator<char> char_sep;
 typedef boost::tokenizer<char_sep> tokenizer;
 
 
-#define REGEX_LABEL     "([[:alnum:]_-]+)"
-#define REGEX_INT       "([[:digit:]]+)"
-#define REGEX_FLOAT     "([[:digit:]]+(\\.[[:digit:]]*)?|\\.[[:digit:]]+)"
-#define REGEX_PATTERN   "([Xx.]+)"
-
-
-static inline bool is_specified(::regmatch_t const &m) {
-    return ((m.rm_eo - m.rm_so) != 0);
-}
-static inline std::string extract_string(std::string const &s, ::regmatch_t const &m) {
-    int len = m.rm_eo - m.rm_so;
-    return len ? std::string(s.c_str() + m.rm_so, len) : "";
-}
-static inline int extract_int(std::string const &s, ::regmatch_t const &m) {
-    int len = m.rm_eo - m.rm_so;
-    return len ? atoi(std::string(s.c_str() + m.rm_so, len).c_str()) : 0;
-}
-static inline float extract_float(std::string const &s, ::regmatch_t const &m) {
-    int len = m.rm_eo - m.rm_so;
-    return len ? atof(std::string(s.c_str() + m.rm_so, len).c_str()) : 0.0f;
-}
-
+#define LABEL   "([[:alnum:]_-]+)"
+#define INT     "([[:digit:]]+)"
+#define FLOAT   "([[:digit:]]+(\\.[[:digit:]]*)?|\\.[[:digit:]]+)"
+#define PATTERN "([Xx.]+)"
 
 // matches a line that contains nothing but whitespace or comments
-static char const regex_blank[] = "^[[:blank:]]*(#.*)?$";
+static das::regex const REGEX_BLANK(
+    "^[[:blank:]]*(#.*)?$"
+);
 
 // matches any valid line in a tempomap file
-static char const regex_valid[] =
+static das::regex const REGEX_VALID(
     // label
-    "^[[:blank:]]*("REGEX_LABEL":)?" \
+    "^[[:blank:]]*(" LABEL ":)?" \
     // bars
-    "[[:blank:]]*"REGEX_INT"" \
+    "[[:blank:]]*" INT "" \
     // meter
-    "([[:blank:]]+"REGEX_INT"/"REGEX_INT")?" \
+    "([[:blank:]]+" INT "/" INT ")?" \
     // tempo
-    "[[:blank:]]+"REGEX_FLOAT"(-"REGEX_FLOAT"|((,"REGEX_FLOAT")*))?" \
+    "[[:blank:]]+" FLOAT "(-" FLOAT "|((," FLOAT ")*))?" \
     // pattern
-    "([[:blank:]]+"REGEX_PATTERN")?" \
+    "([[:blank:]]+" PATTERN ")?" \
     // volume
-    "([[:blank:]]+"REGEX_FLOAT")?" \
+    "([[:blank:]]+" FLOAT ")?" \
     // comment
-    "[[:blank:]]*(#.*)?$";
+    "[[:blank:]]*(#.*)?$"
+);
 
-static int const
-    RE_NMATCHES = 22,
-    IDX_LABEL   =  2,
-    IDX_BARS    =  3,
-    IDX_BEATS   =  5,
-    IDX_DENOM   =  6,
-    IDX_TEMPO   =  7,
-    IDX_TEMPO2  = 10,
-    IDX_TEMPI   = 12,
-    IDX_PATTERN = 17,
-    IDX_VOLUME  = 19;
+static int const IDX_LABEL   =  2,
+                 IDX_BARS    =  3,
+                 IDX_BEATS   =  5,
+                 IDX_DENOM   =  6,
+                 IDX_TEMPO   =  7,
+                 IDX_TEMPO2  = 10,
+                 IDX_TEMPI   = 12,
+                 IDX_PATTERN = 17,
+                 IDX_VOLUME  = 19,
+                 RE_NMATCHES = 22;
 
 
 // matches valid tempo parameters on the command line
-static char const regex_cmdline[] =
+static das::regex const REGEX_CMDLINE(
     // bars
-    "^[[:blank:]]*("REGEX_INT"[[:blank:]]+)?" \
+    "^[[:blank:]]*(" INT "[[:blank:]]+)?" \
     // meter
-    "("REGEX_INT"/"REGEX_INT"[[:blank:]]+)?" \
+    "(" INT "/" INT "[[:blank:]]+)?" \
     // tempo
-    REGEX_FLOAT"(-"REGEX_FLOAT"/"REGEX_FLOAT")?" \
+    FLOAT "(-" FLOAT "/" FLOAT ")?" \
     // pattern
-    "([[:blank:]]+"REGEX_PATTERN")?[[:blank:]]*$";
+    "([[:blank:]]+" PATTERN ")?[[:blank:]]*$"
+);
 
-static int const
-    RE_NMATCHES_CMD = 15,
-    IDX_BARS_CMD    =  2,
-    IDX_BEATS_CMD   =  4,
-    IDX_DENOM_CMD   =  5,
-    IDX_TEMPO_CMD   =  6,
-    IDX_TEMPO2_CMD  =  9,
-    IDX_ACCEL_CMD   = 11,
-    IDX_PATTERN_CMD = 14;
+static int const IDX_BARS_CMD    =  2,
+                 IDX_BEATS_CMD   =  4,
+                 IDX_DENOM_CMD   =  5,
+                 IDX_TEMPO_CMD   =  6,
+                 IDX_TEMPO2_CMD  =  9,
+                 IDX_ACCEL_CMD   = 11,
+                 IDX_PATTERN_CMD = 14,
+                 RE_NMATCHES_CMD = 15;
 
+#undef LABEL
+#undef INT
+#undef FLOAT
+#undef PATTERN
 
 
 TempoMap::Pattern TempoMap::parse_pattern(std::string const &s, int nbeats)
@@ -237,14 +225,6 @@ TempoMapPtr TempoMap::new_from_file(std::string const & filename)
         throw std::runtime_error(das::make_string() << "can't open tempo map file: '" << filename << "'");
     }
 
-    ::regex_t re_blank, re;
-    ::regmatch_t match[RE_NMATCHES];
-    // compile the regexes
-    ::regcomp(&re_blank, regex_blank, REG_EXTENDED | REG_NOSUB);
-    ::regcomp(&re, regex_valid, REG_EXTENDED);
-    boost::shared_ptr<void> foo(&re_blank, ::regfree);
-    boost::shared_ptr<void> bar(&re, ::regfree);
-
     std::string line;
     int lineno = 0;
 
@@ -253,29 +233,30 @@ TempoMapPtr TempoMap::new_from_file(std::string const & filename)
         lineno++;
 
         // discard blank lines right away
-        if (::regexec(&re_blank, line.c_str(), 0, NULL, 0) == 0) {
+        if (REGEX_BLANK.match(line)) {
             continue;
         }
 
         try {
             // check if this line matches the regex
-            if (::regexec(&re, line.c_str(), RE_NMATCHES, match, 0) != 0) {
+            das::regex::matches matches = REGEX_VALID.match(line, RE_NMATCHES);
+            if (!matches) {
                 throw ParseError("malformed tempo map entry");
             }
 
             Entry e;
 
-            e.label   = extract_string(line, match[IDX_LABEL]);
-            e.bars    = extract_int(line, match[IDX_BARS]);
-            e.tempo   = extract_float(line, match[IDX_TEMPO]);
-            e.tempo2  = extract_float(line, match[IDX_TEMPO2]);   // 0 if empty
-            e.beats   = is_specified(match[IDX_BEATS]) ? extract_int(line, match[IDX_BEATS]) : 4;
-            e.denom   = is_specified(match[IDX_DENOM]) ? extract_int(line, match[IDX_DENOM]) : 4;
-            e.pattern = parse_pattern(extract_string(line, match[IDX_PATTERN]), e.beats);
-            e.volume  = is_specified(match[IDX_VOLUME]) ? extract_float(line, match[IDX_VOLUME]) : 1.0f;
+            e.label   = matches[IDX_LABEL];
+            e.bars    = das::lexical_cast<int>(matches[IDX_BARS]);
+            e.tempo   = das::lexical_cast<float>(matches[IDX_TEMPO]);
+            e.tempo2  = das::lexical_cast<float>(matches[IDX_TEMPO2], 0);
+            e.beats   = das::lexical_cast<int>(matches[IDX_BEATS], 4);
+            e.denom   = das::lexical_cast<int>(matches[IDX_DENOM], 4);
+            e.pattern = parse_pattern(matches[IDX_PATTERN], e.beats);
+            e.volume  = das::lexical_cast<float>(matches[IDX_VOLUME], 1.0f);
 
-            if (is_specified(match[IDX_TEMPI])) {
-                e.tempi = parse_tempi(extract_string(line, match[IDX_TEMPI]), e.tempo, e.beats * e.bars);
+            if (matches.has(IDX_TEMPI)) {
+                e.tempi = parse_tempi(matches[IDX_TEMPI], e.tempo, e.beats * e.bars);
                 e.tempo = 0.0f;
             }
 
@@ -299,36 +280,32 @@ TempoMapPtr TempoMap::new_from_cmdline(std::string const & line)
 {
     TempoMapPtr map(new TempoMap());
 
-    ::regex_t re;
-    ::regmatch_t match[RE_NMATCHES_CMD];
-    ::regcomp(&re, regex_cmdline, REG_EXTENDED);
-    boost::shared_ptr<void> foo(&re, ::regfree);
-
     try {
-        if (::regexec(&re, line.c_str(), RE_NMATCHES_CMD, match, 0) != 0) {
+        das::regex::matches matches = REGEX_CMDLINE.match(line, RE_NMATCHES_CMD);
+        if (!matches) {
             throw ParseError("malformed tempo map string");
         }
 
         Entry e;
 
         e.label   = "";
-        e.bars    = is_specified(match[IDX_BARS_CMD]) ? extract_int(line, match[IDX_BARS_CMD]) : -1;
-        e.beats   = is_specified(match[IDX_BEATS_CMD]) ? extract_int(line, match[IDX_BEATS_CMD]) : 4;
-        e.denom   = is_specified(match[IDX_DENOM_CMD]) ? extract_int(line, match[IDX_DENOM_CMD]) : 4;
-        e.tempo   = extract_float(line, match[IDX_TEMPO_CMD]);
+        e.bars    = das::lexical_cast<int>(matches[IDX_BARS_CMD], -1);
+        e.beats   = das::lexical_cast<int>(matches[IDX_BEATS_CMD], 4);
+        e.denom   = das::lexical_cast<int>(matches[IDX_DENOM_CMD], 4);
+        e.tempo   = das::lexical_cast<float>(matches[IDX_TEMPO_CMD]);
         e.tempo2  = 0.0f;
-        e.pattern = parse_pattern(extract_string(line, match[IDX_PATTERN_CMD]), e.beats);
+        e.pattern = parse_pattern(matches[IDX_PATTERN_CMD], e.beats);
         e.volume  = 1.0f;
 
         check_entry(e);
 
-        if (!is_specified(match[IDX_TEMPO2_CMD])) {
+        if (!matches.has(IDX_TEMPO2_CMD)) {
             // no tempo change, just add this single entry
             map->_entries.push_back(e);
         } else {
             // tempo change...
-            e.tempo2 = extract_float(line, match[IDX_TEMPO2_CMD]);
-            float accel = extract_float(line, match[IDX_ACCEL_CMD]);
+            e.tempo2 = das::lexical_cast<float>(matches[IDX_TEMPO2_CMD]);
+            float accel = das::lexical_cast<float>(matches[IDX_ACCEL_CMD]);
             if (accel <= 0.0f) {
                 throw ParseError("accel must be greater than zero");
             }

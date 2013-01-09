@@ -12,13 +12,6 @@
 
 #include <string>
 #include <sstream>
-#include <vector>
-#include <stdexcept>
-
-#include <boost/shared_ptr.hpp>
-#include <boost/noncopyable.hpp>
-
-#include <regex.h>
 
 
 namespace das {
@@ -48,45 +41,6 @@ class make_string
 
 
 
-class regex
-  : boost::noncopyable
-{
-  public:
-    struct compile_error
-      : public std::runtime_error
-    {
-        compile_error(std::string const & w)
-          : std::runtime_error(w)
-        {
-        }
-    };
-
-    regex(std::string const & pattern, bool complete=false) {
-        std::string p = complete ? ("^" + pattern + "$") : pattern;
-
-        int error = ::regcomp(&_preg, p.c_str(), REG_EXTENDED | REG_NOSUB);
-        _freer.reset(&_preg, ::regfree);
-
-        if (error) {
-            std::size_t bufsize = ::regerror(error, &_preg, NULL, 0);
-            std::vector<char> buf(bufsize);
-            ::regerror(error, &_preg, &(*buf.begin()), bufsize);
-
-            throw compile_error(&*buf.begin());
-        }
-    }
-
-    bool match(std::string const & str) {
-        return ::regexec(&_preg, str.c_str(), 0, NULL, 0) == 0;
-    }
-
-  private:
-    ::regex_t _preg;
-    boost::shared_ptr<void> _freer;
-};
-
-
-
 inline std::string indent(std::string const & s, int n)
 {
     std::string ws(n, ' ');
@@ -103,5 +57,6 @@ inline std::string indent(std::string const & s, int n)
 
 
 } // namespace das
+
 
 #endif // DAS_UTIL_STRING_HH

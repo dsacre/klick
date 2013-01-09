@@ -100,7 +100,7 @@ TempoMap::Pattern TempoMap::parse_pattern(std::string const &s, int nbeats)
     Pattern pattern;
 
     if (!s.empty()) {
-        if ((int)s.length() != nbeats) {
+        if (static_cast<int>(s.length()) != nbeats) {
             throw ParseError("pattern length doesn't match number of beats");
         }
         pattern.resize(nbeats);
@@ -310,7 +310,7 @@ TempoMapPtr TempoMap::new_from_cmdline(std::string const & line)
                 throw ParseError("accel must be greater than zero");
             }
             int bars_total = e.bars;
-            int bars_accel = (int)ceilf(accel * fabs(e.tempo2 - e.tempo));
+            int bars_accel = static_cast<int>(std::ceil(accel * std::abs(e.tempo2 - e.tempo)));
 
             if (bars_total == -1 || bars_total > bars_accel) {
                 e.bars = bars_accel;

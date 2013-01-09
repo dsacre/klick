@@ -54,7 +54,7 @@ void MetronomeJack::process_callback(sample_t * /*buffer*/, nframes_t nframes)
 
     // convert BBT position to a frame number in this period
     double frames_per_beat = _audio.samplerate() * 60.0 / pos.beats_per_minute;
-    nframes_t offset = (nframes_t)(frames_per_beat * (1.0 - (pos.tick / pos.ticks_per_beat)));
+    nframes_t offset = static_cast<nframes_t>(frames_per_beat * (1.0 - (pos.tick / pos.ticks_per_beat)));
     bool emphasis;
 
     // avoid playing the same click twice due to rounding errors
@@ -63,7 +63,7 @@ void MetronomeJack::process_callback(sample_t * /*buffer*/, nframes_t nframes)
         return;
     }
 
-    if (offset % (nframes_t)frames_per_beat == 0) {
+    if (offset % static_cast<nframes_t>(frames_per_beat) == 0) {
         // click starts at first frame. pos already refers to this beat
         offset = 0;
         emphasis = (pos.beat == 1);
@@ -79,7 +79,7 @@ void MetronomeJack::process_callback(sample_t * /*buffer*/, nframes_t nframes)
     else if (offset < nframes) {
         // click starts somewhere during this period. since pos is the position at the start
         // of the period, the click played is actually at "pos + 1"
-        emphasis = (pos.beat == (int)pos.beats_per_bar);
+        emphasis = (pos.beat == static_cast<int>(pos.beats_per_bar));
 
         _last_click_frame = pos.frame + offset;
     }

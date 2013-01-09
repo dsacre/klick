@@ -127,7 +127,7 @@ void MetronomeSimple::tap(double now)
 
     _taps.push_back(now);
 
-    if ((int)_taps.size() > MAX_TAPS) {
+    if (static_cast<int>(_taps.size()) > MAX_TAPS) {
         _taps.pop_front();
     }
 
@@ -161,7 +161,7 @@ void MetronomeSimple::process_callback(sample_t * /*buffer*/, nframes_t nframes)
 {
     if (_tapped) {
         // TODO: this is crap. read user's mind instead
-        nframes_t delta = (nframes_t)(TAP_DIFF * _audio.samplerate());
+        nframes_t delta = static_cast<nframes_t>(TAP_DIFF * _audio.samplerate());
 
         if (_frame - _prev < delta) {
             // delay next beat
@@ -185,7 +185,7 @@ void MetronomeSimple::process_callback(sample_t * /*buffer*/, nframes_t nframes)
 
         if (_pattern.size()) {
             // play click, user-defined pattern
-            ASSERT((int)_pattern.size() == std::max(1, _beats));
+            ASSERT(static_cast<int>(_pattern.size()) == std::max(1, _beats));
             if (_pattern[_beat] != TempoMap::BEAT_SILENT) {
                 bool emphasis = (_pattern[_beat] == TempoMap::BEAT_EMPHASIS);
                 play_click(emphasis, offset);
@@ -208,7 +208,7 @@ void MetronomeSimple::process_callback(sample_t * /*buffer*/, nframes_t nframes)
         }
 
         _prev = _next;
-        _next += (nframes_t)(_audio.samplerate() * 240.0 / (_current_tempo * _denom));
+        _next += static_cast<nframes_t>(_audio.samplerate() * 240.0 / (_current_tempo * _denom));
 
         if (++_beat >= _beats) {
             _beat = 0;

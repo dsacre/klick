@@ -20,6 +20,7 @@ opts.AddVariables(
     BoolVariable('OSC', 'OSC support', True),
     BoolVariable('TERMINAL', 'terminal control support', True),
     BoolVariable('RUBBERBAND', 'use Rubber Band for pitch shifting', False),
+    BoolVariable('GETOPT_LONG', 'enable long options using getopt_long()', True),
 )
 opts.Update(env)
 opts.Save('scache.conf', env)
@@ -91,6 +92,9 @@ if env['TERMINAL']:
 if env['RUBBERBAND']:
     env.ParseConfig('pkg-config --cflags --libs rubberband')
     env.Append(CPPDEFINES = ['ENABLE_RUBBERBAND'])
+
+if env['GETOPT_LONG']:
+    env.Append(CPPDEFINES = ['ENABLE_GETOPT_LONG'])
 
 env.Program('klick', sources)
 Default('klick')

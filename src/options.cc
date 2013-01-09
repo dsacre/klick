@@ -17,6 +17,9 @@
 #include <boost/tokenizer.hpp>
 #include <cstdlib>
 #include <unistd.h>
+#ifdef ENABLE_GETOPT_LONG
+  #include <getopt.h>
+#endif
 
 #include "util/lexical_cast.hh"
 
@@ -25,23 +28,23 @@ typedef boost::tokenizer<char_sep> tokenizer;
 
 
 Options::Options()
-  : auto_connect(false),
-    use_osc(false),
-    interactive(false),
-    follow_transport(false),
-    preroll(PREROLL_NONE),
-    tempo_multiplier(1.0),
-    output_samplerate(48000),
-    click_sample(0),
-    emphasis_mode(EMPHASIS_MODE_NORMAL),
-    volume_emphasis(1.0),
-    volume_normal(1.0),
-    pitch_emphasis(1.0),
-    pitch_normal(1.0),
-    transport_enabled(false),
-    transport_master(false),
-    delay(0.0f),
-    verbose(false)
+  : auto_connect(false)
+  , use_osc(false)
+  , interactive(false)
+  , follow_transport(false)
+  , preroll(PREROLL_NONE)
+  , tempo_multiplier(1.0)
+  , output_samplerate(48000)
+  , click_sample(0)
+  , emphasis_mode(EMPHASIS_MODE_NORMAL)
+  , volume_emphasis(1.0)
+  , volume_normal(1.0)
+  , pitch_emphasis(1.0)
+  , pitch_normal(1.0)
+  , transport_enabled(false)
+  , transport_master(false)
+  , delay(0.0f)
+  , verbose(false)
 {
 }
 
@@ -56,44 +59,45 @@ void Options::print_usage()
 {
     std::cout
         << "Usage:\n"
-        << "  klick [options] [bars] [meter] tempo[-tempo2/accel] [pattern]\n"
-        << "  klick [options] -f filename\n"
+        << "    klick [options] [bars] [meter] tempo[-tempo2/accel] [pattern]\n"
+        << " OR klick [options] --tempo-map=FILENAME\n"
 #ifdef ENABLE_TERMINAL
-        << "  klick [options] -i\n"
+        << " OR klick [options] --interactive\n"
 #endif
-        << "  klick [options] -j\n"
+        << " OR klick [options] --accompany-transport\n"
         << "\n"
-        << "Options:\n"
-        << "  -f filename       load tempo map from file\n"
-        << "  -j                no tempo map, just follow jack transport\n"
-        << "  -n name           set jack client name\n"
-        << "  -p port,..        jack port(s) to connect to\n"
-        << "  -P                automatically connect to hardware ports\n"
+        << "All Options:\n"
+        << "  -f, --tempo-map=FILENAME      load tempo map from file\n"
+        << "  -j, --accompany-transport     follow jack transport BBT info (no tempo map)\n"
+        << "  -n, --client-name=NAME        set jack client name (default: klick)\n"
+        << "  -p, --connect=PORT...         jack port(s) to connect to\n"
+        << "  -P, --auto-connect            connect to the first two system output ports\n"
 #ifdef ENABLE_OSC
-        << "  -o port           OSC port to listen on\n"
+        << "  -o, --osc-port=PORT           OSC port to listen on\n"
 #endif
 #ifdef ENABLE_TERMINAL
-        << "  -i                interactive mode\n"
+        << "  -i, --interactive             interactive mode\n"
 #endif
-        << "  -W filename       export click track to audio file\n"
-        << "  -r samplerate     sample rate of export (default: 48000)\n"
-        << "  -s number         use built-in sounds:\n"
-        << "                      0: square wave (default)\n"
-        << "                      1: sine wave\n"
-        << "                      2: noise\n"
-        << "                      3: acoustic bell/click\n"
-        << "  -S file[,file]    load sounds from file(s)\n"
-        << "  -e                no emphasized beats\n"
-        << "  -E                emphasized beats only\n"
-        << "  -v mult[,mult]    adjust playback volume (default: 1.0)\n"
-        << "  -w mult[,mult]    adjust playback pitch (default: 1.0)\n"
-        << "  -t                enable jack transport\n"
-        << "  -T                become transport master (implies -t)\n"
-        << "  -d seconds        delay before starting playback\n"
-        << "  -c bars           pre-roll. use -c 0 for 2 beats\n"
-        << "  -l label          start playback at the given label\n"
-        << "  -x multiplier     multiply tempo by the given factor\n"
-        << "  -h                show this help\n"
+        << "  -W, --output-file=FILENAME    export click track to file (wav, flac, ogg)\n"
+        << "  -r, --sample-rate=SAMPLERATE  sample rate of export (default: 48000)\n"
+        << "  -s, --sound=NUMBER            use built-in sounds:\n"
+        << "                                    0: square wave (default)\n"
+        << "                                    1: sine wave\n"
+        << "                                    2: noise\n"
+        << "                                    3: acoustic bell/click\n"
+        << "  -S, --sound-files=FILE[,FILE] load custom sounds from file(s)\n"
+        << "  -e, --no-emphasis             no emphasized beats\n"
+        << "  -E, --emphasis-only           emphasize all beats\n"
+        << "  -v, --volume=MULT,[MULT]      adjust playback volume (default: 1.0)\n"
+        << "  -w, --pitch=MULT[,MULT]       adjust playback pitch (default: 1.0)\n"
+        << "  -t, --transport               enable jack transport\n"
+        << "  -T, --transport-master        become transport master (implies -t)\n"
+        << "  -d, --start-delay=SECONDS     delay before starting playback\n"
+        << "  -c, --pre-roll=BARS           pre-roll. use -c 0 for 2 beats\n"
+        << "  -l, --start-label=LABEL       start playback at the given label\n"
+        << "  -x, --speed=MULTIPLIER        multiply tempo by the given factor\n"
+        << "  -h, --help                    show this help\n"
+        << "  -V, --version                 print klick version\n"
         << "\n"
         << "Tempo Map File Format:\n"
         << "  [label:] bars [meter] tempo [pattern] [volume]\n"
@@ -104,9 +108,37 @@ void Options::print_usage()
 void Options::parse(int argc, char *argv[])
 {
     int c;
-    char optstring[] = "+f:jn:p:Po:R:iW:r:s:S:eEv:w:tTd:c:l:x:LVh";
+    char optstring[] = "+f:jn:p:Po:R:iW:r:s:S:eEv:w:tTd:c:l:x:hVL";
 
-    if (argc < 2 || (argc == 2 && std::string(argv[1]) == "--help")) {
+#ifdef ENABLE_GETOPT_LONG
+    ::option longopts[] = {
+        { "tempo-map",            required_argument,  NULL, 'f' },
+        { "accompany-transport",  no_argument,        NULL, 'j' },
+        { "client-name",          required_argument,  NULL, 'n' },
+        { "connect",              required_argument,  NULL, 'p' },
+        { "auto-connect",         no_argument,        NULL, 'P' },
+        { "osc-port",             required_argument,  NULL, 'o' },
+        { "interactive",          no_argument,        NULL, 'i' },
+        { "output-file",          required_argument,  NULL, 'W' },
+        { "sample-rate",          required_argument,  NULL, 'r' },
+        { "sound",                required_argument,  NULL, 's' },
+        { "sound-file",           required_argument,  NULL, 'S' },
+        { "no-emphasis",          no_argument,        NULL, 'e' },
+        { "emphasis-only",        no_argument,        NULL, 'E' },
+        { "volume",               required_argument,  NULL, 'v' },
+        { "pitch",                required_argument,  NULL, 'w' },
+        { "transport",            no_argument,        NULL, 't' },
+        { "transport-master",     no_argument,        NULL, 'T' },
+        { "start-delay",          required_argument,  NULL, 'd' },
+        { "pre-roll",             required_argument,  NULL, 'c' },
+        { "start-label",          required_argument,  NULL, 'l' },
+        { "speed",                required_argument,  NULL, 'x' },
+        { "help",                 no_argument,        NULL, 'h' },
+        { "version",              no_argument,        NULL, 'V' }
+    };
+#endif
+
+    if (argc < 2) {
         // run with no arguments, print usage
         print_version();
         std::cout << std::endl;
@@ -114,7 +146,11 @@ void Options::parse(int argc, char *argv[])
         throw Exit(EXIT_SUCCESS);
     }
 
+#ifdef ENABLE_GETOPT_LONG
+    while ((c = ::getopt_long(argc, argv, optstring, longopts, NULL)) != -1) {
+#else
     while ((c = ::getopt(argc, argv, optstring)) != -1) {
+#endif
         switch (c) {
             case 'f':
                 filename = std::string(::optarg);
@@ -253,19 +289,19 @@ void Options::parse(int argc, char *argv[])
                 if (tempo_multiplier <= 0) throw InvalidArgument(c, "tempo multiplier");
                 break;
 
-            case 'L':
-                verbose = true;
+            case 'h':
+                print_version();
+                std::cout << std::endl;
+                print_usage();
+                throw Exit(EXIT_SUCCESS);
                 break;
 
             case 'V':
                 print_version();
                 throw Exit(EXIT_SUCCESS);
 
-            case 'h':
-                print_version();
-                std::cout << std::endl;
-                print_usage();
-                throw Exit(EXIT_SUCCESS);
+            case 'L':
+                verbose = true;
                 break;
 
             default:

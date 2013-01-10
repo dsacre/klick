@@ -27,12 +27,34 @@ Position::Position(TempoMapConstPtr tempomap, float_frames_t samplerate, float m
     _samplerate(samplerate),
     _multiplier(multiplier)
 {
+    reset();
+    calculate_entry_positions();
+}
+
+
+void Position::reset()
+{
+    _frame = 0.0;
+    _entry = _bar = _beat = 0;
+    _bar_total = 0;
+    _beat_total = 0;
+    _init = true;
+    _end = false;
+}
+
+
+void Position::calculate_entry_positions()
+{
+    _start_frames.clear();
+    _start_bars.clear();
+    _start_beats.clear();
+
     float_frames_t frame = 0.0;
     int bar = 0;
     int beat = 0;
 
     // calculate first frame of each tempomap entry
-    for (TempoMap::Entries::const_iterator i = tempomap->entries().begin(); i != tempomap->entries().end(); ++i) {
+    for (TempoMap::Entries::const_iterator i = _tempomap->entries().begin(); i != _tempomap->entries().end(); ++i) {
         _start_frames.push_back(frame);
         _start_bars.push_back(bar);
         _start_beats.push_back(beat);
@@ -53,18 +75,9 @@ Position::Position(TempoMapConstPtr tempomap, float_frames_t samplerate, float m
     _start_bars.push_back(bar);
     _start_beats.push_back(beat);
 
-    reset();
-}
-
-
-void Position::reset()
-{
-    _frame = 0.0;
-    _entry = _bar = _beat = 0;
-    _bar_total = 0;
-    _beat_total = 0;
-    _init = true;
-    _end = false;
+//    for (std::size_t n = 0; n != _start_frames.size(); ++n) {
+//        std::cout << std::fixed << "entry " << n << " starts at frame " << _start_frames[n] << ", bar " << _start_bars[n] << ", beat " << _start_beats[n] << std::endl;
+//    }
 }
 
 
@@ -77,6 +90,9 @@ void Position::set_start_label(std::string const & start_label)
     while (i->label != start_label) ++i;
     for ( ; i != _tempomap->entries().end(); ++i) t->add(*i);
     _tempomap = t;
+
+    reset();
+    calculate_entry_positions();
 }
 
 
@@ -96,6 +112,9 @@ void Position::add_preroll(int nbars)
 
     // join preroll and our actual tempomap
     _tempomap = TempoMap::join(preroll, _tempomap);
+
+    reset();
+    calculate_entry_positions();
 }
 
 

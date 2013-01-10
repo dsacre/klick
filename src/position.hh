@@ -74,6 +74,8 @@ class Position
     // reset, locate at start of tempomap
     void reset();
 
+    void calculate_entry_positions();
+
     // calculate length of entry or beat(s)
     float_frames_t frame_dist(TempoMap::Entry const & e, int start, int end) const;
 

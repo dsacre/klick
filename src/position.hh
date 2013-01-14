@@ -61,7 +61,7 @@ class Position
     int beat_total() const { return _beat_total; }
 
     // current tempomap entry
-    TempoMap::Entry const & map_entry() const {
+    TempoMap::Entry const & current_entry() const {
         return (*_tempomap)[_entry];
     }
 
@@ -73,7 +73,6 @@ class Position
   private:
     // reset, locate at start of tempomap
     void reset();
-
     void calculate_entry_positions();
 
     // calculate length of entry or beat(s)

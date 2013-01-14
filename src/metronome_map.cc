@@ -145,7 +145,7 @@ void MetronomeMap::timebase_callback(position_t *p)
     }
 
     // get the current tempomap entry
-    TempoMap::Entry const & e = _pos.map_entry();
+    TempoMap::Entry const & e = _pos.current_entry();
 
     p->valid = JackPositionBBT;
 

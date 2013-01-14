@@ -137,14 +137,14 @@ void Position::locate(nframes_t f)
         return;
     }
 
-    TempoMap::Entry const & e = (*_tempomap)[_entry];
+    TempoMap::Entry const & e = current_entry();
 
     // difference between start of entry and desired position
     float_frames_t diff = f - _start_frames[_entry];
     double secs = diff / _samplerate * _multiplier;
 
-    // constant tempo
     if (e.tempo && !e.tempo2) {
+        // constant tempo
         int nbeats = static_cast<int>((secs / 240.0 * e.tempo * e.denom));
 
         _bar  = nbeats / e.beats;
@@ -154,36 +154,13 @@ void Position::locate(nframes_t f)
         _bar_total = _start_bars[_entry] + _bar;
         _beat_total = _start_beats[_entry] + _bar * e.beats + _beat;
     }
-    // gradual tempo change
     else if (e.tempo && e.tempo2) {
-        int nbeats = 0;
+        // gradual tempo change
+        double tdiff_beat = (e.tempo2 - e.tempo) / (e.bars * e.beats);
 
-        // do a binary search for the beat at (or before) f.
-        // this is not the most efficient implementation possible,
-        // but good enough for now...
-        int low = 0;
-        int high = e.bars * e.beats;
-        float_frames_t v = f - _start_frames[_entry];
-
-        while (low <= high) {
-            int mid = (low + high) / 2;
-            float_frames_t d = frame_dist(e, 0, mid);
-            if (d > v) {
-                high = mid - 1;
-            } else if (d <= v) {
-                // unless there's a beat exactly at f, what we're really looking for
-                // is the last beat before f.
-                // check if mid+1 would be after f, in which case we're already done
-                float_frames_t dd = frame_dist(e, 0, mid + 1);
-                if (dd < v) {
-                    low = mid + 1;
-                } else {
-                    // found it
-                    nbeats = mid;
-                    break;
-                }
-            }
-        }
+        // this is the reverse of the formula from frame_dist().
+        // it's good to have a CAS that can figure this stuff out...
+        int nbeats = ((e.tempo * std::exp(tdiff_beat * secs * e.denom / 240.0)) - e.tempo) / tdiff_beat;
 
         _bar  = nbeats / e.beats;
         _beat = nbeats % e.beats;
@@ -192,8 +169,8 @@ void Position::locate(nframes_t f)
         _bar_total = _start_bars[_entry] + _bar;
         _beat_total = _start_beats[_entry] + _bar * e.beats + _beat;
     }
-    // tempo per beat
     else if (!e.tempo) {
+        // tempo per beat
         _bar = _beat = 0;
         _frame = _start_frames[_entry];
         _bar_total = _start_bars[_entry];
@@ -219,7 +196,7 @@ void Position::advance()
 
     _frame += dist_to_next();
 
-    TempoMap::Entry const & e = (*_tempomap)[_entry];
+    TempoMap::Entry const & e = current_entry();
 
     // move to next beat
     if (++_beat >= e.beats) {
@@ -245,7 +222,7 @@ Position::float_frames_t Position::dist_to_next() const
     if (_init) return 0.0;
     if (_end) return std::numeric_limits<float_frames_t>::max();
 
-    TempoMap::Entry const & e = (*_tempomap)[_entry];
+    TempoMap::Entry const & e = current_entry();
 
     return frame_dist(e, _bar * e.beats + _beat,
                          _bar * e.beats + _beat + 1);
@@ -263,12 +240,12 @@ Position::float_frames_t Position::frame_dist(TempoMap::Entry const & e, int sta
     int nbeats = end - start;
     double secs = 0.0;
 
-    // constant tempo
     if ((e.tempo && !e.tempo2) || (e.tempo && e.tempo == e.tempo2)) {
+        // constant tempo
         secs = nbeats * 240.0 / (e.tempo * e.denom);
     }
-    // gradual tempo change
     else if (e.tempo && e.tempo2) {
+        // gradual tempo change
         double tdiff = e.tempo2 - e.tempo;
 
         double t1 = static_cast<double>(e.tempo) + tdiff * (static_cast<double>(start) / (e.bars * e.beats));
@@ -277,8 +254,8 @@ Position::float_frames_t Position::frame_dist(TempoMap::Entry const & e, int sta
         double avg_tempo = (t1 - t2) / (std::log(t1) - std::log(t2));
         secs = (nbeats * 240.0) / (avg_tempo * e.denom);
     }
-    // different tempo for each beat
     else if (!e.tempo) {
+        // different tempo for each beat
         secs = std::accumulate(e.tempi.begin() + start,
                                e.tempi.begin() + end,
                                0.0,
@@ -296,7 +273,7 @@ Position::Tick const Position::tick() const
         return (Tick) { static_cast<nframes_t>(_frame), TempoMap::BEAT_SILENT, 0 };
     }
 
-    TempoMap::Entry const & e = (*_tempomap)[_entry];
+    TempoMap::Entry const & e = current_entry();
 
     TempoMap::BeatType t;
     if (e.pattern.empty()) {

@@ -21,6 +21,7 @@
 #include <algorithm>
 #include <boost/tokenizer.hpp>
 #include <boost/make_shared.hpp>
+#include <boost/bind.hpp>
 
 #include "util/string.hh"
 #include "util/regex.hh"
@@ -147,7 +148,7 @@ std::vector<float> TempoMap::parse_tempi(std::string const &s, float tempo1, int
 void TempoMap::check_entry(Entry const & e)
 {
     if ((e.tempo <= 0 && e.tempi.empty()) ||
-        std::find_if(e.tempi.begin(), e.tempi.end(), std::bind2nd(std::less_equal<float>(), 0.0f)) != e.tempi.end()) {
+        std::find_if(e.tempi.begin(), e.tempi.end(), boost::bind(std::less_equal<float>(), _1, 0.0f)) != e.tempi.end()) {
         throw ParseError("tempo must be greater than zero");
     }
     if (e.bars <= 0 && e.bars != -1) {

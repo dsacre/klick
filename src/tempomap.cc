@@ -230,7 +230,7 @@ TempoMapPtr TempoMap::new_from_file(std::string const & filename)
         file = boost::make_shared<std::ifstream>(filename.c_str());
 
         if (!file->is_open()) {
-            throw std::runtime_error(das::make_string() << "can't open tempo map file: '" << filename << "'");
+            throw std::runtime_error(das::make_string() << "can't open tempo map file '" << filename << "'");
         }
 
         input = file.get();

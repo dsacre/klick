@@ -1,6 +1,7 @@
 # -*- python -*-
 
 import os
+import SCons.Util
 
 version = '0.13.0-pre'
 
@@ -10,6 +11,15 @@ env = Environment(
     ],
     ENV = os.environ,
 )
+
+if os.environ.has_key('CXX'):
+    env.Replace(CXX = os.environ['CXX'])
+if os.environ.has_key('CXXFLAGS'):
+    env.Append(CXXFLAGS = SCons.Util.CLVar(os.environ['CXXFLAGS']))
+if os.environ.has_key('CPPFLAGS'):
+    env.Append(CXXFLAGS = SCons.Util.CLVar(os.environ['CPPFLAGS']))
+if os.environ.has_key('LDFLAGS'):
+    env.Append(LINKFLAGS = SCons.Util.CLVar(os.environ['LDFLAGS']))
 
 # build options
 opts = Variables('scache.conf')

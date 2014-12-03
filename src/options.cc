@@ -168,8 +168,8 @@ void Options::parse(int argc, char *argv[])
               { std::string str(::optarg);
                 char_sep sep(",");
                 tokenizer tok(str, sep);
-                for (tokenizer::iterator i = tok.begin(); i != tok.end(); ++i) {
-                    connect_ports.push_back(*i);
+                for (auto & t : tok) {
+                    connect_ports.push_back(t);
                 }
               } break;
 
@@ -214,7 +214,7 @@ void Options::parse(int argc, char *argv[])
               { std::string str(::optarg);
                 char_sep sep(",");
                 tokenizer tok(str, sep);
-                tokenizer::iterator i = tok.begin();
+                auto i = tok.begin();
                 click_filename_emphasis = *i;
                 if (++i == tok.end()) {
                     click_filename_normal = click_filename_emphasis;
@@ -237,7 +237,7 @@ void Options::parse(int argc, char *argv[])
               { std::string str(::optarg);
                 char_sep sep(",");
                 tokenizer tok(str, sep);
-                tokenizer::iterator i = tok.begin();
+                auto i = tok.begin();
                 volume_emphasis = das::lexical_cast<float>(*i, InvalidArgument(c, "volume"));
                 i++;
                 if (i == tok.end()) {
@@ -251,7 +251,7 @@ void Options::parse(int argc, char *argv[])
               { std::string str(::optarg);
                 char_sep sep(",");
                 tokenizer tok(str, sep);
-                tokenizer::iterator i = tok.begin();
+                auto i = tok.begin();
                 pitch_emphasis = das::lexical_cast<float>(*i, InvalidArgument(c, "pitch"));
                 i++;
                 if (i == tok.end()) {

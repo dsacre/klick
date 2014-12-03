@@ -15,15 +15,11 @@
 #include <string>
 #include <vector>
 #include <list>
+#include <functional>
+#include <type_traits>
 #include <stdexcept>
 
-#include <boost/function.hpp>
 #include <boost/variant.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/preprocessor/repetition/repeat.hpp>
-#include <boost/preprocessor/repetition/repeat_from_to.hpp>
-#include <boost/preprocessor/repetition/enum_params.hpp>
-#include <boost/preprocessor/repetition/enum_binary_params.hpp>
 #include <boost/noncopyable.hpp>
 
 #include <lo/lo_types.h>
@@ -75,7 +71,7 @@ class OSCInterface
         Address src;
     };
 
-    typedef boost::function<void (Message const &)> Callback;
+    typedef std::function<void (Message const &)> Callback;
 
 
     OSCInterface(std::string const & port);
@@ -88,27 +84,23 @@ class OSCInterface
 
 
     // basic send function
-    void send(Address const & target, std::string const & path, ArgumentVector const & args = ArgumentVector());
+    void send(Address const & target, std::string const & path, ArgumentVector const & args = {});
 
     // allow multiple recipients
-    void send(std::list<Address> const & targets, std::string const & path, ArgumentVector const & args = ArgumentVector()) {
-        for (std::list<Address>::const_iterator i = targets.begin(); i != targets.end(); ++i) {
-            send(*i, path, args);
+    void send(std::list<Address> const & targets, std::string const & path, ArgumentVector const & args = {}) {
+        for (auto & t : targets) {
+            send(t, path, args);
         }
     }
 
-    // allow arguments to be passed directly to send(), without manually filling a vector
-    #define PP_PUSH_BACK(z, n, arg) args.push_back(arg ## n);
-    #define PP_SEND(z, n, data) \
-        template <typename A, BOOST_PP_ENUM_PARAMS(n, typename T)> \
-        void send(A target, std::string const & path, BOOST_PP_ENUM_BINARY_PARAMS(n, const T, & t)) { \
-            ArgumentVector args; \
-            BOOST_PP_REPEAT_ ## z(n, PP_PUSH_BACK, t) \
-            send(target, path, args); \
-        }
-    BOOST_PP_REPEAT_FROM_TO(1, 10, PP_SEND, ~)
-    #undef PP_PUSH_BACK
-    #undef PP_SEND
+    // allow arguments to be passed directly to send(), without manually
+    // filling a vector
+    template <typename T, typename Head, typename... Tail>
+    typename std::enable_if<!std::is_same<Head, ArgumentVector>::value, void>::type
+    send(T && targets, std::string const & path, Head head, Tail... tail) {
+        ArgumentVector v = {head, tail...};
+        send(std::forward<T>(targets), path, v);
+    }
 
 
     std::string const & url() const { return _url; }

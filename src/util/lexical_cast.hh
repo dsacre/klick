@@ -10,10 +10,9 @@
 #ifndef DAS_UTIL_LEXICAL_CAST_HH
 #define DAS_UTIL_LEXICAL_CAST_HH
 
-#include <boost/lexical_cast.hpp>
-#include <boost/utility/enable_if.hpp>
-#include <boost/type_traits/is_base_of.hpp>
 #include <stdexcept>
+#include <type_traits>
+#include <boost/lexical_cast.hpp>
 
 
 namespace das {
@@ -42,7 +41,7 @@ T lexical_cast(S const & arg, T const & fallback)
 
 
 template<typename T, typename S, typename E>
-typename boost::enable_if<boost::is_base_of<std::exception, E>, T>::type
+typename std::enable_if<std::is_base_of<std::exception, E>::value, T>::type
 lexical_cast(S const & arg, E const & exc)
 {
     try {

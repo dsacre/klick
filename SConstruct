@@ -1,5 +1,3 @@
-# -*- python -*-
-
 import os
 import SCons.Util
 
@@ -9,6 +7,7 @@ env = Environment(
     CPPDEFINES = [
         ('VERSION', '\\"%s\\"' % version),
     ],
+    CXXFLAGS = ['-std=c++11'],
     ENV = os.environ,
 )
 

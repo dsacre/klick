@@ -14,8 +14,7 @@
 #include "jack_ringbuffer.hh"
 #include "debug.hh"
 
-#include <boost/function.hpp>
-#include <boost/bind.hpp>
+#include <functional>
 #include <boost/noncopyable.hpp>
 
 #include <pthread.h>
@@ -33,7 +32,7 @@ class garbage_collector
 {
   public:
     garbage_collector(std::size_t size = 255, pthread_t tid = 0)
-      : disposer(boost::bind(&garbage_collector::dispose, this, _1))
+      : disposer(std::bind(&garbage_collector::dispose, this, std::placeholders::_1))
       , _rb(size)
       , _tid(tid)
     {
@@ -72,8 +71,8 @@ class garbage_collector
         }
     }
 
-    // functor that calls this->dispose(), useful as deleter for boost::shared_ptr
-    boost::function<void (disposable *)> disposer;
+    // functor that calls this->dispose(), useful as deleter for std::shared_ptr
+    std::function<void (disposable *)> disposer;
 
   private:
     jack_ringbuffer<disposable *> _rb;

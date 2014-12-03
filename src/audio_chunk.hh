@@ -14,8 +14,6 @@
 
 #include "audio.hh"
 
-#include <boost/shared_array.hpp>
-
 #include "util/disposable.hh"
 
 
@@ -45,10 +43,9 @@ class AudioChunk
     nframes_t samplerate() const { return _samplerate; }
 
   private:
-    typedef boost::shared_array<sample_t> SamplePtr;
+    typedef std::unique_ptr<sample_t[]> SamplePtr;
 
     void resample(nframes_t samplerate);
-
 #ifdef ENABLE_RUBBERBAND
     void pitch_shift(float factor);
 #endif

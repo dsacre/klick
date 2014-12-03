@@ -14,11 +14,11 @@
 
 #include <string>
 #include <vector>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <stdexcept>
 
-typedef boost::shared_ptr<class TempoMap> TempoMapPtr;
-typedef boost::shared_ptr<class TempoMap const> TempoMapConstPtr;
+typedef std::shared_ptr<class TempoMap> TempoMapPtr;
+typedef std::shared_ptr<class TempoMap const> TempoMapConstPtr;
 
 
 class TempoMap
@@ -64,8 +64,8 @@ class TempoMap
     // get entry with label l, NULL if no such entry exists
     Entry const * entry(std::string const & l) const {
         if (l.empty()) return NULL;
-        for (Entries::const_iterator i = _entries.begin(); i != _entries.end(); ++i) {
-            if (i->label == l) return &*i;
+        for (auto & e : _entries) {
+            if (e.label == l) return &e;
         }
         return NULL;
     }

@@ -59,8 +59,8 @@ class MetronomeSimple
   private:
 
     static int const MAX_TAPS = 5;
-    static float const MAX_TAP_AGE = 3.0f;
-    static float const TAP_DIFF = 0.2f;
+    static float constexpr MAX_TAP_AGE = 3.0f;
+    static float constexpr TAP_DIFF = 0.2f;
 
     float _tempo;
     float _tempo_increment;

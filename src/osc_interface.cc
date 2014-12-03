@@ -136,8 +136,8 @@ void OSCInterface::send(Address const & target, std::string const & path, Argume
 {
     lo_message msg = lo_message_new();
 
-    for (ArgumentVector::const_iterator i = args.begin(); i != args.end(); ++i) {
-        boost::apply_visitor(AddArgumentVisitor(msg), *i);
+    for (auto & a : args) {
+        boost::apply_visitor(AddArgumentVisitor(msg), a);
     }
 
     lo_send_message_from(target.addr(), lo_server_thread_get_server(_thread), path.c_str(), msg);

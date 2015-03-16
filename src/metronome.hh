@@ -14,6 +14,7 @@
 
 #include "audio_interface.hh"
 #include "audio_chunk.hh"
+#include "main.hh"
 
 #include <boost/noncopyable.hpp>
 
@@ -43,8 +44,8 @@ class Metronome
     virtual void do_start() { }
     virtual void do_stop() { }
 
-    virtual void process_callback(sample_t *, nframes_t) = 0;
-    virtual void timebase_callback(position_t *) { }
+    virtual void process_callback(sample_t *, nframes_t) REALTIME = 0;
+    virtual void timebase_callback(position_t *) REALTIME { }
 
     virtual bool running() const = 0;
 

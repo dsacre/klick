@@ -13,6 +13,7 @@
 #define KLICK_AUDIO_INTERFACE_JACK_HH
 
 #include "audio_interface.hh"
+#include "main.hh"
 
 #include <string>
 #include <vector>
@@ -53,8 +54,8 @@ class AudioInterfaceJack
 
   private:
 
-    static int process_callback_(nframes_t, void *);
-    static void timebase_callback_(jack_transport_state_t, nframes_t, position_t *, int, void *);
+    static int process_callback_(nframes_t, void *) REALTIME;
+    static void timebase_callback_(jack_transport_state_t, nframes_t, position_t *, int, void *) REALTIME;
     static void shutdown_callback_(void *);
 
     jack_client_t *_client;

@@ -30,7 +30,6 @@ class MetronomeMap
         TempoMapConstPtr tempomap,
         float tempo_multiplier,
         bool transport,
-        bool master,
         int preroll,
         std::string const & start_label
     );
@@ -57,7 +56,6 @@ class MetronomeMap
     Position _pos;
 
     bool _transport_enabled;
-    bool _transport_master;
 };
 
 

@@ -332,7 +332,6 @@ void Klick::load_metronome()
                              _map,
                              _options->tempo_multiplier,
                              _options->transport_enabled,
-                             _options->transport_master,
                              _options->preroll,
                              _options->start_label);
         break;

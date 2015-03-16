@@ -26,7 +26,6 @@ MetronomeMap::MetronomeMap(
     TempoMapConstPtr tempomap,
     float tempo_multiplier,
     bool transport,
-    bool master,
     int preroll,
     std::string const & start_label
 )
@@ -34,7 +33,6 @@ MetronomeMap::MetronomeMap(
   , _frame(0)
   , _pos(tempomap, audio.samplerate(), tempo_multiplier)
   , _transport_enabled(transport)
-  , _transport_master(master)
 {
     ASSERT(tempomap);
     ASSERT(tempomap->size() > 0);

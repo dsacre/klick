@@ -14,14 +14,11 @@
 
 #include "audio.hh"
 
-#include "util/disposable.hh"
-
 
 /*
  * mono 32-bit float audio sample
  */
 class AudioChunk
-  : public das::disposable
 {
   public:
     // loads sample from file, converting to the given samplerate if samplerate is non-zero

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008  Dominic Sacré  <dominic.sacre@gmx.de>
+ * Copyright (C) 2015  Dominic Sacré  <dominic.sacre@gmx.de>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -10,73 +10,37 @@
 #ifndef DAS_UTIL_GARBAGE_COLLECTOR_HH
 #define DAS_UTIL_GARBAGE_COLLECTOR_HH
 
-#include "disposable.hh"
-#include "jack_ringbuffer.hh"
-#include "debug.hh"
-
-#include <functional>
+#include <memory>
+#include <list>
+#include <algorithm>
 #include <boost/noncopyable.hpp>
-
-#include <pthread.h>
 
 
 namespace das {
 
 
 /*
- * explicitly driven garbage collector, allowing objects to be deleted from a realtime thread.
- * since jack_ringbuffer is single-writer, only one thread is allowed to queue deletions.
+ * simple garbage collector that deletes objects held by a shared pointer
+ * once only its own reference to the object remains.
  */
 class garbage_collector
   : boost::noncopyable
 {
   public:
-    garbage_collector(std::size_t size = 255, pthread_t tid = 0)
-      : disposer(std::bind(&garbage_collector::dispose, this, std::placeholders::_1))
-      , _rb(size)
-      , _tid(tid)
+
+    void manage(std::shared_ptr<void> p)
     {
+        _pointers.push_back(p);
     }
 
-    ~garbage_collector()
+    void collect()
     {
+        auto it = std::remove_if(_pointers.begin(), _pointers.end(),
+                         [](std::shared_ptr<void> p) { return p.unique(); });
+        _pointers.erase(it, _pointers.end());
     }
 
-    // set the thread whose deletions are to be handled by the garbage collector
-    void set_thread(pthread_t tid) {
-        _tid = tid;
-    }
-
-    // if called from the realtime thread, queue object for deletion by the garbage collector,
-    // otherwise delete immediately
-    void dispose(disposable * p) {
-        if (pthread_self() != _tid) {
-            delete p;
-        } else {
-            queue_dispose(p);
-        }
-    }
-
-    // queue object for deletion
-    void queue_dispose(disposable * p) {
-        VERIFY(_rb.write(p));
-    }
-
-    // collect the garbage and delete it
-    void collect() {
-        while (_rb.read_space()) {
-            disposable * p;
-            _rb.read(p);
-            delete p;
-        }
-    }
-
-    // functor that calls this->dispose(), useful as deleter for std::shared_ptr
-    std::function<void (disposable *)> disposer;
-
-  private:
-    jack_ringbuffer<disposable *> _rb;
-    pthread_t _tid;
+    std::list<std::shared_ptr<void>> _pointers;
 };
 
 

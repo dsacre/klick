@@ -18,15 +18,12 @@
 
 #include <boost/noncopyable.hpp>
 
-#include "util/disposable.hh"
-
 
 /*
  * abstract metronome base class
  */
 class Metronome
-  : public das::disposable
-  , boost::noncopyable
+  : boost::noncopyable
 {
   public:
 

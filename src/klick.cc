@@ -42,7 +42,7 @@
 
 Klick::Klick(int argc, char *argv[])
   : _options(new Options)
-  , _gc(new das::garbage_collector(15))
+  , _gc(new das::garbage_collector)
   , _quit(false)
 {
     _options->parse(argc, argv);
@@ -107,8 +107,6 @@ void Klick::setup_jack()
     if (_options->auto_connect) {
         audio->autoconnect();
     }
-
-    _gc->set_thread(audio->client_thread());
 
     _audio = std::move(audio);
 }
@@ -206,10 +204,11 @@ AudioChunkPtr Klick::load_sample(std::string const & filename, float volume, flo
     AudioChunkPtr p;
 
     if (!filename.empty()) {
-        p.reset(new AudioChunk(filename, _audio->samplerate()), _gc->disposer);
+        p.reset(new AudioChunk(filename, _audio->samplerate()));
     } else {
-        p.reset(new AudioChunk(_audio->samplerate()), _gc->disposer);
+        p.reset(new AudioChunk(_audio->samplerate()));
     }
+    _gc->manage(p);
 
     if (volume != 1.0f) {
         p->adjust_volume(volume);
@@ -264,7 +263,8 @@ void Klick::set_sound_custom(std::string const & emphasis, std::string const & n
     }
     catch (std::runtime_error const & e) {
         std::cerr << e.what() << std::endl;
-        _click_emphasis.reset(new AudioChunk(_audio->samplerate()), _gc->disposer);
+        _click_emphasis.reset(new AudioChunk(_audio->samplerate()));
+        _gc->manage(_click_emphasis);
         _options->click_filename_emphasis = "";
     }
 
@@ -273,7 +273,8 @@ void Klick::set_sound_custom(std::string const & emphasis, std::string const & n
     }
     catch (std::runtime_error const & e) {
         std::cerr << e.what() << std::endl;
-        _click_normal.reset(new AudioChunk(_audio->samplerate()), _gc->disposer);
+        _click_normal.reset(new AudioChunk(_audio->samplerate()));
+        _gc->manage(_click_normal);
         _options->click_filename_normal = "";
     }
 
@@ -342,7 +343,8 @@ void Klick::load_metronome()
     }
 
     // store metronome in shared_ptr with custom deleter
-    _metro.reset(m, _gc->disposer);
+    _metro.reset(m);
+    _gc->manage(_metro);
 
     _metro->set_sound(_click_emphasis, _click_normal);
     _audio->set_process_callback(std::bind(&Metronome::process_callback, _metro, _1, _2));

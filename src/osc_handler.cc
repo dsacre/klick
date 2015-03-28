@@ -20,7 +20,8 @@
 #include "tempomap.hh"
 
 #include <iostream>
-#include <boost/bind.hpp>
+#include <functional>
+#include <algorithm>
 
 #include "util/debug.hh"
 #include "util/logstream.hh"
@@ -108,7 +109,7 @@ void OSCHandler::start()
 
 void OSCHandler::update()
 {
-    boost::shared_ptr<MetronomeSimple> m(metro_simple());
+    auto m = metro_simple();
     if (m) {
         if (_current_tempo != m->current_tempo()) {
             _current_tempo = m->current_tempo();
@@ -120,14 +121,16 @@ void OSCHandler::update()
 
 void OSCHandler::add_method(char const *path, char const *types, MessageHandler func)
 {
-    _osc->add_method(path, types, boost::bind(&OSCHandler::generic_callback, this, func, _1));
+    _osc->add_method(path, types, std::bind(&OSCHandler::generic_callback,
+                                            this, func, std::placeholders::_1));
 }
 
 
 template <typename M>
 void OSCHandler::add_method(char const *path, char const *types, MessageHandler func)
 {
-    _osc->add_method(path, types, boost::bind(&OSCHandler::type_specific_callback<M>, this, func, _1));
+    _osc->add_method(path, types, std::bind(&OSCHandler::type_specific_callback<M>,
+                                            this, func, std::placeholders::_1));
 }
 
 
@@ -146,10 +149,10 @@ template <typename M>
 void OSCHandler::type_specific_callback(MessageHandler func, Message const & msg)
 {
     try {
-        if (boost::dynamic_pointer_cast<M>(metro())) {
+        if (std::dynamic_pointer_cast<M>(metro())) {
             (this->*func)(msg);
         } else {
-            std::cerr << msg.path << ": " << "function not available for current metronome type" << std::endl;
+            std::cerr << msg.path << ": function not available for current metronome type" << std::endl;
         }
     }
     catch (OSCInterface::OSCError const & e) {
@@ -170,7 +173,7 @@ OSCInterface::Address OSCHandler::optional_address(Message const & msg, std::siz
 
 void OSCHandler::on_ping(Message const & msg)
 {
-    OSCInterface::Address addr(optional_address(msg));
+    auto addr = optional_address(msg);
 
     std::cout << "ping from " << msg.src.url() << std::endl;
     _osc->send(addr, "/klick/pong");
@@ -185,9 +188,9 @@ void OSCHandler::on_check(Message const & msg)
 
 void OSCHandler::on_register_client(Message const & msg)
 {
-    OSCInterface::Address addr(optional_address(msg));
+    auto addr = optional_address(msg);
 
-    ClientList::iterator i = find(_clients.begin(), _clients.end(), addr);
+    auto i = std::find(_clients.begin(), _clients.end(), addr);
     if (i == _clients.end()) {
         _clients.push_back(addr);
         logv << "client " << addr.url() << " registered" << std::endl;
@@ -197,9 +200,9 @@ void OSCHandler::on_register_client(Message const & msg)
 
 void OSCHandler::on_unregister_client(Message const & msg)
 {
-    OSCInterface::Address addr(optional_address(msg));
+    auto addr = optional_address(msg);
 
-    ClientList::iterator i = find(_clients.begin(), _clients.end(), addr);
+    auto i = std::find(_clients.begin(), _clients.end(), addr);
     if (i != _clients.end()) {
         _clients.erase(i);
         logv << "client " << addr.url() << " unregistered" << std::endl;
@@ -249,7 +252,7 @@ void OSCHandler::on_config_set_sound_custom(Message const & msg)
     _klick.set_sound_custom(emphasis, normal);
 
     std::string res_emphasis, res_normal;
-    boost::tie(res_emphasis, res_normal) = _klick.sound_custom();
+    std::tie(res_emphasis, res_normal) = _klick.sound_custom();
 
     _osc->send(_clients, "/klick/config/sound", res_emphasis, res_normal);
 
@@ -265,14 +268,16 @@ void OSCHandler::on_config_set_sound_custom(Message const & msg)
 void OSCHandler::on_config_set_sound_volume(Message const & msg)
 {
     _klick.set_sound_volume(boost::get<float>(msg.args[0]), boost::get<float>(msg.args[1]));
-    _osc->send(_clients, "/klick/config/sound_volume", _klick.sound_volume().get<0>(), _klick.sound_volume().get<1>());
+    _osc->send(_clients, "/klick/config/sound_volume", std::get<0>(_klick.sound_volume()),
+                                                       std::get<1>(_klick.sound_volume()));
 }
 
 
 void OSCHandler::on_config_set_sound_pitch(Message const & msg)
 {
     _klick.set_sound_pitch(boost::get<float>(msg.args[0]), boost::get<float>(msg.args[1]));
-    _osc->send(_clients, "/klick/config/sound_pitch", _klick.sound_pitch().get<0>(), _klick.sound_pitch().get<1>());
+    _osc->send(_clients, "/klick/config/sound_pitch", std::get<0>(_klick.sound_pitch()),
+                                                      std::get<1>(_klick.sound_pitch()));
 }
 
 
@@ -290,9 +295,9 @@ void OSCHandler::on_config_connect(Message const & msg)
         return;
     }
 
-    for (OSCInterface::ArgumentVector::const_iterator i = msg.args.begin(); i != msg.args.end(); ++i) {
+    for (auto & a : msg.args) {
         try {
-            _audio.connect(boost::get<std::string>(*i));
+            _audio.connect(boost::get<std::string>(a));
         }
         catch (AudioInterfaceJack::AudioError const & e) {
             std::cerr << msg.path << ": " << e.what() << std::endl;
@@ -316,21 +321,25 @@ void OSCHandler::on_config_disconnect_all(Message const &)
 void OSCHandler::on_config_get_available_ports(Message const & msg)
 {
     std::vector<std::string> v = _audio.available_ports();
-    _osc->send(optional_address(msg), "/klick/config/available_ports", OSCInterface::ArgumentVector(v.begin(), v.end()));
+    _osc->send(optional_address(msg), "/klick/config/available_ports",
+               OSCInterface::ArgumentVector(v.begin(), v.end()));
 }
 
 
 void OSCHandler::on_config_query(Message const & msg)
 {
-    OSCInterface::Address addr(optional_address(msg));
+    auto addr = optional_address(msg);
 
     if (_klick.sound() != -1) {
         _osc->send(addr, "/klick/config/sound", _klick.sound());
     } else {
-        _osc->send(addr, "/klick/config/sound", _klick.sound_custom().get<0>(), _klick.sound_custom().get<1>());
+        _osc->send(addr, "/klick/config/sound", std::get<0>(_klick.sound_custom()),
+                                                std::get<1>(_klick.sound_custom()));
     }
-    _osc->send(addr, "/klick/config/sound_volume", _klick.sound_volume().get<0>(), _klick.sound_volume().get<1>());
-    _osc->send(addr, "/klick/config/sound_pitch", _klick.sound_pitch().get<0>(), _klick.sound_pitch().get<1>());
+    _osc->send(addr, "/klick/config/sound_volume", std::get<0>(_klick.sound_volume()),
+                                                   std::get<1>(_klick.sound_volume()));
+    _osc->send(addr, "/klick/config/sound_pitch", std::get<0>(_klick.sound_pitch()),
+                                                  std::get<1>(_klick.sound_pitch()));
     _osc->send(addr, "/klick/config/volume", _audio.volume());
 }
 
@@ -360,7 +369,7 @@ void OSCHandler::on_metro_set_type(Message const & msg)
 
 void OSCHandler::on_metro_start(Message const & /*msg*/)
 {
-    boost::shared_ptr<Metronome> m(metro());
+    auto m = metro();
     m->start();
     _osc->send(_clients, "/klick/metro/active", m->active());
 }
@@ -368,7 +377,7 @@ void OSCHandler::on_metro_start(Message const & /*msg*/)
 
 void OSCHandler::on_metro_stop(Message const & /*msg*/)
 {
-    boost::shared_ptr<Metronome> m(metro());
+    auto m = metro();
     m->stop();
     _osc->send(_clients, "/klick/metro/active", m->active());
 }
@@ -376,7 +385,7 @@ void OSCHandler::on_metro_stop(Message const & /*msg*/)
 
 void OSCHandler::on_metro_query(Message const & msg)
 {
-    OSCInterface::Address addr(optional_address(msg));
+    auto addr = optional_address(msg);
 
     if (metro_simple()) {
         _osc->send(addr, "/klick/metro/type", "simple");
@@ -398,7 +407,7 @@ void OSCHandler::on_metro_query(Message const & msg)
 
 void OSCHandler::on_simple_set_tempo(Message const & msg)
 {
-    boost::shared_ptr<MetronomeSimple> m(metro_simple());
+    auto m = metro_simple();
     m->set_tempo(boost::get<float>(msg.args[0]));
     _osc->send(_clients, "/klick/simple/tempo", m->tempo());
 }
@@ -406,7 +415,7 @@ void OSCHandler::on_simple_set_tempo(Message const & msg)
 
 void OSCHandler::on_simple_set_tempo_increment(Message const & msg)
 {
-    boost::shared_ptr<MetronomeSimple> m(metro_simple());
+    auto m = metro_simple();
     m->set_tempo_increment(boost::get<float>(msg.args[0]));
     _osc->send(_clients, "/klick/simple/tempo_increment", m->tempo_increment());
 }
@@ -414,7 +423,7 @@ void OSCHandler::on_simple_set_tempo_increment(Message const & msg)
 
 void OSCHandler::on_simple_set_tempo_start(Message const & msg)
 {
-    boost::shared_ptr<MetronomeSimple> m(metro_simple());
+    auto m = metro_simple();
     m->set_tempo_start(boost::get<float>(msg.args[0]));
     _osc->send(_clients, "/klick/simple/tempo_start", m->tempo_start());
 }
@@ -422,7 +431,7 @@ void OSCHandler::on_simple_set_tempo_start(Message const & msg)
 
 void OSCHandler::on_simple_set_tempo_limit(Message const & msg)
 {
-    boost::shared_ptr<MetronomeSimple> m(metro_simple());
+    auto m = metro_simple();
     m->set_tempo_limit(boost::get<float>(msg.args[0]));
     _osc->send(_clients, "/klick/simple/tempo_limit", m->tempo_limit());
 }
@@ -430,7 +439,7 @@ void OSCHandler::on_simple_set_tempo_limit(Message const & msg)
 
 void OSCHandler::on_simple_set_meter(Message const & msg)
 {
-    boost::shared_ptr<MetronomeSimple> m(metro_simple());
+    auto m = metro_simple();
     m->set_meter(boost::get<int>(msg.args[0]), boost::get<int>(msg.args[1]));
     _osc->send(_clients, "/klick/simple/meter", m->beats(), m->denom());
 }
@@ -438,9 +447,10 @@ void OSCHandler::on_simple_set_meter(Message const & msg)
 
 void OSCHandler::on_simple_set_pattern(Message const & msg)
 {
-    boost::shared_ptr<MetronomeSimple> m(metro_simple());
+    auto m = metro_simple();
     try {
-        TempoMap::Pattern p = TempoMap::parse_pattern(boost::get<std::string>(msg.args[0]), std::max(1, m->beats()));
+        TempoMap::Pattern p = TempoMap::parse_pattern(boost::get<std::string>(msg.args[0]),
+                                                      std::max(1, m->beats()));
         m->set_pattern(p);
     } catch (TempoMap::ParseError const & e) {
         std::cerr << msg.path << ": " << e.what() << std::endl;
@@ -452,7 +462,7 @@ void OSCHandler::on_simple_set_pattern(Message const & msg)
 
 void OSCHandler::on_simple_tap(Message const & msg)
 {
-    boost::shared_ptr<MetronomeSimple> m(metro_simple());
+    auto m = metro_simple();
     if (!msg.args.empty()) {
         m->tap(boost::get<double>(msg.args[0]));
     } else {
@@ -464,8 +474,8 @@ void OSCHandler::on_simple_tap(Message const & msg)
 
 void OSCHandler::on_simple_query(Message const & msg)
 {
-    OSCInterface::Address addr(optional_address(msg));
-    boost::shared_ptr<MetronomeSimple> m(metro_simple());
+    auto addr = optional_address(msg);
+    auto m = metro_simple();
 
     _osc->send(addr, "/klick/simple/tempo", m->tempo());
     _osc->send(addr, "/klick/simple/tempo_increment", m->tempo_increment());
@@ -506,7 +516,7 @@ void OSCHandler::on_map_set_tempo_multiplier(Message const & msg)
 
 void OSCHandler::on_map_query(Message const & msg)
 {
-    OSCInterface::Address addr(optional_address(msg));
+    auto addr = optional_address(msg);
     _osc->send(addr, "/klick/map/filename", _klick.tempomap_filename());
     _osc->send(addr, "/klick/map/preroll", _klick.tempomap_preroll());
     _osc->send(addr, "/klick/map/tempo_multiplier", _klick.tempomap_multiplier());

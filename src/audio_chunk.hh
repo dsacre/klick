@@ -14,16 +14,11 @@
 
 #include "audio.hh"
 
-#include <boost/shared_array.hpp>
-
-#include "util/disposable.hh"
-
 
 /*
  * mono 32-bit float audio sample
  */
 class AudioChunk
-  : public das::disposable
 {
   public:
     // loads sample from file, converting to the given samplerate if samplerate is non-zero
@@ -45,10 +40,9 @@ class AudioChunk
     nframes_t samplerate() const { return _samplerate; }
 
   private:
-    typedef boost::shared_array<sample_t> SamplePtr;
+    typedef std::unique_ptr<sample_t[]> SamplePtr;
 
     void resample(nframes_t samplerate);
-
 #ifdef ENABLE_RUBBERBAND
     void pitch_shift(float factor);
 #endif

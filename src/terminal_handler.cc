@@ -16,7 +16,6 @@
 
 #include <iostream>
 #include <iomanip>
-#include <boost/shared_ptr.hpp>
 #include <cstdio>
 
 #include <sys/select.h>
@@ -25,7 +24,7 @@
 #include "util/debug.hh"
 
 
-typedef boost::shared_ptr<MetronomeSimple> MetronomeSimplePtr;
+typedef std::shared_ptr<MetronomeSimple> MetronomeSimplePtr;
 
 
 TerminalHandler::TerminalHandler(Klick & klick, AudioInterface & audio)
@@ -170,7 +169,7 @@ void TerminalHandler::handle_input()
 
 void TerminalHandler::set_beats(int n)
 {
-    MetronomeSimplePtr m = boost::dynamic_pointer_cast<MetronomeSimple>(_klick.metronome());
+    MetronomeSimplePtr m = std::dynamic_pointer_cast<MetronomeSimple>(_klick.metronome());
 
     m->set_meter(n, m->denom());
 }
@@ -178,7 +177,7 @@ void TerminalHandler::set_beats(int n)
 
 void TerminalHandler::set_denom(int n)
 {
-    MetronomeSimplePtr m = boost::dynamic_pointer_cast<MetronomeSimple>(_klick.metronome());
+    MetronomeSimplePtr m = std::dynamic_pointer_cast<MetronomeSimple>(_klick.metronome());
 
     m->set_meter(m->beats(), n);
 }
@@ -186,7 +185,7 @@ void TerminalHandler::set_denom(int n)
 
 void TerminalHandler::change_tempo(float f)
 {
-    MetronomeSimplePtr m = boost::dynamic_pointer_cast<MetronomeSimple>(_klick.metronome());
+    MetronomeSimplePtr m = std::dynamic_pointer_cast<MetronomeSimple>(_klick.metronome());
 
     float t = m->tempo() + f;
     t = std::min(std::max(t, 10.0f), 1000.0f);
@@ -196,7 +195,7 @@ void TerminalHandler::change_tempo(float f)
 
 void TerminalHandler::multiply_tempo(float f)
 {
-    MetronomeSimplePtr m = boost::dynamic_pointer_cast<MetronomeSimple>(_klick.metronome());
+    MetronomeSimplePtr m = std::dynamic_pointer_cast<MetronomeSimple>(_klick.metronome());
 
     float t = m->tempo() * f;
     t = std::min(std::max(t, 10.0f), 1000.0f);
@@ -221,7 +220,7 @@ void TerminalHandler::toggle_running()
 
 void TerminalHandler::update()
 {
-    MetronomeSimplePtr m = boost::dynamic_pointer_cast<MetronomeSimple>(_klick.metronome());
+    MetronomeSimplePtr m = std::dynamic_pointer_cast<MetronomeSimple>(_klick.metronome());
     ASSERT(m);
 
     // clear current line

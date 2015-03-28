@@ -14,7 +14,7 @@
 
 #include <string>
 #include <list>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <boost/noncopyable.hpp>
 
 #include "klick.hh"
@@ -50,10 +50,17 @@ class OSCHandler
     OSCInterface::Address optional_address(OSCInterface::Message const & msg, std::size_t i = 0);
 
 
-    boost::shared_ptr<class Metronome> metro() { return _klick.metronome(); }
-    boost::shared_ptr<class MetronomeSimple> metro_simple() { return boost::dynamic_pointer_cast<MetronomeSimple>(_klick.metronome()); }
-    boost::shared_ptr<class MetronomeMap> metro_map() { return boost::dynamic_pointer_cast<MetronomeMap>(_klick.metronome()); }
-    boost::shared_ptr<class MetronomeJack> metro_jack() { return boost::dynamic_pointer_cast<MetronomeJack>(_klick.metronome()); }
+    std::shared_ptr<class Metronome> metro() { return _klick.metronome(); }
+
+    std::shared_ptr<class MetronomeSimple> metro_simple() {
+        return std::dynamic_pointer_cast<MetronomeSimple>(_klick.metronome());
+    }
+    std::shared_ptr<class MetronomeMap> metro_map() {
+        return std::dynamic_pointer_cast<MetronomeMap>(_klick.metronome());
+    }
+    std::shared_ptr<class MetronomeJack> metro_jack() {
+        return std::dynamic_pointer_cast<MetronomeJack>(_klick.metronome());
+    }
 
 
     void on_ping(Message const &);
@@ -98,7 +105,7 @@ class OSCHandler
     void fallback(Message const &);
 
 
-    boost::shared_ptr<OSCInterface> _osc;
+    std::shared_ptr<OSCInterface> _osc;
 
     Klick & _klick;
     AudioInterfaceJack & _audio;

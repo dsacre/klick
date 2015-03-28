@@ -15,7 +15,7 @@
 #include "audio_interface.hh"
 
 #include <string>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <sndfile.h>
 
 
@@ -36,7 +36,7 @@ class AudioInterfaceSndfile
     std::string get_filename_extension(std::string const & filename);
 
     nframes_t _samplerate;
-    boost::shared_ptr<SNDFILE> _sndfile;
+    std::shared_ptr<SNDFILE> _sndfile;
 };
 
 

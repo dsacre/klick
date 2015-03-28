@@ -15,14 +15,14 @@
 #include <string>
 #include <iostream>
 #include <fstream>
+#include <memory>
 #include <csignal>
-#include <boost/shared_ptr.hpp>
 
 
 das::logstream logv(std::cout);
 
 
-static boost::shared_ptr<Klick> app;
+static std::shared_ptr<Klick> app;
 
 static int ret = EXIT_SUCCESS;
 

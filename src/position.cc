@@ -16,7 +16,6 @@
 #include <iterator>
 #include <numeric>
 #include <limits>
-#include <boost/lambda/lambda.hpp>
 #include <cmath>
 
 #include "util/debug.hh"
@@ -54,14 +53,14 @@ void Position::calculate_entry_positions()
     int beat = 0;
 
     // calculate first frame of each tempomap entry
-    for (TempoMap::Entries::const_iterator i = _tempomap->entries().begin(); i != _tempomap->entries().end(); ++i) {
+    for (auto & e : _tempomap->entries()) {
         _start_frames.push_back(frame);
         _start_bars.push_back(bar);
         _start_beats.push_back(beat);
-        if (i->bars != -1) {
-            frame += frame_dist(*i, 0, i->bars * i->beats);
-            bar += i->bars;
-            beat += i->bars * i->beats;
+        if (e.bars != -1) {
+            frame += frame_dist(e, 0, e.bars * e.beats);
+            bar += e.bars;
+            beat += e.bars * e.beats;
         } else {
             // play entry ad infinitum
             frame = std::numeric_limits<float_frames_t>::max();
@@ -83,13 +82,13 @@ void Position::calculate_entry_positions()
 
 void Position::set_start_label(std::string const & start_label)
 {
-    TempoMapPtr t(new TempoMap());
+    auto map = std::make_shared<TempoMap>();
 
     // remove everything before the start label
-    TempoMap::Entries::const_iterator i = _tempomap->entries().begin();
+    auto i = _tempomap->entries().begin();
     while (i->label != start_label) ++i;
-    for ( ; i != _tempomap->entries().end(); ++i) t->add(*i);
-    _tempomap = t;
+    for ( ; i != _tempomap->entries().end(); ++i) map->add(*i);
+    _tempomap = map;
 
     reset();
     calculate_entry_positions();
@@ -259,7 +258,7 @@ Position::float_frames_t Position::frame_dist(TempoMap::Entry const & e, int sta
         secs = std::accumulate(e.tempi.begin() + start,
                                e.tempi.begin() + end,
                                0.0,
-                               boost::lambda::_1 + 240.0 / (boost::lambda::_2 * e.denom));
+                               [=](float acc, float t){ return acc + 240.0 / (t * e.denom); });
     }
 
     return secs * _samplerate / _multiplier;

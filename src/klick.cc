@@ -30,7 +30,7 @@
 #include <string>
 #include <iostream>
 #include <stdexcept>
-#include <boost/bind.hpp>
+#include <functional>
 #include <time.h>
 #include <stdint.h>
 
@@ -42,7 +42,7 @@
 
 Klick::Klick(int argc, char *argv[])
   : _options(new Options)
-  , _gc(new das::garbage_collector(15))
+  , _gc(new das::garbage_collector)
   , _quit(false)
 {
     _options->parse(argc, argv);
@@ -89,15 +89,15 @@ Klick::~Klick()
 
 void Klick::setup_jack()
 {
-    boost::shared_ptr<AudioInterfaceJack> audio(new AudioInterfaceJack(_options->client_name));
+    std::unique_ptr<AudioInterfaceJack> audio(new AudioInterfaceJack(_options->client_name));
 
     logv << "jack client name: " << audio->client_name() << std::endl;
 
     if (_options->connect_ports.size()) {
-        for (std::vector<std::string>::const_iterator i = _options->connect_ports.begin(); i != _options->connect_ports.end(); ++i) {
+        for (auto & p : _options->connect_ports) {
             try {
-                audio->connect(*i);
-                logv << "connected to " << i->c_str() << std::endl;
+                audio->connect(p);
+                logv << "connected to " << p.c_str() << std::endl;
             }
             catch (AudioInterface::AudioError const & e) {
                 std::cerr << e.what() << std::endl;
@@ -108,9 +108,7 @@ void Klick::setup_jack()
         audio->autoconnect();
     }
 
-    _gc->set_thread(audio->client_thread());
-
-    _audio = audio;
+    _audio = std::move(audio);
 }
 
 
@@ -134,15 +132,16 @@ void Klick::load_tempomap()
         _map = TempoMap::new_simple(-1, 120, 4, 4);
     }
 
-    logv << "tempo map:" << std::endl
-              << das::indent(_map->dump(), 2);
+    logv << "tempo map:\n"
+         << das::indent(_map->dump(), 2);
 
     // make sure the start label exists
     if (_options->start_label.length()) {
         if (_map->entry(_options->start_label)) {
             logv << "starting at label: " << _options->start_label << std::endl;
         } else {
-            throw std::runtime_error(das::make_string() << "label '" << _options->start_label << "' not found in tempo map");
+            throw std::runtime_error(das::make_string()
+                        << "label '" << _options->start_label << "' not found in tempo map");
         }
     }
 
@@ -152,7 +151,7 @@ void Klick::load_tempomap()
 }
 
 
-boost::tuple<std::string, std::string> Klick::sample_filenames(int n, Options::EmphasisMode emphasis_mode)
+std::tuple<std::string, std::string> Klick::sample_filenames(int n, Options::EmphasisMode emphasis_mode)
 {
     std::string emphasis, normal;
 
@@ -196,7 +195,7 @@ boost::tuple<std::string, std::string> Klick::sample_filenames(int n, Options::E
         break;
     }
 
-    return boost::make_tuple(emphasis, normal);
+    return std::make_tuple(emphasis, normal);
 }
 
 
@@ -205,10 +204,11 @@ AudioChunkPtr Klick::load_sample(std::string const & filename, float volume, flo
     AudioChunkPtr p;
 
     if (!filename.empty()) {
-        p.reset(new AudioChunk(filename, _audio->samplerate()), _gc->disposer);
+        p.reset(new AudioChunk(filename, _audio->samplerate()));
     } else {
-        p.reset(new AudioChunk(_audio->samplerate()), _gc->disposer);
+        p.reset(new AudioChunk(_audio->samplerate()));
     }
+    _gc->manage(p);
 
     if (volume != 1.0f) {
         p->adjust_volume(volume);
@@ -225,7 +225,7 @@ AudioChunkPtr Klick::load_sample(std::string const & filename, float volume, flo
 void Klick::load_samples()
 {
     std::string emphasis, normal;
-    boost::tie(emphasis, normal) = sample_filenames(_options->click_sample, _options->emphasis_mode);
+    std::tie(emphasis, normal) = sample_filenames(_options->click_sample, _options->emphasis_mode);
 
     logv << "loading samples:\n"
          << "  emphasis: " << emphasis << "\n"
@@ -263,7 +263,8 @@ void Klick::set_sound_custom(std::string const & emphasis, std::string const & n
     }
     catch (std::runtime_error const & e) {
         std::cerr << e.what() << std::endl;
-        _click_emphasis.reset(new AudioChunk(_audio->samplerate()), _gc->disposer);
+        _click_emphasis.reset(new AudioChunk(_audio->samplerate()));
+        _gc->manage(_click_emphasis);
         _options->click_filename_emphasis = "";
     }
 
@@ -272,7 +273,8 @@ void Klick::set_sound_custom(std::string const & emphasis, std::string const & n
     }
     catch (std::runtime_error const & e) {
         std::cerr << e.what() << std::endl;
-        _click_normal.reset(new AudioChunk(_audio->samplerate()), _gc->disposer);
+        _click_normal.reset(new AudioChunk(_audio->samplerate()));
+        _gc->manage(_click_normal);
         _options->click_filename_normal = "";
     }
 
@@ -317,6 +319,8 @@ void Klick::set_metronome(Options::MetronomeType type)
 
 void Klick::load_metronome()
 {
+    using namespace std::placeholders;
+
     Metronome * m = NULL;
 
     switch (_options->type) {
@@ -324,7 +328,7 @@ void Klick::load_metronome()
         m = new MetronomeSimple(*_audio, &(*_map)[0]);
         break;
       case Options::METRONOME_TYPE_JACK:
-        ASSERT(boost::dynamic_pointer_cast<AudioInterfaceJack>(_audio));
+        ASSERT(dynamic_cast<AudioInterfaceJack*>(&*_audio));
         m = new MetronomeJack(dynamic_cast<AudioInterfaceJack &>(*_audio));
         break;
       case Options::METRONOME_TYPE_MAP:
@@ -338,19 +342,20 @@ void Klick::load_metronome()
     }
 
     // store metronome in shared_ptr with custom deleter
-    _metro.reset(m, _gc->disposer);
+    _metro.reset(m);
+    _gc->manage(_metro);
 
     _metro->set_sound(_click_emphasis, _click_normal);
-    _audio->set_process_callback(boost::bind(&Metronome::process_callback, _metro, _1, _2));
+    _audio->set_process_callback(std::bind(&Metronome::process_callback, _metro, _1, _2));
 
     if (_options->transport_master) {
-        boost::shared_ptr<MetronomeMap> m = boost::dynamic_pointer_cast<MetronomeMap>(_metro);
-        boost::shared_ptr<AudioInterfaceTransport> a = boost::dynamic_pointer_cast<AudioInterfaceTransport>(_audio);
+        auto m = std::dynamic_pointer_cast<MetronomeMap>(_metro);
+        auto a = dynamic_cast<AudioInterfaceTransport*>(&*_audio);
 
         // register timebase callback if supported by both the metronome and the audio backend
         if (m && a) {
             try {
-                a->set_timebase_callback(boost::bind(&Metronome::timebase_callback, m, _1));
+                a->set_timebase_callback(std::bind(&Metronome::timebase_callback, m, _1));
             } catch (AudioInterface::AudioError const & e) {
                 std::cerr << e.what() << std::endl;
             }
@@ -448,9 +453,9 @@ void Klick::run_jack()
 
 void Klick::run_sndfile()
 {
-    AudioInterfaceSndfile *a = dynamic_cast<AudioInterfaceSndfile*>(&*_audio);
+    auto a = dynamic_cast<AudioInterfaceSndfile*>(&*_audio);
     ASSERT(a);
-    MetronomeMap *m = dynamic_cast<MetronomeMap*>(&*_metro);
+    auto m = dynamic_cast<MetronomeMap*>(&*_metro);
     ASSERT(m);
 
     static nframes_t const BUFFER_SIZE = 1024;

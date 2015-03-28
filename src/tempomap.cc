@@ -15,16 +15,14 @@
 #include <fstream>
 #include <iostream>
 #include <iomanip>
-#include <cmath>
-#include <cstdlib>
 #include <functional>
 #include <algorithm>
+#include <regex>
+#include <cmath>
+#include <cstdlib>
 #include <boost/tokenizer.hpp>
-#include <boost/make_shared.hpp>
-#include <boost/bind.hpp>
 
 #include "util/string.hh"
-#include "util/regex.hh"
 #include "util/lexical_cast.hh"
 
 typedef boost::char_separator<char> char_sep;
@@ -37,12 +35,13 @@ typedef boost::tokenizer<char_sep> tokenizer;
 #define PATTERN "([Xx.]+)"
 
 // matches a line that contains nothing but whitespace or comments
-static das::regex const REGEX_BLANK(
-    "^[[:blank:]]*(#.*)?$"
+static std::regex const REGEX_BLANK(
+    "^[[:blank:]]*(#.*)?$",
+    std::regex_constants::extended
 );
 
 // matches any valid line in a tempomap file
-static das::regex const REGEX_VALID(
+static std::regex const REGEX_VALID(
     // label
     "^[[:blank:]]*(" LABEL ":)?" \
     // bars
@@ -56,7 +55,8 @@ static das::regex const REGEX_VALID(
     // volume
     "([[:blank:]]+" FLOAT ")?" \
     // comment
-    "[[:blank:]]*(#.*)?$"
+    "[[:blank:]]*(#.*)?$",
+    std::regex_constants::extended
 );
 
 static int const IDX_LABEL   =  2,
@@ -67,12 +67,11 @@ static int const IDX_LABEL   =  2,
                  IDX_TEMPO2  = 10,
                  IDX_TEMPI   = 12,
                  IDX_PATTERN = 17,
-                 IDX_VOLUME  = 19,
-                 RE_NMATCHES = 22;
+                 IDX_VOLUME  = 19;
 
 
 // matches valid tempo parameters on the command line
-static das::regex const REGEX_CMDLINE(
+static std::regex const REGEX_CMDLINE(
     // bars
     "^[[:blank:]]*(" INT "[[:blank:]]+)?" \
     // meter
@@ -80,7 +79,8 @@ static das::regex const REGEX_CMDLINE(
     // tempo
     FLOAT "(-" FLOAT "/" FLOAT ")?" \
     // pattern
-    "([[:blank:]]+" PATTERN ")?[[:blank:]]*$"
+    "([[:blank:]]+" PATTERN ")?[[:blank:]]*$",
+    std::regex_constants::extended
 );
 
 static int const IDX_BARS_CMD    =  2,
@@ -89,8 +89,7 @@ static int const IDX_BARS_CMD    =  2,
                  IDX_TEMPO_CMD   =  6,
                  IDX_TEMPO2_CMD  =  9,
                  IDX_ACCEL_CMD   = 11,
-                 IDX_PATTERN_CMD = 14,
-                 RE_NMATCHES_CMD = 15;
+                 IDX_PATTERN_CMD = 14;
 
 #undef LABEL
 #undef INT
@@ -120,8 +119,8 @@ std::string TempoMap::pattern_to_string(Pattern const & p)
 {
     std::ostringstream os;
 
-    for (Pattern::const_iterator i = p.begin(); i != p.end(); ++i) {
-        os << (*i == BEAT_EMPHASIS ? "X" : *i == BEAT_NORMAL ? "x" : ".");
+    for (auto b : p) {
+        os << (b == BEAT_EMPHASIS ? "X" : b == BEAT_NORMAL ? "x" : ".");
     }
 
     return os.str();
@@ -138,8 +137,8 @@ std::vector<float> TempoMap::parse_tempi(std::string const &s, float tempo1, int
         throw ParseError("number of tempo values doesn't match number of beats");
     }
     tempi.push_back(tempo1);
-    for (tokenizer::iterator i = tok.begin(); i != tok.end(); ++i) {
-        tempi.push_back(das::lexical_cast<float>(*i));
+    for (auto t : tok) {
+        tempi.push_back(das::lexical_cast<float>(t));
     }
     return tempi;
 }
@@ -148,7 +147,8 @@ std::vector<float> TempoMap::parse_tempi(std::string const &s, float tempo1, int
 void TempoMap::check_entry(Entry const & e)
 {
     if ((e.tempo <= 0 && e.tempi.empty()) ||
-        std::find_if(e.tempi.begin(), e.tempi.end(), boost::bind(std::less_equal<float>(), _1, 0.0f)) != e.tempi.end()) {
+        std::find_if(e.tempi.begin(), e.tempi.end(),
+                     std::bind(std::less_equal<float>(), std::placeholders::_1, 0.0f)) != e.tempi.end()) {
         throw ParseError("tempo must be greater than zero");
     }
     if (e.bars <= 0 && e.bars != -1) {
@@ -166,35 +166,35 @@ std::string TempoMap::dump() const
 
     os << std::fixed << std::setprecision(2);
 
-    for (Entries::const_iterator i = _entries.begin(); i != _entries.end(); ++i) {
+    for (auto e : _entries) {
         // label
-        os << (i->label.length() ? i->label : "-") << ": ";
+        os << (e.label.length() ? e.label : "-") << ": ";
         // bars
-        if (i->bars != -1) os << i->bars;
+        if (e.bars != -1) os << e.bars;
         else os << "*";
         os << " ";
         // meter
-        os << i->beats << "/" << i->denom << " ";
+        os << e.beats << "/" << e.denom << " ";
         // tempo
-        if (i->tempo) {
-            os << i->tempo;
-            if (i->tempo2) os << "-" << i->tempo2;
+        if (e.tempo) {
+            os << e.tempo;
+            if (e.tempo2) os << "-" << e.tempo2;
         } else {
-            os << i->tempi[0];
-            for (std::vector<float>::const_iterator k = i->tempi.begin() + 1; k != i->tempi.end(); ++k) {
+            os << e.tempi[0];
+            for (auto k = e.tempi.begin() + 1; k != e.tempi.end(); ++k) {
                 os << "," << *k;
             }
         }
         os << " ";
         // pattern
-        if (i->pattern.empty()) {
+        if (e.pattern.empty()) {
             os << "-";
         } else {
-            os << pattern_to_string(i->pattern);
+            os << pattern_to_string(e.pattern);
         }
         os << " ";
         // volume
-        os << i->volume;
+        os << e.volume;
         os << std::endl;
     }
 
@@ -204,14 +204,14 @@ std::string TempoMap::dump() const
 
 TempoMapPtr TempoMap::join(TempoMapConstPtr const m1, TempoMapConstPtr const m2)
 {
-    TempoMapPtr m(new TempoMap());
+    auto map = std::make_shared<TempoMap>();
 
-    std::back_insert_iterator<Entries> p(m->_entries);
+    std::back_insert_iterator<Entries> p(map->_entries);
 
     std::copy(m1->entries().begin(), m1->entries().end(), p);
     std::copy(m2->entries().begin(), m2->entries().end(), p);
 
-    return m;
+    return map;
 }
 
 
@@ -221,13 +221,13 @@ TempoMapPtr TempoMap::join(TempoMapConstPtr const m1, TempoMapConstPtr const m2)
 TempoMapPtr TempoMap::new_from_file(std::string const & filename)
 {
     std::istream *input;
-    boost::shared_ptr<std::ifstream> file;
+    std::shared_ptr<std::ifstream> file;
 
     if (filename == "-") {
         input = &std::cin;
     }
     else {
-        file = boost::make_shared<std::ifstream>(filename.c_str());
+        file = std::make_shared<std::ifstream>(filename.c_str());
 
         if (!file->is_open()) {
             throw std::runtime_error(das::make_string() << "can't open tempo map file '" << filename << "'");
@@ -236,7 +236,7 @@ TempoMapPtr TempoMap::new_from_file(std::string const & filename)
         input = file.get();
     }
 
-    TempoMapPtr map(new TempoMap());
+    auto map = std::make_shared<TempoMap>();
 
     std::string line;
     int lineno = 0;
@@ -246,14 +246,14 @@ TempoMapPtr TempoMap::new_from_file(std::string const & filename)
         lineno++;
 
         // discard blank lines right away
-        if (REGEX_BLANK.match(line)) {
+        if (std::regex_match(line, REGEX_BLANK)) {
             continue;
         }
 
         try {
             // check if this line matches the regex
-            das::regex::matches matches = REGEX_VALID.match(line, RE_NMATCHES);
-            if (!matches) {
+            std::smatch matches;
+            if (!std::regex_match(line, matches, REGEX_VALID)) {
                 throw ParseError("malformed tempo map entry");
             }
 
@@ -268,7 +268,7 @@ TempoMapPtr TempoMap::new_from_file(std::string const & filename)
             e.pattern = parse_pattern(matches[IDX_PATTERN], e.beats);
             e.volume  = das::lexical_cast<float>(matches[IDX_VOLUME], 1.0f);
 
-            if (matches.has(IDX_TEMPI)) {
+            if (matches[IDX_TEMPI].length()) {
                 e.tempi = parse_tempi(matches[IDX_TEMPI], e.tempo, e.beats * e.bars);
                 e.tempo = 0.0f;
             }
@@ -291,11 +291,11 @@ TempoMapPtr TempoMap::new_from_file(std::string const & filename)
  */
 TempoMapPtr TempoMap::new_from_cmdline(std::string const & line)
 {
-    TempoMapPtr map(new TempoMap());
+    auto map = std::make_shared<TempoMap>();
 
     try {
-        das::regex::matches matches = REGEX_CMDLINE.match(line, RE_NMATCHES_CMD);
-        if (!matches) {
+        std::smatch matches;
+        if (!std::regex_match(line, matches, REGEX_CMDLINE)) {
             throw ParseError("malformed tempo map string");
         }
 
@@ -312,7 +312,7 @@ TempoMapPtr TempoMap::new_from_cmdline(std::string const & line)
 
         check_entry(e);
 
-        if (!matches.has(IDX_TEMPO2_CMD)) {
+        if (!matches[IDX_TEMPO2_CMD].length()) {
             // no tempo change, just add this single entry
             map->_entries.push_back(e);
         } else {
@@ -356,7 +356,7 @@ TempoMapPtr TempoMap::new_from_cmdline(std::string const & line)
 TempoMapPtr TempoMap::new_simple(int bars, float tempo, int beats, int denom,
                                  Pattern const & pattern, float volume)
 {
-    TempoMapPtr map(new TempoMap());
+    auto map = std::make_shared<TempoMap>();
 
     Entry e;
     e.bars    = bars;

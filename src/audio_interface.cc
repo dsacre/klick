@@ -43,19 +43,19 @@ void AudioInterface::play(AudioChunkConstPtr chunk, nframes_t offset, float volu
 
 void AudioInterface::process_mix(sample_t *buffer, nframes_t nframes)
 {
-    for (ChunkArray::iterator i = _chunks.begin(); i != _chunks.end(); ++i)
+    for (auto & a : _chunks)
     {
-        if (i->chunk) {
-            process_mix_samples(buffer + i->offset,
-                                i->chunk->samples() + i->pos,
-                                std::min(nframes - i->offset, i->chunk->length() - i->pos),
-                                i->volume * _volume);
+        if (a.chunk) {
+            process_mix_samples(buffer + a.offset,
+                                a.chunk->samples() + a.pos,
+                                std::min(nframes - a.offset, a.chunk->length() - a.pos),
+                                a.volume * _volume);
 
-            i->pos += nframes - i->offset;
-            i->offset = 0;
+            a.pos += nframes - a.offset;
+            a.offset = 0;
 
-            if (i->pos >= i->chunk->length()) {
-                i->chunk.reset();
+            if (a.pos >= a.chunk->length()) {
+                a.chunk.reset();
             }
         }
     }

@@ -14,10 +14,9 @@
 
 #include <string>
 #include <csignal>
-#include <boost/shared_ptr.hpp>
-#include <boost/scoped_ptr.hpp>
+#include <memory>
+#include <tuple>
 #include <boost/noncopyable.hpp>
-#include <boost/tuple/tuple.hpp>
 
 #include "audio.hh"
 #include "options.hh"
@@ -42,7 +41,7 @@ class Klick
     void run();
     void signal_quit();
 
-    boost::shared_ptr<Metronome> metronome() const { return _metro; }
+    std::shared_ptr<Metronome> metronome() const { return _metro; }
 
     void set_metronome(Options::MetronomeType type);
 
@@ -54,14 +53,14 @@ class Klick
     int sound() const {
         return _options->click_sample;
     }
-    boost::tuple<std::string, std::string> sound_custom() const {
-        return boost::make_tuple(_options->click_filename_emphasis, _options->click_filename_normal);
+    std::tuple<std::string, std::string> sound_custom() const {
+        return std::make_tuple(_options->click_filename_emphasis, _options->click_filename_normal);
     }
-    boost::tuple<float, float> sound_volume() const {
-        return boost::make_tuple(_options->volume_emphasis, _options->volume_normal);
+    std::tuple<float, float> sound_volume() const {
+        return std::make_tuple(_options->volume_emphasis, _options->volume_normal);
     }
-    boost::tuple<float, float> sound_pitch() const {
-        return boost::make_tuple(_options->pitch_emphasis, _options->pitch_normal);
+    std::tuple<float, float> sound_pitch() const {
+        return std::make_tuple(_options->pitch_emphasis, _options->pitch_normal);
     }
 
     void set_tempomap_filename(std::string const & filename);
@@ -81,27 +80,27 @@ class Klick
     void load_samples();
     void load_metronome();
 
-    boost::tuple<std::string, std::string> sample_filenames(int n, Options::EmphasisMode emphasis_mode);
+    std::tuple<std::string, std::string> sample_filenames(int n, Options::EmphasisMode emphasis_mode);
     AudioChunkPtr load_sample(std::string const & filename, float volume, float pitch);
 
     void run_jack();
     void run_sndfile();
 
 
-    boost::scoped_ptr<Options> _options;
-    boost::scoped_ptr<das::garbage_collector> _gc;
+    std::unique_ptr<Options> _options;
+    std::unique_ptr<das::garbage_collector> _gc;
 
-    boost::shared_ptr<AudioInterface> _audio;
+    std::unique_ptr<AudioInterface> _audio;
 
     AudioChunkPtr _click_emphasis;
     AudioChunkPtr _click_normal;
 
-    boost::shared_ptr<TempoMap> _map;
+    std::shared_ptr<TempoMap> _map;
 
-    boost::shared_ptr<OSCHandler> _osc;
-    boost::shared_ptr<TerminalHandler> _term;
+    std::unique_ptr<OSCHandler> _osc;
+    std::unique_ptr<TerminalHandler> _term;
 
-    boost::shared_ptr<Metronome> _metro;
+    std::shared_ptr<Metronome> _metro;
 
     volatile std::sig_atomic_t _quit;
 };

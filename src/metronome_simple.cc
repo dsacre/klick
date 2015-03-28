@@ -12,7 +12,6 @@
 #include "metronome_simple.hh"
 
 #include <algorithm>
-#include <boost/lambda/lambda.hpp>
 
 #include <sys/time.h>
 #include <time.h>
@@ -133,7 +132,8 @@ void MetronomeSimple::tap(double now)
 
     // forget taps which happened too long ago
     _taps.erase(
-        std::remove_if(_taps.begin(), _taps.end(), boost::lambda::_1 < now - MAX_TAP_AGE),
+        std::remove_if(_taps.begin(), _taps.end(),
+                       [&](double t){ return t < now - MAX_TAP_AGE; }),
         _taps.end()
     );
 

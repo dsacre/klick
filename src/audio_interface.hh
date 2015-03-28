@@ -16,9 +16,10 @@
 
 #include <string>
 #include <stdexcept>
-#include <boost/array.hpp>
+#include <memory>
+#include <array>
+#include <functional>
 #include <boost/noncopyable.hpp>
-#include <boost/function.hpp>
 
 
 class AudioInterface
@@ -33,7 +34,7 @@ class AudioInterface
     AudioInterface();
     virtual ~AudioInterface() { }
 
-    typedef boost::function<void (sample_t *, nframes_t)> ProcessCallback;
+    typedef std::function<void (sample_t *, nframes_t)> ProcessCallback;
 
     virtual void set_process_callback(ProcessCallback cb);
 
@@ -68,7 +69,7 @@ class AudioInterface
         float volume;
     };
 
-    typedef boost::array<PlayingChunk, MAX_PLAYING_CHUNKS> ChunkArray;
+    typedef std::array<PlayingChunk, MAX_PLAYING_CHUNKS> ChunkArray;
 
     ChunkArray _chunks;
     int _next_chunk;
@@ -82,7 +83,7 @@ class AudioInterfaceTransport
 {
   public:
 
-    typedef boost::function<void (position_t *)> TimebaseCallback;
+    typedef std::function<void (position_t *)> TimebaseCallback;
 
     virtual void set_timebase_callback(TimebaseCallback cb) = 0;
 

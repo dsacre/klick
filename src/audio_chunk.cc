@@ -19,7 +19,6 @@
 
 #include <samplerate.h>
 #include <sndfile.h>
-
 #ifdef ENABLE_RUBBERBAND
     #include <rubberband/RubberBandStretcher.h>
 #endif
@@ -51,7 +50,7 @@ AudioChunk::AudioChunk(std::string const & filename, nframes_t samplerate)
         for (int i = 0; i < sfinfo.frames; ++i) {
             mono_samples[i] = (_samples[i*2] + _samples[i*2 + 1]) / 2;
         }
-        _samples = mono_samples;
+        _samples = std::move(mono_samples);
     }
 
     // convert samplerate
@@ -105,7 +104,7 @@ void AudioChunk::resample(nframes_t samplerate)
         throw std::runtime_error(das::make_string() << "error converting samplerate: " << src_strerror(error));
     }
 
-    _samples = samples_new;
+    _samples = std::move(samples_new);
     _length = src_data.output_frames;
     _samplerate = samplerate;
 }
@@ -147,7 +146,7 @@ void AudioChunk::pitch_shift(float factor)
     ASSERT(rb.available() == -1);
 
     _length = k;
-    _samples = samples_new;
+    _samples = std::move(samples_new);
 }
 
 #endif

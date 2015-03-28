@@ -29,7 +29,7 @@ opts.AddVariables(
     BoolVariable('DEBUG', 'debug mode', False),
     BoolVariable('OSC', 'OSC support', True),
     BoolVariable('TERMINAL', 'terminal control support', True),
-    BoolVariable('RUBBERBAND', 'use Rubber Band for pitch shifting', False),
+    BoolVariable('RUBBERBAND', 'use Rubber Band for pitch shifting', True),
     BoolVariable('GETOPT_LONG', 'enable long options using getopt_long()', True),
 )
 opts.Update(env)

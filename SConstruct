@@ -11,13 +11,13 @@ env = Environment(
     ENV = os.environ,
 )
 
-if os.environ.has_key('CXX'):
+if os.environ.get('CXX'):
     env.Replace(CXX = os.environ['CXX'])
-if os.environ.has_key('CXXFLAGS'):
+if os.environ.get('CXXFLAGS'):
     env.Append(CXXFLAGS = SCons.Util.CLVar(os.environ['CXXFLAGS']))
-if os.environ.has_key('CPPFLAGS'):
+if os.environ.get('CPPFLAGS'):
     env.Append(CXXFLAGS = SCons.Util.CLVar(os.environ['CPPFLAGS']))
-if os.environ.has_key('LDFLAGS'):
+if os.environ.get('LDFLAGS'):
     env.Append(LINKFLAGS = SCons.Util.CLVar(os.environ['LDFLAGS']))
 
 # build options
